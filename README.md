@@ -31,6 +31,7 @@ This will:
 - Start a PostgreSQL database
 - Start the web application which will be accessible on `http://localhost:8080` (migrations run automatically on startup)
 - Start Adminer on and forward port to `http://localhost:5050` for database management
+- Start Seq on `http://localhost:8081` (ingestion endpoint: `http://localhost:5341`)
 
 ## Dev
 
