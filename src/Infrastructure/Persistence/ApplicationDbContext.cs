@@ -1,15 +1,21 @@
-using Microsoft.EntityFrameworkCore;
 using Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistence;
 
 public class ApplicationDbContext : DbContext
 {
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        : base(options)
+    {
+    }
 
     public DbSet<User> Users => Set<User>();
+
     public DbSet<Checklist> Checklists => Set<Checklist>();
+
     public DbSet<Section> Sections => Set<Section>();
+
     public DbSet<TaskItem> Tasks => Set<TaskItem>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -37,7 +43,7 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<Section>(entity =>
         {
             entity.Property(s => s.Name).IsRequired().HasMaxLength(100);
-            entity.Property(s => s.Position).IsRequired(); 
+            entity.Property(s => s.Position).IsRequired();
         });
 
         modelBuilder.Entity<TaskItem>(entity =>
