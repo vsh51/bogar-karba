@@ -1,5 +1,7 @@
 namespace BogarKarba.Domain.Enums;
 
-public enum Enum
+public enum SampleStatus
 {
+    Active,
+    Inactive,
 }
