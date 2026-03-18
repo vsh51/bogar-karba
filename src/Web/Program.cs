@@ -1,20 +1,30 @@
+using System.Globalization;
+using Application.Interfaces;
+using Application.UseCases.GetPublishedChecklist;
 using Infrastructure.Persistence;
+using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Serilog;
+
+var builder = WebApplication.CreateBuilder(args);
+
+var seqUrl = builder.Configuration["SEQ_URL"] ?? string.Empty;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
     .Enrich.FromLogContext()
-    .WriteTo.Console()
-    .WriteTo.Seq("http://seq:5341")
+    .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
+    .WriteTo.Seq(seqUrl, formatProvider: CultureInfo.InvariantCulture)
     .CreateLogger();
-
-var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<IChecklistReadOnlyRepository, ChecklistReadOnlyRepository>();
+builder.Services.AddScoped<GetPublishedChecklistQueryHandler>();
 
 builder.Services.AddControllersWithViews();
 
@@ -26,6 +36,10 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     await db.Database.MigrateAsync();
+
+    var loggerFactory = scope.ServiceProvider.GetRequiredService<ILoggerFactory>();
+    var seedingLogger = loggerFactory.CreateLogger("DbInitializer");
+    await DbInitializer.SeedAsync(db, seedingLogger);
 }
 
 if (!app.Environment.IsDevelopment())
