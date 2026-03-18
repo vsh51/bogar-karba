@@ -1,20 +1,16 @@
+using Microsoft.AspNetCore.Identity;
+
 namespace Domain.Entities;
 
 public enum UserStatus
 {
     Active,
     Banned,
-    Pending
+    Pending,
 }
 
-public class User
+public class ApplicationUser : IdentityUser
 {
-    public Guid Id { get; set; }
-
-    public string Login { get; set; } = string.Empty;
-
-    public string PasswordHash { get; set; } = string.Empty;
-
     public UserStatus AccountStatus { get; set; } = UserStatus.Active;
 
     public List<Checklist> Checklists { get; set; } = new();

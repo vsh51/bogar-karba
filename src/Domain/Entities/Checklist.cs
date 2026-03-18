@@ -19,9 +19,9 @@ public class Checklist
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-    public Guid UserId { get; set; }
+    public string UserId { get; set; } = string.Empty;
 
-    public User Author { get; set; } = null!;
+    public ApplicationUser Author { get; set; } = null!;
 
     public List<Section> Sections { get; set; } = new();
 }
