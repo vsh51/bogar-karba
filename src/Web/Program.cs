@@ -1,5 +1,6 @@
 using System.Globalization;
 using Application.Interfaces;
+using Application.Services;
 using Application.UseCases;
 using Application.UseCases.AdminAuth;
 using Application.UseCases.Auth;
@@ -62,6 +63,8 @@ builder.Services.AddScoped<IAdminAuthService, AdminAuthService>();
 builder.Services.AddScoped<IChecklistReadOnlyRepository, ChecklistReadOnlyRepository>();
 builder.Services.AddScoped<GetPublishedChecklistQueryHandler>();
 
+builder.Services.AddScoped<ChecklistService>();
+
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
@@ -83,8 +86,6 @@ using (var scope = app.Services.CreateScope())
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 

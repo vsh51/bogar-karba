@@ -1,4 +1,5 @@
 using Application.Interfaces;
+using Application.Services;
 using Application.UseCases;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,11 +12,16 @@ public class AdminController : Controller
 {
     private readonly IAdminAuthService _authService;
     private readonly SearchChecklistsService _searchService;
+    private readonly ChecklistService _checklistService;
 
-    public AdminController(IAdminAuthService authService, SearchChecklistsService searchService)
+    public AdminController(
+        IAdminAuthService authService,
+        SearchChecklistsService searchService,
+        ChecklistService checklistService)
     {
         _authService = authService;
         _searchService = searchService;
+        _checklistService = checklistService;
     }
 
     public IActionResult Index(string? searchTerm)
@@ -51,6 +57,19 @@ public class AdminController : Controller
         }
 
         return RedirectToAction("Index");
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Delete(Guid id, string? searchTerm)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        await _checklistService.DeleteChecklist(id);
+        return RedirectToAction(nameof(Index), new { searchTerm });
     }
 
     public IActionResult Dashboard()

@@ -61,5 +61,11 @@ public class SearchChecklistsServiceTests
         }
 
         public IQueryable<Checklist> GetAll() => _items.AsQueryable();
+
+        public Task DeleteAsync(Guid id)
+        {
+            _items.RemoveAll(c => c.Id == id);
+            return Task.CompletedTask;
+        }
     }
 }
