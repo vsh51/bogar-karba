@@ -1,14 +1,10 @@
 using Domain.Entities;
 
-namespace Application.Common.Interfaces;
+namespace Application.Interfaces;
 
 public interface IChecklistRepository
 {
-    Task<IEnumerable<Checklist>> GetAllAsync();
-
-    Task<Checklist?> GetByIdAsync(Guid id);
+    IQueryable<Checklist> GetAll();
 
     Task DeleteAsync(Guid id);
-
-    Task SaveChangesAsync();
 }

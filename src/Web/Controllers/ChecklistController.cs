@@ -1,29 +1,69 @@
+using Application.UseCases.GetPublishedChecklist;
 using Microsoft.AspNetCore.Mvc;
-using Application.Services;
+using Microsoft.Extensions.Logging;
+using Web.Models.Checklist;
 
 namespace Web.Controllers;
 
-public class ChecklistController : Controller 
+[Route("checklist")]
+public sealed class ChecklistController : Controller
 {
-    private readonly ChecklistService _service;
+    private readonly GetPublishedChecklistQueryHandler _handler;
+    private readonly ILogger<ChecklistController> _logger;
 
-    public ChecklistController(ChecklistService service)
+    public ChecklistController(
+        GetPublishedChecklistQueryHandler handler,
+        ILogger<ChecklistController> logger)
     {
-        _service = service;
+        _handler = handler;
+        _logger = logger;
     }
 
-    [HttpGet]
-    public async Task<IActionResult> Index()
+    [HttpGet("{id:guid}")]
+    public async Task<IActionResult> Show(Guid id, CancellationToken cancellationToken)
     {
-        var checklists = await _service.GetAllChecklists();
-        
-        return View(checklists); 
-    }
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
 
-    [HttpPost]
-    public async Task<IActionResult> Delete(Guid id)
-    {
-        await _service.DeleteChecklist(id);
-        return RedirectToAction(nameof(Index));
+        _logger.LogInformation("Anonymous user requested checklist page for {ChecklistId}", id);
+
+        GetPublishedChecklistResult? result;
+
+        result = await _handler.HandleAsync(
+            new GetPublishedChecklistQuery(id), cancellationToken);
+
+        if (result is null)
+        {
+            _logger.LogInformation("Checklist {ChecklistId} not found or not published", id);
+            return NotFound();
+        }
+
+        var viewModel = new ChecklistViewModel
+        {
+            Id = result.Id,
+            Title = result.Title,
+            Description = result.Description,
+            Sections = result.Sections
+                .OrderBy(s => s.Position)
+                .Select(section => new ChecklistSectionViewModel
+                {
+                    Id = section.Id,
+                    Name = section.Name,
+                    Position = section.Position,
+                    Items = section.Items
+                        .OrderBy(i => i.Position)
+                        .Select(item => new ChecklistItemViewModel
+                        {
+                            Id = item.Id,
+                            Content = item.Content
+                        })
+                        .ToList()
+                })
+                .ToList()
+        };
+
+        return View("Show", viewModel);
     }
 }

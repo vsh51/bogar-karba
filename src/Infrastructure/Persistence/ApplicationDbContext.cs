@@ -1,16 +1,16 @@
 using Domain.Entities;
+using Infrastructure.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistence;
 
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
     {
     }
-
-    public DbSet<User> Users => Set<User>();
 
     public DbSet<Checklist> Checklists => Set<Checklist>();
 
@@ -18,35 +18,34 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<TaskItem> Tasks => Set<TaskItem>();
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    protected override void OnModelCreating(ModelBuilder builder)
     {
-        base.OnModelCreating(modelBuilder);
+        base.OnModelCreating(builder);
 
-        modelBuilder.Entity<Checklist>(entity =>
+        builder.Entity<Checklist>(entity =>
         {
             entity.Property(c => c.Title).IsRequired().HasMaxLength(200);
 
             entity.Property(c => c.Status)
                 .HasConversion<string>();
+
+            entity.HasOne<ApplicationUser>()
+                .WithMany(u => u.Checklists)
+                .HasForeignKey(c => c.UserId);
         });
 
-        modelBuilder.Entity<User>(entity =>
+        builder.Entity<ApplicationUser>(entity =>
         {
-            entity.Property(u => u.Login).IsRequired().HasMaxLength(50);
-            entity.HasIndex(u => u.Login).IsUnique();
-
-            entity.Property(u => u.PasswordHash).IsRequired().HasMaxLength(50);
-
             entity.Property(u => u.AccountStatus).HasConversion<string>();
         });
 
-        modelBuilder.Entity<Section>(entity =>
+        builder.Entity<Section>(entity =>
         {
             entity.Property(s => s.Name).IsRequired().HasMaxLength(100);
             entity.Property(s => s.Position).IsRequired();
         });
 
-        modelBuilder.Entity<TaskItem>(entity =>
+        builder.Entity<TaskItem>(entity =>
         {
             entity.Property(t => t.Content).IsRequired();
             entity.Property(t => t.Position).IsRequired();

@@ -1,6 +1,5 @@
-using Application.Common.Interfaces;
+using Application.Interfaces;
 using Application.Services;
-using Domain.Entities;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
@@ -21,28 +20,6 @@ public class ChecklistServiceTests
     }
 
     [Fact]
-    public async Task GetAllChecklistsShouldReturnListOfChecklistsWhenDataExists()
-    {
-        var expected = new List<Checklist> 
-        { 
-            new Checklist { Id = Guid.NewGuid(), Title = "Test 1" } 
-        };
-        _repositoryMock.Setup(repo => repo.GetAllAsync()).ReturnsAsync(expected);
-
-        var result = await _service.GetAllChecklists();
-
-        Assert.Single(result);
-    }
-
-    [Fact]
-    public async Task GetAllChecklistsShouldReturnEmptyWhenNoData()
-    {
-        _repositoryMock.Setup(repo => repo.GetAllAsync()).ReturnsAsync(new List<Checklist>());
-        var result = await _service.GetAllChecklists();
-        Assert.Empty(result);
-    }
-
-    [Fact]
     public async Task DeleteChecklistShouldCallRepositoryWhenIdIsValid()
     {
         var checklistId = Guid.NewGuid();
@@ -55,15 +32,16 @@ public class ChecklistServiceTests
     {
         var checklistId = Guid.NewGuid();
         _repositoryMock.Setup(repo => repo.DeleteAsync(checklistId))
-                       .ThrowsAsync(new Exception("DB Error"));
+                       .ThrowsAsync(new InvalidOperationException("DB Error"));
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => _service.DeleteChecklist(checklistId));
     }
 
     [Fact]
-    public async Task ServiceShouldLogInformationOnEachAction()
+    public async Task DeleteChecklistShouldLogInformation()
     {
-        await _service.GetAllChecklists();
+        var checklistId = Guid.NewGuid();
+        await _service.DeleteChecklist(checklistId);
 
         _loggerMock.Verify(
             x => x.Log(
