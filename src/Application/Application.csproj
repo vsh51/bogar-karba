@@ -6,6 +6,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.2" />
+    <Folder Include="Interfaces\" />
+    <Folder Include="UseCases\" />
   </ItemGroup>
 
   <PropertyGroup>

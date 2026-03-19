@@ -2,12 +2,15 @@ using System.Globalization;
 using Application.Interfaces;
 using Application.UseCases.AdminAuth;
 using Application.UseCases.Auth;
+using Application.UseCases.GetPublishedChecklist;
 using Application.UseCases.Registration;
 using Domain.Entities;
 using Infrastructure.Identity;
 using Infrastructure.Persistence;
+using Infrastructure.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -52,6 +55,8 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAdminUserRepository, AdminUserRepository>();
 builder.Services.AddScoped<IAdminSignInService, AdminSignInService>();
 builder.Services.AddScoped<IAdminAuthService, AdminAuthService>();
+builder.Services.AddScoped<IChecklistReadOnlyRepository, ChecklistReadOnlyRepository>();
+builder.Services.AddScoped<GetPublishedChecklistQueryHandler>();
 
 builder.Services.AddControllersWithViews();
 
@@ -65,6 +70,10 @@ using (var scope = app.Services.CreateScope())
     await db.Database.MigrateAsync();
 
     await SeedAdminAsync(scope.ServiceProvider, app.Configuration);
+
+    var loggerFactory = scope.ServiceProvider.GetRequiredService<ILoggerFactory>();
+    var seedingLogger = loggerFactory.CreateLogger("DbInitializer");
+    await DbInitializer.SeedAsync(db, seedingLogger);
 }
 
 if (!app.Environment.IsDevelopment())
