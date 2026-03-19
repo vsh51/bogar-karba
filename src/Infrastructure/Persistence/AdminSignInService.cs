@@ -1,5 +1,6 @@
 using Application.Interfaces;
 using Domain.Entities;
+using Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 
 namespace Infrastructure.Persistence;
@@ -7,15 +8,23 @@ namespace Infrastructure.Persistence;
 public class AdminSignInService : IAdminSignInService
 {
     private readonly SignInManager<ApplicationUser> _signInManager;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public AdminSignInService(SignInManager<ApplicationUser> signInManager)
+    public AdminSignInService(
+        SignInManager<ApplicationUser> signInManager,
+        UserManager<ApplicationUser> userManager)
     {
         _signInManager = signInManager;
+        _userManager = userManager;
     }
 
-    public async Task SignInAsync(ApplicationUser user)
+    public async Task SignInAsync(User user)
     {
-        await _signInManager.SignInAsync(user, isPersistent: false);
+        var identityUser = await _userManager.FindByIdAsync(user.Id);
+        if (identityUser is not null)
+        {
+            await _signInManager.SignInAsync(identityUser, isPersistent: false);
+        }
     }
 
     public async Task SignOutAsync()

@@ -21,7 +21,7 @@ public class Checklist
 
     public string UserId { get; set; } = string.Empty;
 
-    public ApplicationUser Author { get; set; } = null!;
+    public User Author { get; set; } = null!;
 
     public List<Section> Sections { get; set; } = new();
 }

@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Identity;
-
 namespace Domain.Entities;
 
 public enum UserStatus
@@ -9,8 +7,12 @@ public enum UserStatus
     Pending,
 }
 
-public class ApplicationUser : IdentityUser
+public class User
 {
+    public string Id { get; set; } = string.Empty;
+
+    public string UserName { get; set; } = string.Empty;
+
     public UserStatus AccountStatus { get; set; } = UserStatus.Active;
 
     public List<Checklist> Checklists { get; set; } = new();

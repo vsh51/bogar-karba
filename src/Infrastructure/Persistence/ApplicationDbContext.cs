@@ -1,4 +1,5 @@
 using Domain.Entities;
+using Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -28,9 +29,11 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.Property(c => c.Status)
                 .HasConversion<string>();
 
-            entity.HasOne(c => c.Author)
-                .WithMany(u => u.Checklists)
+            entity.HasOne<ApplicationUser>()
+                .WithMany()
                 .HasForeignKey(c => c.UserId);
+
+            entity.Ignore(c => c.Author);
         });
 
         builder.Entity<Section>(entity =>

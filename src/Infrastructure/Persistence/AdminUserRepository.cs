@@ -1,5 +1,6 @@
 using Application.Interfaces;
 using Domain.Entities;
+using Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 
 namespace Infrastructure.Persistence;
@@ -13,18 +14,31 @@ public class AdminUserRepository : IAdminUserRepository
         _userManager = userManager;
     }
 
-    public async Task<ApplicationUser?> GetByUserNameAsync(string userName)
+    public async Task<User?> GetByUserNameAsync(string userName)
     {
-        return await _userManager.FindByNameAsync(userName);
+        var identityUser = await _userManager.FindByNameAsync(userName);
+        return identityUser?.ToDomainUser();
     }
 
-    public async Task<bool> CheckPasswordAsync(ApplicationUser user, string password)
+    public async Task<bool> CheckPasswordAsync(User user, string password)
     {
-        return await _userManager.CheckPasswordAsync(user, password);
+        var identityUser = await _userManager.FindByIdAsync(user.Id);
+        if (identityUser is null)
+        {
+            return false;
+        }
+
+        return await _userManager.CheckPasswordAsync(identityUser, password);
     }
 
-    public async Task<IList<string>> GetRolesAsync(ApplicationUser user)
+    public async Task<IList<string>> GetRolesAsync(User user)
     {
-        return await _userManager.GetRolesAsync(user);
+        var identityUser = await _userManager.FindByIdAsync(user.Id);
+        if (identityUser is null)
+        {
+            return new List<string>();
+        }
+
+        return await _userManager.GetRolesAsync(identityUser);
     }
 }

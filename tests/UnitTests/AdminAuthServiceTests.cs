@@ -28,7 +28,7 @@ public class AdminAuthServiceTests
     [Fact]
     public async Task LoginAsyncValidAdminReturnsSuccess()
     {
-        var user = new ApplicationUser { UserName = "admin" };
+        var user = new User { UserName = "admin" };
         _repositoryMock.Setup(r => r.GetByUserNameAsync("admin"))
             .ReturnsAsync(user);
         _repositoryMock.Setup(r => r.GetRolesAsync(user))
@@ -47,19 +47,19 @@ public class AdminAuthServiceTests
     public async Task LoginAsyncUserNotFoundReturnsFailure()
     {
         _repositoryMock.Setup(r => r.GetByUserNameAsync("nonexistent"))
-            .ReturnsAsync((ApplicationUser?)null);
+            .ReturnsAsync((User?)null);
 
         var result = await _sut.LoginAsync("nonexistent", "password");
 
         Assert.False(result.Succeeded);
         Assert.Equal("Invalid username or password.", result.ErrorMessage);
-        _signInServiceMock.Verify(s => s.SignInAsync(It.IsAny<ApplicationUser>()), Times.Never);
+        _signInServiceMock.Verify(s => s.SignInAsync(It.IsAny<User>()), Times.Never);
     }
 
     [Fact]
     public async Task LoginAsyncUserIsNotAdminReturnsFailure()
     {
-        var user = new ApplicationUser { UserName = "regularuser" };
+        var user = new User { UserName = "regularuser" };
         _repositoryMock.Setup(r => r.GetByUserNameAsync("regularuser"))
             .ReturnsAsync(user);
         _repositoryMock.Setup(r => r.GetRolesAsync(user))
@@ -69,14 +69,14 @@ public class AdminAuthServiceTests
 
         Assert.False(result.Succeeded);
         Assert.Equal("Invalid username or password.", result.ErrorMessage);
-        _signInServiceMock.Verify(s => s.SignInAsync(It.IsAny<ApplicationUser>()), Times.Never);
-        _repositoryMock.Verify(r => r.CheckPasswordAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()), Times.Never);
+        _signInServiceMock.Verify(s => s.SignInAsync(It.IsAny<User>()), Times.Never);
+        _repositoryMock.Verify(r => r.CheckPasswordAsync(It.IsAny<User>(), It.IsAny<string>()), Times.Never);
     }
 
     [Fact]
     public async Task LoginAsyncWrongPasswordReturnsFailure()
     {
-        var user = new ApplicationUser { UserName = "admin" };
+        var user = new User { UserName = "admin" };
         _repositoryMock.Setup(r => r.GetByUserNameAsync("admin"))
             .ReturnsAsync(user);
         _repositoryMock.Setup(r => r.GetRolesAsync(user))
@@ -88,7 +88,7 @@ public class AdminAuthServiceTests
 
         Assert.False(result.Succeeded);
         Assert.Equal("Invalid username or password.", result.ErrorMessage);
-        _signInServiceMock.Verify(s => s.SignInAsync(It.IsAny<ApplicationUser>()), Times.Never);
+        _signInServiceMock.Verify(s => s.SignInAsync(It.IsAny<User>()), Times.Never);
     }
 
     [Theory]
@@ -97,7 +97,7 @@ public class AdminAuthServiceTests
     public async Task LoginAsyncEmptyOrWhitespaceUserNameReturnsFailure(string userName)
     {
         _repositoryMock.Setup(r => r.GetByUserNameAsync(userName))
-            .ReturnsAsync((ApplicationUser?)null);
+            .ReturnsAsync((User?)null);
 
         var result = await _sut.LoginAsync(userName, "password");
 
@@ -116,7 +116,7 @@ public class AdminAuthServiceTests
     [Fact]
     public async Task LoginAsyncUserHasNoRolesReturnsFailure()
     {
-        var user = new ApplicationUser { UserName = "norolesuser" };
+        var user = new User { UserName = "norolesuser" };
         _repositoryMock.Setup(r => r.GetByUserNameAsync("norolesuser"))
             .ReturnsAsync(user);
         _repositoryMock.Setup(r => r.GetRolesAsync(user))
@@ -131,7 +131,7 @@ public class AdminAuthServiceTests
     [Fact]
     public async Task LoginAsyncValidAdminDoesNotCallSignInBeforePasswordCheck()
     {
-        var user = new ApplicationUser { UserName = "admin" };
+        var user = new User { UserName = "admin" };
         var callOrder = new List<string>();
 
         _repositoryMock.Setup(r => r.GetByUserNameAsync("admin"))

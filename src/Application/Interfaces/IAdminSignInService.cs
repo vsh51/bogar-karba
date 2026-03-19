@@ -4,7 +4,7 @@ namespace Application.Interfaces;
 
 public interface IAdminSignInService
 {
-    Task SignInAsync(ApplicationUser user);
+    Task SignInAsync(User user);
 
     Task SignOutAsync();
 }
