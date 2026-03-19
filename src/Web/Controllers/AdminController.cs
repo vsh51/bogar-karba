@@ -1,25 +1,39 @@
 using Application.Interfaces;
+using Application.UseCases;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Web.Models;
 
 namespace Web.Controllers;
 
+[Authorize(Roles = "Admin")]
 public class AdminController : Controller
 {
     private readonly IAdminAuthService _authService;
+    private readonly SearchChecklistsService _searchService;
 
-    public AdminController(IAdminAuthService authService)
+    public AdminController(IAdminAuthService authService, SearchChecklistsService searchService)
     {
         _authService = authService;
+        _searchService = searchService;
     }
 
+    public IActionResult Index(string? searchTerm)
+    {
+        var results = _searchService.Execute(searchTerm);
+
+        ViewData["SearchTerm"] = searchTerm;
+        return View(results);
+    }
+
+    [AllowAnonymous]
     [HttpGet]
     public IActionResult Login()
     {
         return View();
     }
 
+    [AllowAnonymous]
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Login(LoginViewModel model)
@@ -36,10 +50,9 @@ public class AdminController : Controller
             return View(model);
         }
 
-        return RedirectToAction("Dashboard");
+        return RedirectToAction("Index");
     }
 
-    [Authorize(Roles = "Admin")]
     public IActionResult Dashboard()
     {
         return View();

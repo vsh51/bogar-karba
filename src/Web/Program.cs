@@ -1,5 +1,6 @@
 using System.Globalization;
 using Application.Interfaces;
+using Application.UseCases;
 using Application.UseCases.AdminAuth;
 using Application.UseCases.Auth;
 using Application.UseCases.GetPublishedChecklist;
@@ -27,7 +28,10 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+   options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<IChecklistRepository, ChecklistRepository>();
+builder.Services.AddScoped<SearchChecklistsService>();
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
