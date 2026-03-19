@@ -1,6 +1,7 @@
 using System.Globalization;
 using Application.Interfaces;
 using Application.UseCases.AdminAuth;
+using Application.UseCases.Auth;
 using Application.UseCases.Registration;
 using Domain.Entities;
 using Infrastructure.Identity;
@@ -45,6 +46,9 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.AddScoped<IRegistrationUserRepository, RegistrationUserRepository>();
 builder.Services.AddScoped<IRegistrationService, RegistrationService>();
+builder.Services.AddScoped<IAuthUserRepository, AuthUserRepository>();
+builder.Services.AddScoped<IAuthSignInService, AuthSignInService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAdminUserRepository, AdminUserRepository>();
 builder.Services.AddScoped<IAdminSignInService, AdminSignInService>();
 builder.Services.AddScoped<IAdminAuthService, AdminAuthService>();
