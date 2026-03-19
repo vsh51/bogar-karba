@@ -1,4 +1,8 @@
+using Application.Interfaces;
+using Application.UseCases.Registration;
+using Infrastructure.Identity;
 using Infrastructure.Persistence;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -15,6 +19,27 @@ builder.Host.UseSerilog();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+{
+    options.Password.RequireDigit = true;
+    options.Password.RequiredLength = 6;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireLowercase = true;
+})
+.AddEntityFrameworkStores<ApplicationDbContext>()
+.AddDefaultTokenProviders();
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.AccessDeniedPath = "/Account/Login";
+    options.ExpireTimeSpan = TimeSpan.FromHours(2);
+});
+
+builder.Services.AddScoped<IRegistrationUserRepository, RegistrationUserRepository>();
+builder.Services.AddScoped<IRegistrationService, RegistrationService>();
 
 builder.Services.AddControllersWithViews();
 
@@ -39,6 +64,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
