@@ -1,4 +1,6 @@
 using Domain.Entities;
+using Infrastructure.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -16,16 +18,9 @@ public static class DbInitializer
 
         logger.LogInformation("Seeding initial demo data...");
 
-        var demoUserId = Guid.NewGuid();
+        var demoUser = await context.Users.FirstOrDefaultAsync(cancellationToken);
+        var demoUserId = demoUser?.Id ?? string.Empty;
         var demoChecklistId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
-
-        var user = new User
-        {
-            Id = demoUserId,
-            Login = "demo",
-            PasswordHash = "not-a-real-password",
-            AccountStatus = UserStatus.Active
-        };
 
         var checklist = new Checklist
         {
@@ -35,11 +30,9 @@ public static class DbInitializer
             Status = ChecklistStatus.Published,
             CreatedAt = DateTime.UtcNow,
             UserId = demoUserId,
-            Author = user,
             Sections = BuildLargeDemoSections()
         };
 
-        context.Users.Add(user);
         context.Checklists.Add(checklist);
 
         await context.SaveChangesAsync(cancellationToken);
