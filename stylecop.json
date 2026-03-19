@@ -5,14 +5,10 @@
       "usingDirectivesPlacement": "outsideNamespace",
       "systemUsingDirectivesFirst": true
     },
-    "namingRules": {
-      "allowCommonHungarianPrefixes": true,
-      "allowedHungarianPrefixes": []
-    },
     "documentationRules": {
       "companyName": "BogarKarba",
-      "documentInterfaces": true,
-      "documentExposedElements": true,
+      "documentInterfaces": false,
+      "documentExposedElements": false,
       "documentInternalElements": false,
       "documentPrivateElements": false,
       "documentPrivateFields": false,
