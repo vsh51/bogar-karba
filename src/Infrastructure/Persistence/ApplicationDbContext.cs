@@ -1,16 +1,16 @@
 using Domain.Entities;
+using Infrastructure.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistence;
 
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
     {
     }
-
-    public DbSet<User> Users => Set<User>();
 
     public DbSet<Checklist> Checklists => Set<Checklist>();
 
@@ -28,15 +28,14 @@ public class ApplicationDbContext : DbContext
 
             entity.Property(c => c.Status)
                 .HasConversion<string>();
+
+            entity.HasOne<ApplicationUser>()
+                .WithMany(u => u.Checklists)
+                .HasForeignKey(c => c.UserId);
         });
 
-        modelBuilder.Entity<User>(entity =>
+        modelBuilder.Entity<ApplicationUser>(entity =>
         {
-            entity.Property(u => u.Login).IsRequired().HasMaxLength(50);
-            entity.HasIndex(u => u.Login).IsUnique();
-
-            entity.Property(u => u.PasswordHash).IsRequired().HasMaxLength(50);
-
             entity.Property(u => u.AccountStatus).HasConversion<string>();
         });
 

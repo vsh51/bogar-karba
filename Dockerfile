@@ -11,7 +11,7 @@ RUN dotnet restore src/Web/Web.csproj
 COPY . .
 
 WORKDIR /src/src/Web
-RUN dotnet publish -c Release -o /app/publish --no-restore
+RUN dotnet publish -c Release -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 WORKDIR /app
