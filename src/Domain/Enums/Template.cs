@@ -1,1 +1,0 @@
-namespace BogarKarba.Domain.Enums;

@@ -18,11 +18,11 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<TaskItem> Tasks => Set<TaskItem>();
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    protected override void OnModelCreating(ModelBuilder builder)
     {
-        base.OnModelCreating(modelBuilder);
+        base.OnModelCreating(builder);
 
-        modelBuilder.Entity<Checklist>(entity =>
+        builder.Entity<Checklist>(entity =>
         {
             entity.Property(c => c.Title).IsRequired().HasMaxLength(200);
 
@@ -34,18 +34,18 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 .HasForeignKey(c => c.UserId);
         });
 
-        modelBuilder.Entity<ApplicationUser>(entity =>
+        builder.Entity<ApplicationUser>(entity =>
         {
             entity.Property(u => u.AccountStatus).HasConversion<string>();
         });
 
-        modelBuilder.Entity<Section>(entity =>
+        builder.Entity<Section>(entity =>
         {
             entity.Property(s => s.Name).IsRequired().HasMaxLength(100);
             entity.Property(s => s.Position).IsRequired();
         });
 
-        modelBuilder.Entity<TaskItem>(entity =>
+        builder.Entity<TaskItem>(entity =>
         {
             entity.Property(t => t.Content).IsRequired();
             entity.Property(t => t.Position).IsRequired();
