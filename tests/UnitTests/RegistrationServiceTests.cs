@@ -8,6 +8,9 @@ namespace UnitTests;
 
 public class RegistrationServiceTests
 {
+    private static readonly string[] SingleError = ["Password is too weak."];
+    private static readonly string[] MultipleErrors = ["Error one.", "Error two."];
+
     private readonly Mock<IRegistrationUserRepository> _repositoryMock;
     private readonly Mock<ILogger<RegistrationService>> _loggerMock;
     private readonly RegistrationService _sut;
@@ -57,7 +60,7 @@ public class RegistrationServiceTests
         _repositoryMock.Setup(r => r.UserExistsAsync("new@example.com"))
             .ReturnsAsync(false);
         _repositoryMock.Setup(r => r.CreateUserAsync("John", "Doe", "new@example.com", "weak", UserStatus.Active))
-            .ReturnsAsync((false, new[] { "Password is too weak." }));
+            .ReturnsAsync((false, SingleError));
 
         var result = await _sut.RegisterAsync("John", "Doe", "new@example.com", "weak");
 
@@ -71,7 +74,7 @@ public class RegistrationServiceTests
         _repositoryMock.Setup(r => r.UserExistsAsync("new@example.com"))
             .ReturnsAsync(false);
         _repositoryMock.Setup(r => r.CreateUserAsync("John", "Doe", "new@example.com", "bad", UserStatus.Active))
-            .ReturnsAsync((false, new[] { "Error one.", "Error two." }));
+            .ReturnsAsync((false, MultipleErrors));
 
         var result = await _sut.RegisterAsync("John", "Doe", "new@example.com", "bad");
 
