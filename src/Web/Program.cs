@@ -16,21 +16,39 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Serilog;
 
+// Load environment variables from .env file
+DotNetEnv.Env.TraversePath().Load();
+
 var builder = WebApplication.CreateBuilder(args);
 
-Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Information()
-    .Enrich.FromLogContext()
-    .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
-#pragma warning disable S1075 // URIs should not be hardcoded
-    .WriteTo.Seq(builder.Configuration["Serilog:SeqServerUrl"] ?? "http://seq:5341", formatProvider: CultureInfo.InvariantCulture)
-#pragma warning restore S1075
-    .CreateLogger();
+// Add environment variables to configuration
+builder.Configuration.AddEnvironmentVariables();
 
-builder.Host.UseSerilog();
+builder.Host.UseSerilog((context, services, configuration) =>
+{
+    configuration
+        .ReadFrom.Configuration(context.Configuration)
+        .ReadFrom.Services(services)
+        .Enrich.FromLogContext()
+        .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture);
+
+    var seqUrl = context.Configuration["Seq:Url"];
+    if (!string.IsNullOrWhiteSpace(seqUrl))
+    {
+        configuration.WriteTo.Seq(seqUrl, formatProvider: CultureInfo.InvariantCulture);
+    }
+});
+
+var dbHost = builder.Configuration["DB_HOST"];
+var dbPort = builder.Configuration["DB_PORT"];
+var dbName = builder.Configuration["POSTGRES_DB"];
+var dbUser = builder.Configuration["POSTGRES_USER"];
+var dbPassword = builder.Configuration["POSTGRES_PASSWORD"];
+
+var connectionString = $"Host={dbHost};Port={dbPort};Database={dbName};Username={dbUser};Password={dbPassword}";
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-   options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(connectionString));
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {

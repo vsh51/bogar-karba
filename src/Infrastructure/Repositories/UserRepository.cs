@@ -1,9 +1,10 @@
+using Application.Enums;
 using Application.Interfaces;
 using Domain.Entities;
 using Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 
-namespace Infrastructure.Persistence;
+namespace Infrastructure.Repositories;
 
 public class UserRepository : IUserRepository
 {

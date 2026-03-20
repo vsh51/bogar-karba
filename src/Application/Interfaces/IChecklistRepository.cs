@@ -4,7 +4,7 @@ namespace Application.Interfaces;
 
 public interface IChecklistRepository
 {
-    IQueryable<Checklist> GetAll();
+    IEnumerable<Checklist> GetAll();
 
     Task DeleteAsync(Guid id);
 }

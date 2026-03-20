@@ -1,8 +1,8 @@
+using Application.Enums;
 using Application.Interfaces;
-using Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 
-namespace Infrastructure.Persistence;
+namespace Infrastructure.Identity;
 
 public class SignInService : ISignInService
 {

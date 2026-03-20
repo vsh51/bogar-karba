@@ -1,4 +1,4 @@
-namespace Application.Interfaces;
+namespace Application.Enums;
 
 public enum UserLookupMode
 {

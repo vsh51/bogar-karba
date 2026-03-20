@@ -1,3 +1,4 @@
+using Application.Enums;
 using Application.Interfaces;
 using Application.UseCases.Auth.RegisterUser;
 using Domain.Entities;

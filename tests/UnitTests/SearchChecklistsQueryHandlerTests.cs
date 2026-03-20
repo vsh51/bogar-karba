@@ -54,7 +54,7 @@ public class SearchChecklistsQueryHandlerTests
             _items = items.ToList();
         }
 
-        public IQueryable<Checklist> GetAll() => _items.AsQueryable();
+        public IEnumerable<Checklist> GetAll() => _items;
 
         public Task DeleteAsync(Guid id)
         {

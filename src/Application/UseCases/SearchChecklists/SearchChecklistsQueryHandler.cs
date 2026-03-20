@@ -18,10 +18,8 @@ public partial class SearchChecklistsQueryHandler(
             var normalizedSearch = query.SearchTerm.Trim();
 
             items = items
-                .AsEnumerable()
                 .Where(c => c.Title.Contains(normalizedSearch, StringComparison.OrdinalIgnoreCase) ||
-                            c.Description.Contains(normalizedSearch, StringComparison.OrdinalIgnoreCase))
-                .AsQueryable();
+                            c.Description.Contains(normalizedSearch, StringComparison.OrdinalIgnoreCase));
         }
 
         var results = items.ToList();

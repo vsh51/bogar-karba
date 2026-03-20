@@ -1,3 +1,5 @@
+using Application.Enums;
+
 namespace Application.Interfaces;
 
 public interface ISignInService
