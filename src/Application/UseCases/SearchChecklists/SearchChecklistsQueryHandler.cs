@@ -1,32 +1,33 @@
 using Application.Interfaces;
-using Domain.Entities;
 using Microsoft.Extensions.Logging;
 
-namespace Application.UseCases;
+namespace Application.UseCases.SearchChecklists;
 
-public partial class SearchChecklistsService(IChecklistRepository repository, ILogger<SearchChecklistsService> logger)
+public partial class SearchChecklistsQueryHandler(
+    IChecklistRepository repository,
+    ILogger<SearchChecklistsQueryHandler> logger)
 {
-    public List<Checklist> Execute(string? searchTerm)
+    public SearchChecklistsResult Handle(SearchChecklistsQuery query)
     {
-        LogSearchQuery(logger, searchTerm ?? "empty");
+        LogSearchQuery(logger, query.SearchTerm ?? "empty");
 
-        var query = repository.GetAll();
+        var items = repository.GetAll();
 
-        if (!string.IsNullOrWhiteSpace(searchTerm))
+        if (!string.IsNullOrWhiteSpace(query.SearchTerm))
         {
-            var normalizedSearch = searchTerm.Trim();
+            var normalizedSearch = query.SearchTerm.Trim();
 
-            query = query
+            items = items
                 .AsEnumerable()
                 .Where(c => c.Title.Contains(normalizedSearch, StringComparison.OrdinalIgnoreCase) ||
                             c.Description.Contains(normalizedSearch, StringComparison.OrdinalIgnoreCase))
                 .AsQueryable();
         }
 
-        var results = query.ToList();
+        var results = items.ToList();
         LogSearchResult(logger, results.Count);
 
-        return results;
+        return new SearchChecklistsResult(results);
     }
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Search query: {SearchTerm}")]

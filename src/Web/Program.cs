@@ -1,11 +1,12 @@
 using System.Globalization;
 using Application.Interfaces;
-using Application.Services;
-using Application.UseCases;
-using Application.UseCases.AdminAuth;
-using Application.UseCases.Auth;
+using Application.UseCases.Auth.LoginAdmin;
+using Application.UseCases.Auth.LoginUser;
+using Application.UseCases.Auth.Logout;
+using Application.UseCases.Auth.RegisterUser;
+using Application.UseCases.DeleteChecklist;
 using Application.UseCases.GetPublishedChecklist;
-using Application.UseCases.Registration;
+using Application.UseCases.SearchChecklists;
 using Domain.Entities;
 using Infrastructure.Identity;
 using Infrastructure.Persistence;
@@ -31,9 +32,6 @@ builder.Host.UseSerilog();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddScoped<IChecklistRepository, ChecklistRepository>();
-builder.Services.AddScoped<SearchChecklistsService>();
-
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     options.Password.RequireDigit = true;
@@ -52,18 +50,18 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.ExpireTimeSpan = TimeSpan.FromHours(2);
 });
 
-builder.Services.AddScoped<IRegistrationUserRepository, RegistrationUserRepository>();
-builder.Services.AddScoped<IRegistrationService, RegistrationService>();
-builder.Services.AddScoped<IAuthUserRepository, AuthUserRepository>();
-builder.Services.AddScoped<IAuthSignInService, AuthSignInService>();
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IAdminUserRepository, AdminUserRepository>();
-builder.Services.AddScoped<IAdminSignInService, AdminSignInService>();
-builder.Services.AddScoped<IAdminAuthService, AdminAuthService>();
+builder.Services.AddScoped<IChecklistRepository, ChecklistRepository>();
 builder.Services.AddScoped<IChecklistReadOnlyRepository, ChecklistReadOnlyRepository>();
-builder.Services.AddScoped<GetPublishedChecklistQueryHandler>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ISignInService, SignInService>();
 
-builder.Services.AddScoped<ChecklistService>();
+builder.Services.AddScoped<LoginUserCommandHandler>();
+builder.Services.AddScoped<LoginAdminCommandHandler>();
+builder.Services.AddScoped<LogoutCommandHandler>();
+builder.Services.AddScoped<RegisterUserCommandHandler>();
+builder.Services.AddScoped<SearchChecklistsQueryHandler>();
+builder.Services.AddScoped<DeleteChecklistCommandHandler>();
+builder.Services.AddScoped<GetPublishedChecklistQueryHandler>();
 
 builder.Services.AddControllersWithViews();
 

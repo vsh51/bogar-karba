@@ -1,6 +1,7 @@
-using Application.Interfaces;
-using Application.Services;
-using Application.UseCases;
+using Application.UseCases.Auth.LoginAdmin;
+using Application.UseCases.Auth.Logout;
+using Application.UseCases.DeleteChecklist;
+using Application.UseCases.SearchChecklists;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Web.Models;
@@ -10,26 +11,29 @@ namespace Web.Controllers;
 [Authorize(Roles = "Admin")]
 public class AdminController : Controller
 {
-    private readonly IAdminAuthService _authService;
-    private readonly SearchChecklistsService _searchService;
-    private readonly ChecklistService _checklistService;
+    private readonly LoginAdminCommandHandler _loginHandler;
+    private readonly LogoutCommandHandler _logoutHandler;
+    private readonly SearchChecklistsQueryHandler _searchHandler;
+    private readonly DeleteChecklistCommandHandler _deleteHandler;
 
     public AdminController(
-        IAdminAuthService authService,
-        SearchChecklistsService searchService,
-        ChecklistService checklistService)
+        LoginAdminCommandHandler loginHandler,
+        LogoutCommandHandler logoutHandler,
+        SearchChecklistsQueryHandler searchHandler,
+        DeleteChecklistCommandHandler deleteHandler)
     {
-        _authService = authService;
-        _searchService = searchService;
-        _checklistService = checklistService;
+        _loginHandler = loginHandler;
+        _logoutHandler = logoutHandler;
+        _searchHandler = searchHandler;
+        _deleteHandler = deleteHandler;
     }
 
     public IActionResult Index(string? searchTerm)
     {
-        var results = _searchService.Execute(searchTerm);
+        var result = _searchHandler.Handle(new SearchChecklistsQuery(searchTerm));
 
         ViewData["SearchTerm"] = searchTerm;
-        return View(results);
+        return View(result.Checklists);
     }
 
     [AllowAnonymous]
@@ -49,7 +53,8 @@ public class AdminController : Controller
             return View(model);
         }
 
-        var result = await _authService.LoginAsync(model.UserName, model.Password);
+        var result = await _loginHandler.HandleAsync(
+            new LoginAdminCommand(model.UserName, model.Password));
         if (!result.Succeeded)
         {
             ModelState.AddModelError(string.Empty, result.ErrorMessage ?? "Login failed.");
@@ -68,7 +73,7 @@ public class AdminController : Controller
             return BadRequest(ModelState);
         }
 
-        await _checklistService.DeleteChecklist(id);
+        await _deleteHandler.HandleAsync(new DeleteChecklistCommand(id));
         return RedirectToAction(nameof(Index), new { searchTerm });
     }
 
@@ -81,7 +86,7 @@ public class AdminController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout()
     {
-        await _authService.LogoutAsync();
+        await _logoutHandler.HandleAsync(new LogoutCommand(DateTime.UtcNow));
         return RedirectToAction("Index", "Home");
     }
 }

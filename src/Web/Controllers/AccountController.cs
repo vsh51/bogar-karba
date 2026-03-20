@@ -1,4 +1,6 @@
-using Application.Interfaces;
+using Application.UseCases.Auth.LoginUser;
+using Application.UseCases.Auth.Logout;
+using Application.UseCases.Auth.RegisterUser;
 using Microsoft.AspNetCore.Mvc;
 using Web.Models;
 
@@ -6,13 +8,18 @@ namespace Web.Controllers;
 
 public class AccountController : Controller
 {
-    private readonly IRegistrationService _registrationService;
-    private readonly IAuthService _authService;
+    private readonly RegisterUserCommandHandler _registerHandler;
+    private readonly LoginUserCommandHandler _loginHandler;
+    private readonly LogoutCommandHandler _logoutHandler;
 
-    public AccountController(IRegistrationService registrationService, IAuthService authService)
+    public AccountController(
+        RegisterUserCommandHandler registerHandler,
+        LoginUserCommandHandler loginHandler,
+        LogoutCommandHandler logoutHandler)
     {
-        _registrationService = registrationService;
-        _authService = authService;
+        _registerHandler = registerHandler;
+        _loginHandler = loginHandler;
+        _logoutHandler = logoutHandler;
     }
 
     [HttpGet]
@@ -30,8 +37,8 @@ public class AccountController : Controller
             return View(model);
         }
 
-        var result = await _registrationService.RegisterAsync(
-            model.Name, model.Surname, model.Email, model.Password);
+        var result = await _registerHandler.HandleAsync(
+            new RegisterUserCommand(model.Name, model.Surname, model.Email, model.Password));
 
         if (!result.Succeeded)
         {
@@ -62,10 +69,11 @@ public class AccountController : Controller
             return View(model);
         }
 
-        var success = await _authService.LoginAsync(model.Email, model.Password);
-        if (!success)
+        var result = await _loginHandler.HandleAsync(
+            new LoginUserCommand(model.Email, model.Password));
+        if (!result.Succeeded)
         {
-            ModelState.AddModelError(string.Empty, "Invalid email or password.");
+            ModelState.AddModelError(string.Empty, result.ErrorMessage ?? "Invalid email or password.");
             return View(model);
         }
 
@@ -76,7 +84,7 @@ public class AccountController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout()
     {
-        await _authService.LogoutAsync();
+        await _logoutHandler.HandleAsync(new LogoutCommand(DateTime.UtcNow));
         return RedirectToAction("Login", "Account");
     }
 }

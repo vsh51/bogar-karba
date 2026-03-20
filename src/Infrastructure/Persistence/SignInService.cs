@@ -4,12 +4,12 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Infrastructure.Persistence;
 
-public class AdminSignInService : IAdminSignInService
+public class SignInService : ISignInService
 {
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly UserManager<ApplicationUser> _userManager;
 
-    public AdminSignInService(
+    public SignInService(
         SignInManager<ApplicationUser> signInManager,
         UserManager<ApplicationUser> userManager)
     {
@@ -17,12 +17,18 @@ public class AdminSignInService : IAdminSignInService
         _userManager = userManager;
     }
 
-    public async Task SignInAsync(string userName)
+    public async Task SignInAsync(string identifier, UserLookupMode lookupMode)
     {
-        var identityUser = await _userManager.FindByNameAsync(userName);
-        if (identityUser is not null)
+        var user = lookupMode switch
         {
-            await _signInManager.SignInAsync(identityUser, isPersistent: false);
+            UserLookupMode.ByEmail => await _userManager.FindByEmailAsync(identifier),
+            UserLookupMode.ByUserName => await _userManager.FindByNameAsync(identifier),
+            _ => null,
+        };
+
+        if (user is not null)
+        {
+            await _signInManager.SignInAsync(user, isPersistent: false);
         }
     }
 

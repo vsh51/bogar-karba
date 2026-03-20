@@ -1,16 +1,15 @@
 using Application.Interfaces;
-using Application.UseCases;
+using Application.UseCases.SearchChecklists;
 using Domain.Entities;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace UnitTests;
 
-public class SearchChecklistsServiceTests
+public class SearchChecklistsQueryHandlerTests
 {
     [Fact]
-    public void ExecuteWithSearchTermFiltersByTitleOrDescriptionIgnoringCase()
+    public void HandleWithSearchTermFiltersByTitleOrDescriptionIgnoringCase()
     {
-        // Arrange
         var items = new[]
         {
             new Checklist { Title = "Deploy", Description = "Deploy to staging" },
@@ -18,37 +17,32 @@ public class SearchChecklistsServiceTests
             new Checklist { Title = "Fix", Description = "Fix bug" },
         };
 
-        var service = new SearchChecklistsService(
+        var handler = new SearchChecklistsQueryHandler(
             new FakeChecklistRepository(items),
-            NullLogger<SearchChecklistsService>.Instance);
+            NullLogger<SearchChecklistsQueryHandler>.Instance);
 
-        // Act
-        var result = service.Execute("deploy");
+        var result = handler.Handle(new SearchChecklistsQuery("deploy"));
 
-        // Assert
-        Assert.Single(result);
-        Assert.Equal("Deploy", result[0].Title);
+        Assert.Single(result.Checklists);
+        Assert.Equal("Deploy", result.Checklists[0].Title);
     }
 
     [Fact]
-    public void ExecuteWithEmptySearchTermReturnsAllItems()
+    public void HandleWithEmptySearchTermReturnsAllItems()
     {
-        // Arrange
         var items = new[]
         {
             new Checklist { Title = "A", Description = "a" },
             new Checklist { Title = "B", Description = "b" },
         };
 
-        var service = new SearchChecklistsService(
+        var handler = new SearchChecklistsQueryHandler(
             new FakeChecklistRepository(items),
-            NullLogger<SearchChecklistsService>.Instance);
+            NullLogger<SearchChecklistsQueryHandler>.Instance);
 
-        // Act
-        var result = service.Execute(null);
+        var result = handler.Handle(new SearchChecklistsQuery(null));
 
-        // Assert
-        Assert.Equal(2, result.Count);
+        Assert.Equal(2, result.Checklists.Count);
     }
 
     private sealed class FakeChecklistRepository : IChecklistRepository
