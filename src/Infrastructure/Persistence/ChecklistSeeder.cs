@@ -1,46 +1,57 @@
 using Domain.Entities;
-using Infrastructure.Identity;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Persistence;
 
-public static class DbInitializer
+public static class ChecklistSeeder
 {
-    public static async Task SeedAsync(ApplicationDbContext context, ILogger logger, CancellationToken cancellationToken = default)
+    public static async Task SeedAsync(
+        IServiceProvider serviceProvider,
+        CancellationToken cancellationToken = default)
     {
+        var context = serviceProvider.GetRequiredService<ApplicationDbContext>();
+        var logger = serviceProvider.GetRequiredService<ILoggerFactory>()
+            .CreateLogger(typeof(ChecklistSeeder));
         if (await context.Checklists.AnyAsync(cancellationToken))
         {
-            logger.LogInformation("Database already contains checklists. Skipping seeding.");
+            logger.LogInformation("Database already contains checklists, skipping seeding");
             return;
         }
 
-        logger.LogInformation("Seeding initial demo data...");
+        var ownerId = await GetDefaultOwnerIdAsync(context, cancellationToken);
+        var checklist = BuildDemoChecklist(ownerId);
 
-        var demoUser = await context.Users.FirstOrDefaultAsync(cancellationToken);
-        var demoUserId = demoUser?.Id ?? string.Empty;
-        var demoChecklistId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        context.Checklists.Add(checklist);
+        await context.SaveChangesAsync(cancellationToken);
 
-        var checklist = new Checklist
+        logger.LogInformation("Seeded demo checklist {ChecklistId}", checklist.Id);
+    }
+
+    private static async Task<string> GetDefaultOwnerIdAsync(
+        ApplicationDbContext context,
+        CancellationToken cancellationToken)
+    {
+        var firstUser = await context.Users.FirstOrDefaultAsync(cancellationToken);
+        return firstUser?.Id ?? string.Empty;
+    }
+
+    private static Checklist BuildDemoChecklist(string ownerId)
+    {
+        return new Checklist
         {
-            Id = demoChecklistId,
+            Id = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
             Title = "Large demo checklist for scrolling tests",
             Description = "This seeded checklist intentionally contains many sections and items so you can validate layout, typography, spacing, and long-page scrolling behavior in the UI.",
             Status = ChecklistStatus.Published,
             CreatedAt = DateTime.UtcNow,
-            UserId = demoUserId,
-            Sections = BuildLargeDemoSections()
+            UserId = ownerId,
+            Sections = BuildDemoSections()
         };
-
-        context.Checklists.Add(checklist);
-
-        await context.SaveChangesAsync(cancellationToken);
-
-        logger.LogInformation("Seeding completed. Demo checklist id: {ChecklistId}", demoChecklistId);
     }
 
-    private static List<Section> BuildLargeDemoSections()
+    private static List<Section> BuildDemoSections()
     {
         var sections = new List<Section>();
 

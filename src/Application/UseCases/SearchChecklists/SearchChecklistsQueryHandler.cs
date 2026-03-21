@@ -1,3 +1,4 @@
+using Application.DTOs.Checklist;
 using Application.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -22,7 +23,15 @@ public partial class SearchChecklistsQueryHandler(
                             c.Description.Contains(normalizedSearch, StringComparison.OrdinalIgnoreCase));
         }
 
-        var results = items.ToList();
+        var results = items
+            .Select(c => new ChecklistSummaryDto
+            {
+                Id = c.Id,
+                Title = c.Title,
+                Description = c.Description,
+                UserId = c.UserId
+            })
+            .ToList();
         LogSearchResult(logger, results.Count);
 
         return new SearchChecklistsResult(results);

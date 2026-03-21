@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Web.Models;
+namespace Web.Models.Account;
 
-public class UserLoginViewModel
+public sealed class LoginViewModel
 {
     [Required]
     [EmailAddress]

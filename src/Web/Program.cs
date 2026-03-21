@@ -7,13 +7,11 @@ using Application.UseCases.Auth.RegisterUser;
 using Application.UseCases.DeleteChecklist;
 using Application.UseCases.GetPublishedChecklist;
 using Application.UseCases.SearchChecklists;
-using Domain.Entities;
 using Infrastructure.Identity;
 using Infrastructure.Persistence;
 using Infrastructure.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Serilog;
 
 // Load environment variables from .env file
@@ -89,14 +87,11 @@ app.UseSerilogRequestLogging();
 
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    await db.Database.MigrateAsync();
+    await scope.ServiceProvider.GetRequiredService<ApplicationDbContext>()
+        .Database.MigrateAsync();
 
-    await SeedAdminAsync(scope.ServiceProvider, app.Configuration);
-
-    var loggerFactory = scope.ServiceProvider.GetRequiredService<ILoggerFactory>();
-    var seedingLogger = loggerFactory.CreateLogger("DbInitializer");
-    await DbInitializer.SeedAsync(db, seedingLogger);
+    await AdminSeeder.SeedAsync(scope.ServiceProvider, app.Configuration);
+    await ChecklistSeeder.SeedAsync(scope.ServiceProvider);
 }
 
 if (!app.Environment.IsDevelopment())
@@ -119,34 +114,3 @@ app.MapControllerRoute(
     .WithStaticAssets();
 
 await app.RunAsync();
-
-static async Task SeedAdminAsync(IServiceProvider serviceProvider, IConfiguration configuration)
-{
-    var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-
-    const string adminRoleName = "Admin";
-    const string adminUserName = "admin";
-    string initialAdminPassword = configuration["Seed:AdminPassword"] ?? "Admin123!";
-
-    if (!await roleManager.RoleExistsAsync(adminRoleName))
-    {
-        await roleManager.CreateAsync(new IdentityRole(adminRoleName));
-    }
-
-    var adminUser = await userManager.FindByNameAsync(adminUserName);
-    if (adminUser is null)
-    {
-        adminUser = new ApplicationUser
-        {
-            UserName = adminUserName,
-            AccountStatus = UserStatus.Active,
-        };
-
-        var result = await userManager.CreateAsync(adminUser, initialAdminPassword);
-        if (result.Succeeded)
-        {
-            await userManager.AddToRoleAsync(adminUser, adminRoleName);
-        }
-    }
-}

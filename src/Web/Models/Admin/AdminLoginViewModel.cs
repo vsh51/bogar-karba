@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Web.Models;
+namespace Web.Models.Admin;
 
-public class LoginViewModel
+public sealed class AdminLoginViewModel
 {
     [Required(ErrorMessage = "Username is required")]
     [Display(Name = "Username")]
