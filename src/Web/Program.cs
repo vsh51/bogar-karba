@@ -91,7 +91,7 @@ using (var scope = app.Services.CreateScope())
         .Database.MigrateAsync();
 
     await AdminSeeder.SeedAsync(scope.ServiceProvider, app.Configuration);
-    await ChecklistSeeder.SeedAsync(scope.ServiceProvider);
+    await ChecklistSeeder.SeedAsync(scope.ServiceProvider, app.Configuration);
 }
 
 if (!app.Environment.IsDevelopment())
