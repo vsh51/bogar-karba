@@ -1,18 +1,28 @@
-using Application.Interfaces;
+using Application.UseCases.Auth.LoginUser;
+using Application.UseCases.Auth.Logout;
+using Application.UseCases.Auth.RegisterUser;
 using Microsoft.AspNetCore.Mvc;
-using Web.Models;
+using Web.Models.Account;
 
 namespace Web.Controllers;
 
-public class AccountController : Controller
+public sealed class AccountController : Controller
 {
-    private readonly IRegistrationService _registrationService;
-    private readonly IAuthService _authService;
+    private readonly RegisterUserCommandHandler _registerHandler;
+    private readonly LoginUserCommandHandler _loginHandler;
+    private readonly LogoutCommandHandler _logoutHandler;
+    private readonly ILogger<AccountController> _logger;
 
-    public AccountController(IRegistrationService registrationService, IAuthService authService)
+    public AccountController(
+        RegisterUserCommandHandler registerHandler,
+        LoginUserCommandHandler loginHandler,
+        LogoutCommandHandler logoutHandler,
+        ILogger<AccountController> logger)
     {
-        _registrationService = registrationService;
-        _authService = authService;
+        _registerHandler = registerHandler;
+        _loginHandler = loginHandler;
+        _logoutHandler = logoutHandler;
+        _logger = logger;
     }
 
     [HttpGet]
@@ -30,15 +40,19 @@ public class AccountController : Controller
             return View(model);
         }
 
-        var result = await _registrationService.RegisterAsync(
-            model.Name, model.Surname, model.Email, model.Password);
+        _logger.LogInformation("User registration attempt for {Email}", model.Email);
+
+        var result = await _registerHandler.HandleAsync(
+            new RegisterUserCommand(model.Name, model.Surname, model.Email, model.Password));
 
         if (!result.Succeeded)
         {
+            _logger.LogWarning("Registration failed for {Email}", model.Email);
             ModelState.AddModelError(string.Empty, result.ErrorMessage ?? "Registration failed.");
             return View(model);
         }
 
+        _logger.LogInformation("User registered successfully: {Email}", model.Email);
         return RedirectToAction("Login", "Account");
     }
 
@@ -55,20 +69,25 @@ public class AccountController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Login(UserLoginViewModel model)
+    public async Task<IActionResult> Login(LoginViewModel model)
     {
         if (!ModelState.IsValid)
         {
             return View(model);
         }
 
-        var success = await _authService.LoginAsync(model.Email, model.Password);
-        if (!success)
+        _logger.LogInformation("User login attempt for {Email}", model.Email);
+
+        var result = await _loginHandler.HandleAsync(
+            new LoginUserCommand(model.Email, model.Password));
+        if (!result.Succeeded)
         {
-            ModelState.AddModelError(string.Empty, "Invalid email or password.");
+            _logger.LogWarning("Login failed for {Email}", model.Email);
+            ModelState.AddModelError(string.Empty, result.ErrorMessage ?? "Invalid email or password.");
             return View(model);
         }
 
+        _logger.LogInformation("User logged in: {Email}", model.Email);
         return RedirectToAction("Index", "Home");
     }
 
@@ -76,7 +95,8 @@ public class AccountController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout()
     {
-        await _authService.LogoutAsync();
+        await _logoutHandler.HandleAsync(new LogoutCommand(DateTime.UtcNow));
+        _logger.LogInformation("User logged out");
         return RedirectToAction("Login", "Account");
     }
 }

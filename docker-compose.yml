@@ -20,12 +20,8 @@ services:
       context: .
       dockerfile: Dockerfile
     env_file: .env
-    environment:
-      SEQ_URL: http://seq:5341
-      ConnectionStrings__DefaultConnection: >-
-        Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
     ports:
-      - "8080:8080"
+      - "${APP_PORT}:8080"
     networks:
       - backend
       - frontend
@@ -40,7 +36,7 @@ services:
       ADMINER_DEFAULT_SERVER: db
       ADMINER_DESIGN: nette
     ports:
-      - "5050:8080"
+      - "${ADMINER_PORT}:8080"
     networks:
       - backend
       - frontend
@@ -53,10 +49,10 @@ services:
     image: datalust/seq:latest
     environment:
       ACCEPT_EULA: "Y"
-      SEQ_FIRSTRUN_ADMINPASSWORD: ${SEQ_FIRSTRUN_ADMINPASSWORD:-admin12345}
+      SEQ_FIRSTRUN_ADMINPASSWORD: ${SEQ_FIRSTRUN_ADMINPASSWORD}
     ports:
-      - "8081:80"
-      - "5341:5341"
+      - "${SEQ_UI_PORT}:80"
+      - "${SEQ_INGEST_PORT}:5341"
     networks:
       - backend
       - frontend
