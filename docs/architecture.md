@@ -7,7 +7,7 @@
 ```
 Domain           (Бізнес логіка)
 Application      (Use-Case-и)
-Infrastracture   (Інфраструктура)
+Infrastructure   (Інфраструктура)
 Web              (UI)
 ```
 
@@ -34,18 +34,18 @@ Mappings/
 Validation/
 ```
 
-### Infrastracture
+### Infrastructure
 ```
 Persistence/
 Repositories/
-Logging/
+Identity/
 ```
 
 ### Web
 ```
 Models/
 Views/
-COntrollers/
+Controllers/
 
 wwwroot/
 ```

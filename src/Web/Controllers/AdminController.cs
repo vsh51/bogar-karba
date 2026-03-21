@@ -1,0 +1,111 @@
+using Application.UseCases.Auth.LoginAdmin;
+using Application.UseCases.Auth.Logout;
+using Application.UseCases.DeleteChecklist;
+using Application.UseCases.SearchChecklists;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Web.Models.Admin;
+
+namespace Web.Controllers;
+
+[Authorize(Roles = "Admin")]
+public sealed class AdminController : Controller
+{
+    private readonly LoginAdminCommandHandler _loginHandler;
+    private readonly LogoutCommandHandler _logoutHandler;
+    private readonly SearchChecklistsQueryHandler _searchHandler;
+    private readonly DeleteChecklistCommandHandler _deleteHandler;
+    private readonly ILogger<AdminController> _logger;
+
+    public AdminController(
+        LoginAdminCommandHandler loginHandler,
+        LogoutCommandHandler logoutHandler,
+        SearchChecklistsQueryHandler searchHandler,
+        DeleteChecklistCommandHandler deleteHandler,
+        ILogger<AdminController> logger)
+    {
+        _loginHandler = loginHandler;
+        _logoutHandler = logoutHandler;
+        _searchHandler = searchHandler;
+        _deleteHandler = deleteHandler;
+        _logger = logger;
+    }
+
+    public IActionResult Index(string? searchTerm)
+    {
+        var result = _searchHandler.Handle(new SearchChecklistsQuery(searchTerm));
+
+        var viewModels = result.Checklists
+            .Select(c => new AdminChecklistViewModel
+            {
+                Id = c.Id,
+                Title = c.Title,
+                Description = c.Description,
+                UserId = c.UserId
+            })
+            .ToList();
+
+        ViewData["SearchTerm"] = searchTerm;
+        return View(viewModels);
+    }
+
+    [AllowAnonymous]
+    [HttpGet]
+    public IActionResult Login()
+    {
+        return View();
+    }
+
+    [AllowAnonymous]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Login(AdminLoginViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        _logger.LogInformation("Admin login attempt for {UserName}", model.UserName);
+
+        var result = await _loginHandler.HandleAsync(
+            new LoginAdminCommand(model.UserName, model.Password));
+        if (!result.Succeeded)
+        {
+            _logger.LogWarning("Admin login failed for {UserName}", model.UserName);
+            ModelState.AddModelError(string.Empty, result.ErrorMessage ?? "Login failed.");
+            return View(model);
+        }
+
+        _logger.LogInformation("Admin logged in: {UserName}", model.UserName);
+        return RedirectToAction("Index");
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Delete(Guid id, string? searchTerm)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        _logger.LogInformation("Admin deleting checklist {ChecklistId}", id);
+        await _deleteHandler.HandleAsync(new DeleteChecklistCommand(id));
+        return RedirectToAction(nameof(Index), new { searchTerm });
+    }
+
+    public IActionResult Dashboard()
+    {
+        return View();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Logout()
+    {
+        await _logoutHandler.HandleAsync(new LogoutCommand(DateTime.UtcNow));
+        _logger.LogInformation("Admin logged out");
+        return RedirectToAction("Index", "Home");
+    }
+}
