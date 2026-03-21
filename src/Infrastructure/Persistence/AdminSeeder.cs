@@ -15,7 +15,8 @@ public static class AdminSeeder
 
         const string adminRoleName = "Admin";
         const string adminUserName = "admin";
-        string initialAdminPassword = configuration["Seed:AdminPassword"] ?? "Admin123!";
+        string initialAdminPassword = configuration["Seed:AdminPassword"]
+            ?? throw new InvalidOperationException("Seed:AdminPassword (SEED__ADMINPASSWORD) is not configured.");
 
         if (!await roleManager.RoleExistsAsync(adminRoleName))
         {
