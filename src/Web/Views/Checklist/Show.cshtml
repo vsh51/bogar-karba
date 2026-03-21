@@ -80,7 +80,7 @@
     }
 </style>
 
-<section class="checklist-page">
+<section class="checklist-page" data-checklist-id="@Model.Id">
     <header class="mb-3">
         <h1 class="checklist-title">@Model.Title</h1>
 
@@ -105,7 +105,7 @@
                             var itemId = $"item-{item.Id}";
 
                             <li class="checklist-item">
-                                <input id="@itemId" type="checkbox" class="form-check-input checklist-item-input" />
+                                <input id="@itemId" type="checkbox" class="form-check-input checklist-item-input" data-task-id="@item.Id" />
                                 <label for="@itemId" class="checklist-item-label">@item.Content</label>
                             </li>
                         }
@@ -124,3 +124,6 @@
     }
 </section>
 
+@section Scripts {
+    <script src="~/js/checklist-progress.js" asp-append-version="true"></script>
+}
