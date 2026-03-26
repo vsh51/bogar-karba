@@ -15,6 +15,11 @@ public class ChecklistRepository(ApplicationDbContext context) : IChecklistRepos
             .ToList();
     }
 
+    public async Task<Checklist?> GetByIdAsync(Guid id)
+    {
+        return await context.Checklists.FindAsync(id);
+    }
+
     public async Task DeleteAsync(Guid id)
     {
         var checklist = await context.Checklists.FindAsync(id);

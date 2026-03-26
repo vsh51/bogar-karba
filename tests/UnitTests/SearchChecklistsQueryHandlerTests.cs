@@ -61,6 +61,11 @@ public class SearchChecklistsQueryHandlerTests
             return _items.Where(c => c.UserId == userId);
         }
 
+        public Task<Checklist?> GetByIdAsync(Guid id)
+        {
+            return Task.FromResult(_items.FirstOrDefault(c => c.Id == id));
+        }
+
         public Task DeleteAsync(Guid id)
         {
             _items.RemoveAll(c => c.Id == id);
