@@ -73,7 +73,7 @@ public class UserRepository : IUserRepository
         }
 
         user.AccountStatus = UserStatus.Banned;
-        var result = await _userManager.UpdateAsync(user);
+        var result = await _userManager.UpdateSecurityStampAsync(user);
         return result.Succeeded;
     }
 

@@ -18,22 +18,14 @@ public class BanUserCommandHandler
     {
         _logger.LogInformation("Account blocking started for user {UserId}", command.UserId);
 
-        try
+        var banned = await _repository.BanUserAsync(command.UserId);
+        if (!banned)
         {
-            var banned = await _repository.BanUserAsync(command.UserId);
-            if (!banned)
-            {
-                _logger.LogWarning("Account blocking failed: user {UserId} was not found", command.UserId);
-                return BanUserResult.NotFound("User not found.");
-            }
+            _logger.LogWarning("Account blocking failed: user {UserId} was not found", command.UserId);
+            return BanUserResult.NotFound();
+        }
 
-            _logger.LogInformation("Account blocking completed successfully for user {UserId}", command.UserId);
-            return BanUserResult.Success();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Account blocking failed with exception for user {UserId}", command.UserId);
-            return BanUserResult.Failure($"Failed to ban user {command.UserId}");
-        }
+        _logger.LogInformation("Account blocking completed successfully for user {UserId}", command.UserId);
+        return BanUserResult.Success();
     }
 }
