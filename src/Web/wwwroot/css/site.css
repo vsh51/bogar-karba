@@ -29,3 +29,16 @@ body {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
+
+.list-group-item {
+  background-color: transparent;
+}
+
+.dropdown-item:active {
+  background-color: #e9ecef;
+  color: black;
+}
+
+.author-page h2 {
+  font-family: serif;
+}
