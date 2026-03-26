@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Application.UseCases.CreateChecklist;
+using Application.UseCases.DeleteChecklist;
 using Application.UseCases.GetPublishedChecklist;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,21 +10,16 @@ using Web.Models.Checklist;
 namespace Web.Controllers;
 
 [Route("checklist")]
-public sealed class ChecklistController : Controller
+public sealed class ChecklistController(
+    GetPublishedChecklistQueryHandler handler,
+    CreateChecklistCommandHandler createHandler,
+    DeleteChecklistCommandHandler deleteHandler,
+    ILogger<ChecklistController> logger) : Controller
 {
-    private readonly GetPublishedChecklistQueryHandler _handler;
-    private readonly CreateChecklistCommandHandler _createHandler;
-    private readonly ILogger<ChecklistController> _logger;
-
-    public ChecklistController(
-        GetPublishedChecklistQueryHandler handler,
-        CreateChecklistCommandHandler createHandler,
-        ILogger<ChecklistController> logger)
-    {
-        _handler = handler;
-        _createHandler = createHandler;
-        _logger = logger;
-    }
+    private readonly GetPublishedChecklistQueryHandler _handler = handler;
+    private readonly CreateChecklistCommandHandler _createHandler = createHandler;
+    private readonly DeleteChecklistCommandHandler _deleteHandler = deleteHandler;
+    private readonly ILogger<ChecklistController> _logger = logger;
 
     [HttpGet("create")]
     [Authorize]
@@ -111,5 +107,26 @@ public sealed class ChecklistController : Controller
         };
 
         return View("Show", viewModel);
+    }
+
+    [HttpPost("delete/{id:guid}")]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        await _deleteHandler.HandleAsync(new DeleteChecklistCommand(id, userId));
+
+        return RedirectToAction("Index", "Author");
     }
 }
