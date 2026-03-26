@@ -1,0 +1,36 @@
+@{
+    ViewData["Title"] = "Create Checklist";
+}
+
+<div class="checklist-editor" id="checklist-editor">
+    <div class="editor-header">
+        <a href="/" class="back-btn"><</a>
+        <div class="title-container">
+            <h1 class="editable-title" contenteditable="true" data-placeholder="[ CLICK TO EDIT TITLE ]">[ CLICK TO EDIT TITLE ]</h1>
+        </div>
+    </div>
+
+    <p class="editable-desc" contenteditable="true" data-placeholder="[ CLICK TO EDIT DESCRIPTION ]">[ CLICK TO EDIT DESCRIPTION ]</p>
+
+    <div class="editor-content">
+        <!-- Rows will be added here by JS -->
+        <div class="checklist-row">
+            <span class="drag-handle">::</span>
+            <div class="custom-cb"></div>
+            <input type="text" class="item-input" placeholder="item item item item item item item item" />
+            <button type="button" class="btn-delete">×</button>
+        </div>
+    </div>
+
+    <div class="editor-actions">
+        <button type="button" class="btn-secondary-soft" id="add-item-btn">+Item</button>
+        <button type="button" class="btn-secondary-soft" id="add-section-btn">+Section</button>
+        <button type="button" class="btn-primary-custom" id="create-checklist-btn">Create</button>
+    </div>
+
+    @Html.AntiForgeryToken()
+</div>
+
+@section Scripts {
+    <script src="~/js/checklist-create.js"></script>
+}

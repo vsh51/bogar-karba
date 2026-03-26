@@ -1,0 +1,53 @@
+using Application.Interfaces;
+using Domain.Common;
+using Domain.Entities;
+using Microsoft.Extensions.Logging;
+
+namespace Application.UseCases.CreateChecklist;
+
+public class CreateChecklistCommandHandler(
+    IChecklistRepository repository,
+    ILogger<CreateChecklistCommandHandler> logger)
+{
+    public async Task<Result<Guid>> HandleAsync(CreateChecklistRequest request, string userId)
+    {
+        if (string.IsNullOrWhiteSpace(request.Title))
+        {
+            return Result.Failure<Guid>("Title is required.");
+        }
+
+        var checklist = new Checklist
+        {
+            Id = Guid.NewGuid(),
+            Title = request.Title,
+            Description = request.Description,
+            UserId = userId,
+            CreatedAt = DateTime.UtcNow,
+            Status = ChecklistStatus.Published,
+            Sections = request.Sections.Select(s => new Section
+            {
+                Id = Guid.NewGuid(),
+                Name = s.Name,
+                Position = s.Position,
+                Tasks = s.Tasks.Select(t => new TaskItem
+                {
+                    Id = Guid.NewGuid(),
+                    Content = t.Content,
+                    Position = t.Position
+                }).ToList()
+            }).ToList()
+        };
+
+        try
+        {
+            await repository.AddAsync(checklist);
+            logger.LogInformation("Successfully created checklist {ChecklistId} for user {UserId}", checklist.Id, userId);
+            return Result.Success(checklist.Id);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to create checklist for user {UserId}", userId);
+            return Result.Failure<Guid>($"Failed to create checklist: {ex.Message}");
+        }
+    }
+}

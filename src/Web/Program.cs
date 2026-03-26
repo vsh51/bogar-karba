@@ -4,6 +4,7 @@ using Application.UseCases.Auth.LoginAdmin;
 using Application.UseCases.Auth.LoginUser;
 using Application.UseCases.Auth.Logout;
 using Application.UseCases.Auth.RegisterUser;
+using Application.UseCases.CreateChecklist;
 using Application.UseCases.DeleteChecklist;
 using Application.UseCases.GetPublishedChecklist;
 using Application.UseCases.GetUserChecklists;
@@ -80,6 +81,7 @@ builder.Services.AddScoped<SearchChecklistsQueryHandler>();
 builder.Services.AddScoped<DeleteChecklistCommandHandler>();
 builder.Services.AddScoped<GetPublishedChecklistQueryHandler>();
 builder.Services.AddScoped<GetUserChecklistsQueryHandler>();
+builder.Services.AddScoped<CreateChecklistCommandHandler>();
 
 builder.Services.AddControllersWithViews();
 

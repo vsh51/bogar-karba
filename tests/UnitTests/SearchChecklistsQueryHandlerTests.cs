@@ -61,6 +61,12 @@ public class SearchChecklistsQueryHandlerTests
             return _items.Where(c => c.UserId == userId);
         }
 
+        public Task AddAsync(Checklist checklist)
+        {
+            _items.Add(checklist);
+            return Task.CompletedTask;
+        }
+
         public Task DeleteAsync(Guid id)
         {
             _items.RemoveAll(c => c.Id == id);

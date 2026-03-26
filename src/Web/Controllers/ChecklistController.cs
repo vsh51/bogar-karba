@@ -1,22 +1,60 @@
+using System.Security.Claims;
+using Application.UseCases.CreateChecklist;
 using Application.UseCases.GetPublishedChecklist;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Web.Models.Checklist;
 
 namespace Web.Controllers;
 
+[Authorize]
 [Route("checklist")]
 public sealed class ChecklistController : Controller
 {
     private readonly GetPublishedChecklistQueryHandler _handler;
+    private readonly CreateChecklistCommandHandler _createHandler;
     private readonly ILogger<ChecklistController> _logger;
 
     public ChecklistController(
         GetPublishedChecklistQueryHandler handler,
+        CreateChecklistCommandHandler createHandler,
         ILogger<ChecklistController> logger)
     {
         _handler = handler;
+        _createHandler = createHandler;
         _logger = logger;
+    }
+
+    [HttpGet("create")]
+    public IActionResult Create()
+    {
+        return View();
+    }
+
+    [HttpPost("create")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create([FromBody] CreateChecklistRequest request)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _createHandler.HandleAsync(request, userId);
+
+        if (result.IsSuccess)
+        {
+            return Json(new { success = true, id = result.Value, redirectUrl = Url.Action("Show", "Checklist", new { id = result.Value }) });
+        }
+
+        return BadRequest(result.Message);
     }
 
     [HttpGet("{id:guid}")]
@@ -29,9 +67,7 @@ public sealed class ChecklistController : Controller
 
         _logger.LogInformation("Anonymous user requested checklist page for {ChecklistId}", id);
 
-        GetPublishedChecklistResult? result;
-
-        result = await _handler.HandleAsync(
+        var result = await _handler.HandleAsync(
             new GetPublishedChecklistQuery(id), cancellationToken);
 
         if (result is null)
