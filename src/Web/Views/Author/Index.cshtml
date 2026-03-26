@@ -1,0 +1,80 @@
+@model Web.Models.Author.AuthorChecklistsViewModel
+
+@{
+    ViewData["Title"] = "Author's Page";
+}
+
+<div class="container mt-4" style="max-width: 800px;">
+    <div class="mb-3">
+        <a href="@Url.Action("Index", "Home")" class="text-dark text-decoration-none fs-4">
+            <i class="bi bi-chevron-left"></i> < 
+        </a>
+    </div>
+
+    <h2 class="fw-normal mb-4">Your checklists :</h2>
+
+    <div class="list-group list-group-flush">
+        @if (!Model.Checklists.Any())
+        {
+            <div class="alert alert-light text-center border shadow-sm">
+                <p class="mb-0 text-muted">You don't have any checklists yet. Click the button below to create your first one!</p>
+            </div>
+        }
+        else
+        {
+            @foreach (var item in Model.Checklists)
+            {
+                <div class="list-group-item d-flex justify-content-between align-items-start border-0 px-0 mb-4">
+                    <div class="ms-2 me-auto">
+                        <div class="text-uppercase fw-bold" style="font-size: 1.1rem; letter-spacing: 1px;">
+                            @item.Title
+                        </div>
+                        <div class="text-muted mt-1" style="max-width: 500px;">
+                            @item.Description
+                        </div>
+                    </div>
+                    
+                    <div class="dropdown">
+                        <button class="btn btn-link text-dark text-decoration-none fw-bold fs-4 p-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            ...
+                        </button>
+                        <ul class="dropdown-menu shadow border-0">
+                            <li><a class="dropdown-item" href="#">Edit checklist</a></li>
+                            <li><a class="dropdown-item" href="#">Clone checklist</a></li>
+                            <li>
+                                <form action="#" method="post" onsubmit="return confirm('Are you sure?');">
+                                    <button type="submit" class="dropdown-item text-danger">Delete checklist</button>
+                                </form>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#">Activate checklist</a></li>
+                            <li><a class="dropdown-item" href="#">Deactivate checklist</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#"><i class="bi bi-share"></i> Get shareable link</a></li>
+                        </ul>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+
+    <div class="mt-5">
+        <a href="#" class="btn btn-light border px-4 py-2 shadow-sm" style="background-color: #f8f9fa;">
+            Create new checklist
+        </a>
+    </div>
+</div>
+
+
+<style>
+    .list-group-item {
+        background-color: transparent;
+    }
+    .dropdown-item:active {
+        background-color: #e9ecef;
+        color: black;
+    }
+    h2 {
+        font-family: serif;
+    }
+</style>
