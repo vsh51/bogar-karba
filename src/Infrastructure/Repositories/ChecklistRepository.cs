@@ -8,13 +8,6 @@ public class ChecklistRepository(ApplicationDbContext context) : IChecklistRepos
 {
     public IEnumerable<Checklist> GetAll() => context.Checklists;
 
-    public IEnumerable<Checklist> GetByUserId(string userId)
-    {
-        return context.Checklists
-            .Where(c => c.UserId == userId)
-            .ToList();
-    }
-
     public async Task DeleteAsync(Guid id)
     {
         var checklist = await context.Checklists.FindAsync(id);
