@@ -1,5 +1,4 @@
 using Application.Interfaces;
-using Domain.Common;
 using Domain.Entities;
 using Microsoft.Extensions.Logging;
 
@@ -9,11 +8,11 @@ public class CreateChecklistCommandHandler(
     IChecklistRepository repository,
     ILogger<CreateChecklistCommandHandler> logger)
 {
-    public async Task<Result<Guid>> HandleAsync(CreateChecklistRequest request, string userId)
+    public async Task<ChecklistResult> HandleAsync(CreateChecklistRequest request, string userId)
     {
         if (string.IsNullOrWhiteSpace(request.Title))
         {
-            return Result.Failure<Guid>("Title is required.");
+            return ChecklistResult.Failure("Title is required.");
         }
 
         var checklist = new Checklist
@@ -42,12 +41,12 @@ public class CreateChecklistCommandHandler(
         {
             await repository.AddAsync(checklist);
             logger.LogInformation("Successfully created checklist {ChecklistId} for user {UserId}", checklist.Id, userId);
-            return Result.Success(checklist.Id);
+            return ChecklistResult.Success(checklist.Id);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to create checklist for user {UserId}", userId);
-            return Result.Failure<Guid>($"Failed to create checklist: {ex.Message}");
+            return ChecklistResult.Failure($"Failed to create checklist: {ex.Message}");
         }
     }
 }

@@ -30,12 +30,6 @@
                         @if (User.Identity?.IsAuthenticated == true)
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-primary font-weight-bold" asp-controller="Checklist" asp-action="Create">Create Checklist</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Author" asp-action="Index">My Checklists</a>
-                            </li>
-                            <li class="nav-item">
                                 <span class="nav-link text-dark">@User.Identity.Name</span>
                             </li>
                             <li class="nav-item">

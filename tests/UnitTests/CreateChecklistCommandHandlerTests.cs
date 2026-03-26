@@ -40,8 +40,8 @@ public class CreateChecklistCommandHandlerTests
 
         var result = await _handler.HandleAsync(request, userId);
 
-        Assert.True(result.IsSuccess);
-        Assert.NotEqual(Guid.Empty, result.Value);
+        Assert.True(result.Succeeded);
+        Assert.NotEqual(Guid.Empty, result.Id);
         _repositoryMock.Verify(
             r => r.AddAsync(It.Is<Checklist>(c =>
             c.Title == request.Title &&
@@ -58,8 +58,8 @@ public class CreateChecklistCommandHandlerTests
 
         var result = await _handler.HandleAsync(request, "user-123");
 
-        Assert.True(result.IsFailure);
-        Assert.Equal("Title is required.", result.Message);
+        Assert.False(result.Succeeded);
+        Assert.Equal("Title is required.", result.ErrorMessage);
         _repositoryMock.Verify(r => r.AddAsync(It.IsAny<Checklist>()), Times.Never);
     }
 
@@ -72,7 +72,7 @@ public class CreateChecklistCommandHandlerTests
 
         var result = await _handler.HandleAsync(request, "user-123");
 
-        Assert.True(result.IsFailure);
-        Assert.Contains("DB Error", result.Message);
+        Assert.False(result.Succeeded);
+        Assert.Contains("DB Error", result.ErrorMessage);
     }
 }

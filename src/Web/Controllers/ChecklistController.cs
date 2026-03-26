@@ -8,7 +8,6 @@ using Web.Models.Checklist;
 
 namespace Web.Controllers;
 
-[Authorize]
 [Route("checklist")]
 public sealed class ChecklistController : Controller
 {
@@ -27,12 +26,14 @@ public sealed class ChecklistController : Controller
     }
 
     [HttpGet("create")]
+    [Authorize]
     public IActionResult Create()
     {
         return View();
     }
 
     [HttpPost("create")]
+    [Authorize]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create([FromBody] CreateChecklistRequest request)
     {
@@ -49,12 +50,12 @@ public sealed class ChecklistController : Controller
 
         var result = await _createHandler.HandleAsync(request, userId);
 
-        if (result.IsSuccess)
+        if (result.Succeeded)
         {
-            return Json(new { success = true, id = result.Value, redirectUrl = Url.Action("Show", "Checklist", new { id = result.Value }) });
+            return Json(new { success = true, id = result.Id, redirectUrl = Url.Action("Show", "Checklist", new { id = result.Id }) });
         }
 
-        return BadRequest(result.Message);
+        return BadRequest(result.ErrorMessage);
     }
 
     [HttpGet("{id:guid}")]
