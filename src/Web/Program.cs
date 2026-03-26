@@ -7,6 +7,7 @@ using Application.UseCases.Auth.RegisterUser;
 using Application.UseCases.BanUser;
 using Application.UseCases.DeleteChecklist;
 using Application.UseCases.GetPublishedChecklist;
+using Application.UseCases.GetUserChecklists;
 using Application.UseCases.SearchChecklists;
 using Infrastructure.Identity;
 using Infrastructure.Persistence;
@@ -80,6 +81,7 @@ builder.Services.AddScoped<SearchChecklistsQueryHandler>();
 builder.Services.AddScoped<DeleteChecklistCommandHandler>();
 builder.Services.AddScoped<BanUserCommandHandler>();
 builder.Services.AddScoped<GetPublishedChecklistQueryHandler>();
+builder.Services.AddScoped<GetUserChecklistsQueryHandler>();
 
 builder.Services.AddControllersWithViews();
 
