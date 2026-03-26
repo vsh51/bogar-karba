@@ -1,5 +1,6 @@
 using Application.UseCases.Auth.LoginAdmin;
 using Application.UseCases.Auth.Logout;
+using Application.UseCases.BanUser;
 using Application.UseCases.DeleteChecklist;
 using Application.UseCases.SearchChecklists;
 using Microsoft.AspNetCore.Authorization;
@@ -15,6 +16,7 @@ public sealed class AdminController : Controller
     private readonly LogoutCommandHandler _logoutHandler;
     private readonly SearchChecklistsQueryHandler _searchHandler;
     private readonly DeleteChecklistCommandHandler _deleteHandler;
+    private readonly BanUserCommandHandler _banUserHandler;
     private readonly ILogger<AdminController> _logger;
 
     public AdminController(
@@ -22,12 +24,14 @@ public sealed class AdminController : Controller
         LogoutCommandHandler logoutHandler,
         SearchChecklistsQueryHandler searchHandler,
         DeleteChecklistCommandHandler deleteHandler,
+        BanUserCommandHandler banUserHandler,
         ILogger<AdminController> logger)
     {
         _loginHandler = loginHandler;
         _logoutHandler = logoutHandler;
         _searchHandler = searchHandler;
         _deleteHandler = deleteHandler;
+        _banUserHandler = banUserHandler;
         _logger = logger;
     }
 
@@ -92,6 +96,41 @@ public sealed class AdminController : Controller
 
         _logger.LogInformation("Admin deleting checklist {ChecklistId}", id);
         await _deleteHandler.HandleAsync(new DeleteChecklistCommand(id));
+        return RedirectToAction(nameof(Index), new { searchTerm });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> BanUser(string userId, string? searchTerm)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var adminUserName = User.Identity?.Name ?? "unknown-admin";
+        _logger.LogInformation("Admin {AdminUserName} requested account blocking for user {UserId}", adminUserName, userId);
+        var result = await _banUserHandler.HandleAsync(new BanUserCommand(userId));
+
+        if (result.Succeeded)
+        {
+            _logger.LogInformation("Admin {AdminUserName} successfully blocked user account {UserId}", adminUserName, userId);
+            TempData["AdminAlertType"] = "success";
+            TempData["AdminAlertMessage"] = "The user has been blocked.";
+        }
+        else if (result.ErrorType == BanUserErrorType.NotFound)
+        {
+            _logger.LogWarning("Admin {AdminUserName} attempted to block user {UserId}, but account was not found", adminUserName, userId);
+            TempData["AdminAlertType"] = "warning";
+            TempData["AdminAlertMessage"] = "User not found.";
+        }
+        else
+        {
+            _logger.LogError("Admin {AdminUserName} failed to block user account {UserId}", adminUserName, userId);
+            TempData["AdminAlertType"] = "danger";
+            TempData["AdminAlertMessage"] = "Failed to block the user.";
+        }
+
         return RedirectToAction(nameof(Index), new { searchTerm });
     }
 

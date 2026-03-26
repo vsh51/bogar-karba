@@ -15,4 +15,6 @@ public interface IUserRepository
 
     Task<(bool Succeeded, IEnumerable<string> Errors)> CreateUserAsync(
         string name, string surname, string email, string password, UserStatus accountStatus);
+
+    Task<bool> BanUserAsync(string userId);
 }
