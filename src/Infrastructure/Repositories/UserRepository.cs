@@ -64,6 +64,19 @@ public class UserRepository : IUserRepository
         return (result.Succeeded, result.Errors.Select(e => e.Description));
     }
 
+    public async Task<bool> BanUserAsync(string userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user is null)
+        {
+            return false;
+        }
+
+        user.AccountStatus = UserStatus.Banned;
+        var result = await _userManager.UpdateAsync(user);
+        return result.Succeeded;
+    }
+
     private async Task<ApplicationUser?> FindUserAsync(string identifier, UserLookupMode lookupMode)
     {
         return lookupMode switch

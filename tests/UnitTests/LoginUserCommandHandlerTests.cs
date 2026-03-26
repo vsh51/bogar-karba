@@ -58,6 +58,7 @@ public class LoginUserCommandHandlerTests
         var result = await _sut.HandleAsync(new LoginUserCommand("banned@test.com", "Pass123"));
 
         Assert.False(result.Succeeded);
+        Assert.Equal("Your account is blocked. Please contact administrator.", result.ErrorMessage);
         _repositoryMock.Verify(r => r.CheckPasswordAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<UserLookupMode>()), Times.Never);
     }
 
