@@ -116,19 +116,19 @@ public sealed class AdminController : Controller
         {
             _logger.LogInformation("Admin {AdminUserName} successfully blocked user account {UserId}", adminUserName, userId);
             TempData["AdminAlertType"] = "success";
-            TempData["AdminAlertMessage"] = "Користувача заблоковано.";
+            TempData["AdminAlertMessage"] = "The user has been blocked.";
         }
-        else if (string.Equals(result.ErrorMessage, "User not found.", StringComparison.Ordinal))
+        else if (result.ErrorType == BanUserErrorType.NotFound)
         {
             _logger.LogWarning("Admin {AdminUserName} attempted to block user {UserId}, but account was not found", adminUserName, userId);
             TempData["AdminAlertType"] = "warning";
-            TempData["AdminAlertMessage"] = "Користувача не знайдено.";
+            TempData["AdminAlertMessage"] = "User not found.";
         }
         else
         {
             _logger.LogError("Admin {AdminUserName} failed to block user account {UserId}", adminUserName, userId);
             TempData["AdminAlertType"] = "danger";
-            TempData["AdminAlertMessage"] = "Не вдалося заблокувати користувача.";
+            TempData["AdminAlertMessage"] = "Failed to block the user.";
         }
 
         return RedirectToAction(nameof(Index), new { searchTerm });
