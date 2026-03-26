@@ -36,12 +36,23 @@ public static class ChecklistSeeder
             return;
         }
 
-        var checklist = BuildDemoChecklist(ownerId);
+        var checklistA = BuildDemoChecklist(
+            Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+            "Large demo checklist for scrolling tests (A)",
+            ownerId);
 
-        context.Checklists.Add(checklist);
+        var checklistB = BuildDemoChecklist(
+            Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
+            "Second demo checklist (B)",
+            ownerId);
+
+        context.Checklists.AddRange(checklistA, checklistB);
         await context.SaveChangesAsync(cancellationToken);
 
-        logger.LogInformation("Seeded demo checklist {ChecklistId}", checklist.Id);
+        logger.LogInformation(
+            "Seeded demo checklists {ChecklistAId} and {ChecklistBId}",
+            checklistA.Id,
+            checklistB.Id);
     }
 
     private static async Task<string?> EnsureDemoChecklistOwnerAsync(
@@ -94,12 +105,12 @@ public static class ChecklistSeeder
         return user.Id;
     }
 
-    private static Checklist BuildDemoChecklist(string ownerId)
+    private static Checklist BuildDemoChecklist(Guid id, string title, string ownerId)
     {
         return new Checklist
         {
-            Id = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
-            Title = "Large demo checklist for scrolling tests",
+            Id = id,
+            Title = title,
             Description = "This seeded checklist intentionally contains many sections and items so you can validate layout, typography, spacing, and long-page scrolling behavior in the UI.",
             Status = ChecklistStatus.Published,
             CreatedAt = DateTime.UtcNow,
