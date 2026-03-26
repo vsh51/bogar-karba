@@ -89,8 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.location.href = result.redirectUrl;
             }
         } else {
-            const error = await response.text();
-            alert('Failed to create checklist: ' + error);
+            alert('Failed to create checklist. Please check your input and try again.');
         }
     });
 });

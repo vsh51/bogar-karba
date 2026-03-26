@@ -35,7 +35,7 @@ public sealed class ChecklistController : Controller
     [HttpPost("create")]
     [Authorize]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create([FromBody] CreateChecklistRequest request)
+    public async Task<IActionResult> Create([FromBody] CreateChecklistViewModel model)
     {
         if (!ModelState.IsValid)
         {
@@ -48,6 +48,15 @@ public sealed class ChecklistController : Controller
             return Unauthorized();
         }
 
+        // Map ViewModel to Application DTO
+        var request = new CreateChecklistRequest(
+            model.Title,
+            model.Description,
+            model.Sections.Select(s => new CreateSectionRequest(
+                s.Name,
+                s.Position,
+                s.Tasks.Select(t => new CreateTaskRequest(t.Content, t.Position)).ToList())).ToList());
+
         var result = await _createHandler.HandleAsync(request, userId);
 
         if (result.Succeeded)
@@ -55,7 +64,7 @@ public sealed class ChecklistController : Controller
             return Json(new { success = true, id = result.Id, redirectUrl = Url.Action("Show", "Checklist", new { id = result.Id }) });
         }
 
-        return BadRequest(result.ErrorMessage);
+        return BadRequest("An error occurred while creating the checklist.");
     }
 
     [HttpGet("{id:guid}")]

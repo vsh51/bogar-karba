@@ -12,7 +12,7 @@ public class CreateChecklistCommandHandler(
     {
         if (string.IsNullOrWhiteSpace(request.Title))
         {
-            return ChecklistResult.Failure("Title is required.");
+            return ChecklistResult.Failure();
         }
 
         var checklist = new Checklist
@@ -46,7 +46,7 @@ public class CreateChecklistCommandHandler(
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to create checklist for user {UserId}", userId);
-            return ChecklistResult.Failure($"Failed to create checklist: {ex.Message}");
+            return ChecklistResult.Failure();
         }
     }
 }
