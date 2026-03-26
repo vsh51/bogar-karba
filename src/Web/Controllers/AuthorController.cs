@@ -34,12 +34,6 @@ public sealed class AuthorController : Controller
 
         var result = _handler.Handle(new GetUserChecklistsQuery(userId));
 
-        if (!result.Succeeded)
-        {
-            _logger.LogWarning("Failed to get checklists for user {UserId}: {Error}", userId, result.ErrorMessage);
-            return View("Error");
-        }
-
         var viewModel = new AuthorChecklistsViewModel
         {
             Checklists = result.Checklists

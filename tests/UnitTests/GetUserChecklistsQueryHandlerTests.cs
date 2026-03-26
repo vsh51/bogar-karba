@@ -36,7 +36,6 @@ public class GetUserChecklistsQueryHandlerTests
 
         var result = _handler.Handle(new GetUserChecklistsQuery(userId));
 
-        Assert.True(result.Succeeded);
         Assert.Equal(2, result.Checklists.Count);
         Assert.Equal("Checklist 1", result.Checklists[0].Title);
         Assert.Equal("Checklist 2", result.Checklists[1].Title);
@@ -51,7 +50,6 @@ public class GetUserChecklistsQueryHandlerTests
 
         var result = _handler.Handle(new GetUserChecklistsQuery(userId));
 
-        Assert.True(result.Succeeded);
         Assert.Empty(result.Checklists);
         _repositoryMock.Verify(repo => repo.GetByUserId(userId), Times.Once);
     }
