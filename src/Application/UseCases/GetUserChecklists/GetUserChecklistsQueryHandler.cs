@@ -5,14 +5,14 @@ using Microsoft.Extensions.Logging;
 namespace Application.UseCases.GetUserChecklists;
 
 public partial class GetUserChecklistsQueryHandler(
-    IChecklistRepository repository,
+    IChecklistReadOnlyRepository repository,
     ILogger<GetUserChecklistsQueryHandler> logger)
 {
-    public GetUserChecklistsResult Handle(GetUserChecklistsQuery query)
+    public async Task<GetUserChecklistsResult> HandleAsync(GetUserChecklistsQuery query)
     {
         LogRequest(logger, query.UserId);
 
-        var items = repository.GetByUserId(query.UserId);
+        var items = await repository.GetByUserIdAsync(query.UserId);
 
         var results = items
             .Select(c => new ChecklistSummaryDto
