@@ -33,7 +33,7 @@ public class LoginUserCommandHandler
         if (!await _repository.IsActiveAsync(command.Email, UserLookupMode.ByEmail))
         {
             _logger.LogWarning("Login denied for '{Email}': account is not active", command.Email);
-            return AuthResult.Failure("Invalid email or password.");
+            return AuthResult.Failure("Your account is blocked.");
         }
 
         if (!await _repository.CheckPasswordAsync(command.Email, command.Password, UserLookupMode.ByEmail))
