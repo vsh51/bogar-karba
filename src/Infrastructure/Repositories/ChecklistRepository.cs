@@ -1,6 +1,7 @@
 using Application.Interfaces;
 using Domain.Entities;
 using Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories;
 
@@ -8,11 +9,11 @@ public class ChecklistRepository(ApplicationDbContext context) : IChecklistRepos
 {
     public IEnumerable<Checklist> GetAll() => context.Checklists;
 
-    public IEnumerable<Checklist> GetByUserId(string userId)
+    public async Task<IEnumerable<Checklist>> GetByUserIdAsync(string userId)
     {
-        return context.Checklists
+        return await context.Checklists
             .Where(c => c.UserId == userId)
-            .ToList();
+            .ToListAsync();
     }
 
     public async Task AddAsync(Checklist checklist)

@@ -323,10 +323,12 @@ dotnet_diagnostic.IDE0161.severity = warning
 dotnet_diagnostic.EnableGenerateDocumentationFile.severity = none
 
 # CA1848: Prefer LoggerMessage delegates over LogInformation/LogError/etc.
+# CA1873: Avoid expensive logging argument evaluation.
 # Disabled because:
 # - adds significant boilerplate and reduces readability
 # - negligible performance impact for our uni project
 dotnet_diagnostic.CA1848.severity = none
+dotnet_diagnostic.CA1873.severity = none
 
 # ─── Auto-generated files (EF Migrations) ───────────────────
 [**/Migrations/*.cs]

@@ -56,9 +56,9 @@ public class SearchChecklistsQueryHandlerTests
 
         public IEnumerable<Checklist> GetAll() => _items;
 
-        public IEnumerable<Checklist> GetByUserId(string userId)
+        public Task<IEnumerable<Checklist>> GetByUserIdAsync(string userId)
         {
-            return _items.Where(c => c.UserId == userId);
+            return Task.FromResult<IEnumerable<Checklist>>(_items.Where(c => c.UserId == userId));
         }
 
         public Task AddAsync(Checklist checklist)

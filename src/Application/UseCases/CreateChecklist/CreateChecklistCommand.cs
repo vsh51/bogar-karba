@@ -1,6 +1,6 @@
 namespace Application.UseCases.CreateChecklist;
 
-public record CreateChecklistRequest(
+public record CreateChecklistCommand(
     string Title,
     string Description,
     List<CreateSectionRequest> Sections);

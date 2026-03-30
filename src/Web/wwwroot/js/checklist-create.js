@@ -4,27 +4,31 @@ document.addEventListener('DOMContentLoaded', () => {
     const addItemBtn = document.getElementById('add-item-btn');
     const addSectionBtn = document.getElementById('add-section-btn');
     const createBtn = document.getElementById('create-checklist-btn');
-    const checklistForm = document.getElementById('checklist-form');
 
     function createRow(type = 'item') {
         const row = document.createElement('div');
         row.className = 'checklist-row ' + (type === 'section' ? 'section-row' : '');
         
+        const input = document.createElement('input');
+        input.type = 'text';
+        const deleteBtn = document.createElement('button');
+        deleteBtn.type = 'button';
+        deleteBtn.className = 'btn-delete';
+        deleteBtn.textContent = '\u00D7';
+
         if (type === 'section') {
-            row.innerHTML = `
-                <span class="drag-handle">::</span>
-                <span class="section-prefix">>></span>
-                <input type="text" class="section-input" placeholder="Section name..." />
-                <button type="button" class="btn-delete">×</button>
-            `;
+            input.className = 'section-input';
+            input.placeholder = 'Section name...';
         } else {
-            row.innerHTML = `
-                <span class="drag-handle">::</span>
-                <div class="custom-cb"></div>
-                <input type="text" class="item-input" placeholder="Item description..." />
-                <button type="button" class="btn-delete">×</button>
-            `;
+            const checkbox = document.createElement('div');
+            checkbox.className = 'item-checkbox';
+            row.appendChild(checkbox);
+            input.className = 'item-input';
+            input.placeholder = 'Item description...';
         }
+
+        row.appendChild(input);
+        row.appendChild(deleteBtn);
 
         row.querySelector('.btn-delete').addEventListener('click', () => row.remove());
         return row;
@@ -39,13 +43,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     createBtn.addEventListener('click', async () => {
-        const title = editor.querySelector('.editable-title').innerText.trim();
-        const description = editor.querySelector('.editable-desc').innerText.trim();
+        const title = editor.querySelector('.editable-title').value.trim();
+        const description = editor.querySelector('.editable-desc').value.trim();
         
         const sections = [];
         let currentSection = { name: "General", position: 0, tasks: [] };
         
-        let globalPosition = 0;
         Array.from(content.children).forEach((row, index) => {
             if (row.classList.contains('section-row')) {
                 if (currentSection.tasks.length > 0 || currentSection.name !== "General") {
@@ -74,22 +77,26 @@ document.addEventListener('DOMContentLoaded', () => {
             sections: sections
         };
 
-        const response = await fetch('/checklist/create', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
-            },
-            body: JSON.stringify(requestData)
-        });
+        try {
+            const response = await fetch('/checklist/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify(requestData)
+            });
 
-        if (response.ok) {
-            const result = await response.json();
-            if (result.success && result.redirectUrl) {
-                window.location.href = result.redirectUrl;
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success && result.redirectUrl) {
+                    window.location.href = result.redirectUrl;
+                }
+            } else {
+                alert('Failed to create checklist. Please check your input and try again.');
             }
-        } else {
-            alert('Failed to create checklist. Please check your input and try again.');
+        } catch (error) {
+            alert('Network error. Please check your connection and try again.');
         }
     });
 });

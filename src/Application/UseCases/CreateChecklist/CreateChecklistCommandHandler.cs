@@ -8,11 +8,11 @@ public class CreateChecklistCommandHandler(
     IChecklistRepository repository,
     ILogger<CreateChecklistCommandHandler> logger)
 {
-    public async Task<ChecklistResult> HandleAsync(CreateChecklistRequest request, string userId)
+    public async Task<CreateChecklistResult> HandleAsync(CreateChecklistCommand request, string userId)
     {
         if (string.IsNullOrWhiteSpace(request.Title))
         {
-            return ChecklistResult.Failure();
+            return CreateChecklistResult.Failure();
         }
 
         var checklist = new Checklist
@@ -41,12 +41,12 @@ public class CreateChecklistCommandHandler(
         {
             await repository.AddAsync(checklist);
             logger.LogInformation("Successfully created checklist {ChecklistId} for user {UserId}", checklist.Id, userId);
-            return ChecklistResult.Success(checklist.Id);
+            return CreateChecklistResult.Success(checklist.Id);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to create checklist for user {UserId}", userId);
-            return ChecklistResult.Failure();
+            return CreateChecklistResult.Failure();
         }
     }
 }

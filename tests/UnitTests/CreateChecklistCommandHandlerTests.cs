@@ -36,7 +36,7 @@ public class CreateChecklistCommandHandlerTests
         {
             new CreateSectionRequest("Section 1", 0, tasks),
         };
-        var request = new CreateChecklistRequest("Test Checklist", "Test Description", sections);
+        var request = new CreateChecklistCommand("Test Checklist", "Test Description", sections);
 
         var result = await _handler.HandleAsync(request, userId);
 
@@ -54,7 +54,7 @@ public class CreateChecklistCommandHandlerTests
     [Fact]
     public async Task HandleAsync_EmptyTitle_ReturnsFailure()
     {
-        var request = new CreateChecklistRequest(string.Empty, "Desc", new List<CreateSectionRequest>());
+        var request = new CreateChecklistCommand(string.Empty, "Desc", new List<CreateSectionRequest>());
 
         var result = await _handler.HandleAsync(request, "user-123");
 
@@ -65,7 +65,7 @@ public class CreateChecklistCommandHandlerTests
     [Fact]
     public async Task HandleAsync_RepositoryThrows_ReturnsFailure()
     {
-        var request = new CreateChecklistRequest("Valid", "Desc", new List<CreateSectionRequest>());
+        var request = new CreateChecklistCommand("Valid", "Desc", new List<CreateSectionRequest>());
         _repositoryMock.Setup(r => r.AddAsync(It.IsAny<Checklist>()))
             .ThrowsAsync(new InvalidOperationException("DB Error"));
 

@@ -6,7 +6,7 @@ public interface IChecklistRepository
 {
     IEnumerable<Checklist> GetAll();
 
-    IEnumerable<Checklist> GetByUserId(string userId);
+    Task<IEnumerable<Checklist>> GetByUserIdAsync(string userId);
 
     Task AddAsync(Checklist checklist);
 

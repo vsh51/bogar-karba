@@ -45,7 +45,7 @@ public sealed class ChecklistController(
         }
 
         // Map ViewModel to Application DTO
-        var request = new CreateChecklistRequest(
+        var request = new CreateChecklistCommand(
             model.Title,
             model.Description,
             model.Sections.Select(s => new CreateSectionRequest(
