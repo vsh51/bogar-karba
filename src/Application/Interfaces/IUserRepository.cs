@@ -17,4 +17,6 @@ public interface IUserRepository
         string name, string surname, string email, string password, UserStatus accountStatus);
 
     Task<bool> BanUserAsync(string userId);
+
+    Task<int> GetTotalCountAsync();
 }

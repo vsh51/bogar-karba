@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -14,7 +15,7 @@ public class BanUserCommandHandler
         _logger = logger;
     }
 
-    public async Task<BanUserResult> HandleAsync(BanUserCommand command)
+    public async Task<Result<bool>> HandleAsync(BanUserCommand command)
     {
         _logger.LogInformation("Account blocking started for user {UserId}", command.UserId);
 
@@ -22,10 +23,10 @@ public class BanUserCommandHandler
         if (!banned)
         {
             _logger.LogWarning("Account blocking failed: user {UserId} was not found", command.UserId);
-            return BanUserResult.NotFound();
+            return "User not found.";
         }
 
         _logger.LogInformation("Account blocking completed successfully for user {UserId}", command.UserId);
-        return BanUserResult.Success();
+        return true;
     }
 }

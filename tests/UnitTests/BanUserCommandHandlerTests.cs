@@ -27,7 +27,6 @@ public class BanUserCommandHandlerTests
         var result = await _handler.HandleAsync(new BanUserCommand("user-id"));
 
         Assert.True(result.Succeeded);
-        Assert.Equal(BanUserErrorType.None, result.ErrorType);
         _repositoryMock.Verify(repo => repo.BanUserAsync("user-id"), Times.Once);
     }
 
@@ -40,7 +39,7 @@ public class BanUserCommandHandlerTests
         var result = await _handler.HandleAsync(new BanUserCommand("missing-user"));
 
         Assert.False(result.Succeeded);
-        Assert.Equal(BanUserErrorType.NotFound, result.ErrorType);
+        Assert.Equal("User not found.", result.ErrorMessage);
     }
 
     [Fact]

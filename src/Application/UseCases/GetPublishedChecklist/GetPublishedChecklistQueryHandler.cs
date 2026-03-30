@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.Interfaces;
 using Application.Mappings;
 using Domain.Entities;
@@ -18,20 +19,19 @@ public sealed class GetPublishedChecklistQueryHandler
         _logger = logger;
     }
 
-    public async Task<GetPublishedChecklistResult?> HandleAsync(
+    public async Task<Result<GetPublishedChecklistResult>> HandleAsync(
         GetPublishedChecklistQuery query,
         CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Handling GetPublishedChecklistQuery for ChecklistId: {ChecklistId}", query.Id);
 
-        Checklist? checklist;
-        checklist = await _repository.GetPublishedChecklistAsync(
+        var checklist = await _repository.GetPublishedChecklistAsync(
             query.Id, cancellationToken);
 
         if (checklist is null)
         {
             _logger.LogInformation("Checklist with id {ChecklistId} was not found or not published", query.Id);
-            return null;
+            return "Checklist not found or not published.";
         }
 
         var result = checklist.ToPublishedChecklistResult();

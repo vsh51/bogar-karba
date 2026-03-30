@@ -2,6 +2,7 @@ using Application.Interfaces;
 using Application.UseCases.SearchChecklists;
 using Domain.Entities;
 using Microsoft.Extensions.Logging.Abstractions;
+using Xunit;
 
 namespace UnitTests;
 
@@ -23,8 +24,10 @@ public class SearchChecklistsQueryHandlerTests
 
         var result = handler.Handle(new SearchChecklistsQuery("deploy"));
 
-        Assert.Single(result.Checklists);
-        Assert.Equal("Deploy", result.Checklists[0].Title);
+        Assert.True(result.Succeeded);
+        Assert.NotNull(result.Value);
+        Assert.Single(result.Value);
+        Assert.Equal("Deploy", result.Value[0].Title);
     }
 
     [Fact]
@@ -42,7 +45,9 @@ public class SearchChecklistsQueryHandlerTests
 
         var result = handler.Handle(new SearchChecklistsQuery(null));
 
-        Assert.Equal(2, result.Checklists.Count);
+        Assert.True(result.Succeeded);
+        Assert.NotNull(result.Value);
+        Assert.Equal(2, result.Value.Count);
     }
 
     private sealed class FakeChecklistRepository : IChecklistRepository
@@ -71,6 +76,11 @@ public class SearchChecklistsQueryHandlerTests
         {
             _items.RemoveAll(c => c.Id == id);
             return Task.CompletedTask;
+        }
+
+        public Task<int> GetTotalCountAsync()
+        {
+            return Task.FromResult(_items.Count);
         }
     }
 }

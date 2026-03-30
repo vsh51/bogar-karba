@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.UseCases.Auth.LoginAdmin;
 using Application.UseCases.Auth.Logout;
 using Application.UseCases.BanUser;
@@ -39,7 +40,7 @@ public sealed class AdminController : Controller
     {
         var result = _searchHandler.Handle(new SearchChecklistsQuery(searchTerm));
 
-        var viewModels = result.Checklists
+        var viewModels = (result.Value ?? new())
             .Select(c => new AdminChecklistViewModel
             {
                 Id = c.Id,
@@ -118,7 +119,7 @@ public sealed class AdminController : Controller
             TempData["AdminAlertType"] = "success";
             TempData["AdminAlertMessage"] = "The user has been blocked.";
         }
-        else if (result.ErrorType == BanUserErrorType.NotFound)
+        else if (result.ErrorMessage == "User not found.")
         {
             _logger.LogWarning("Admin {AdminUserName} attempted to block user {UserId}, but account was not found", adminUserName, userId);
             TempData["AdminAlertType"] = "warning";

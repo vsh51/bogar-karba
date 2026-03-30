@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Application.Common;
 using Application.UseCases.DeleteChecklist;
 using Application.UseCases.GetUserChecklists;
 using Microsoft.AspNetCore.Authorization;
@@ -40,7 +41,7 @@ public sealed class AuthorController : Controller
 
         var viewModel = new AuthorChecklistsViewModel
         {
-            Checklists = result.Checklists
+            Checklists = result.Value ?? new()
         };
 
         return View(viewModel);

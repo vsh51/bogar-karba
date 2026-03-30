@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -16,10 +17,10 @@ public class LogoutCommandHandler
         _logger = logger;
     }
 
-    public async Task<AuthResult> HandleAsync(LogoutCommand command)
+    public async Task<Result<bool>> HandleAsync(LogoutCommand command)
     {
         _logger.LogInformation("Logout requested at {Time}", command.RequestedAt);
         await _signInService.SignOutAsync();
-        return AuthResult.Success();
+        return true;
     }
 }
