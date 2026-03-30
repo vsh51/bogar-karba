@@ -30,10 +30,6 @@ body {
   text-align: start;
 }
 
-.list-group-item {
-  background-color: transparent;
-}
-
 .dropdown-item:active {
   background-color: #e9ecef;
   color: black;
