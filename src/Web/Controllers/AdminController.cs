@@ -3,6 +3,7 @@ using Application.UseCases.Auth.LoginAdmin;
 using Application.UseCases.Auth.Logout;
 using Application.UseCases.BanUser;
 using Application.UseCases.DeleteChecklist;
+using Application.UseCases.GetSystemStats;
 using Application.UseCases.SearchChecklists;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,6 +19,7 @@ public sealed class AdminController : Controller
     private readonly SearchChecklistsQueryHandler _searchHandler;
     private readonly DeleteChecklistCommandHandler _deleteHandler;
     private readonly BanUserCommandHandler _banUserHandler;
+    private readonly GetSystemStatsQueryHandler _systemStatsHandler;
     private readonly ILogger<AdminController> _logger;
 
     public AdminController(
@@ -26,6 +28,7 @@ public sealed class AdminController : Controller
         SearchChecklistsQueryHandler searchHandler,
         DeleteChecklistCommandHandler deleteHandler,
         BanUserCommandHandler banUserHandler,
+        GetSystemStatsQueryHandler systemStatsHandler,
         ILogger<AdminController> logger)
     {
         _loginHandler = loginHandler;
@@ -33,6 +36,7 @@ public sealed class AdminController : Controller
         _searchHandler = searchHandler;
         _deleteHandler = deleteHandler;
         _banUserHandler = banUserHandler;
+        _systemStatsHandler = systemStatsHandler;
         _logger = logger;
     }
 
@@ -135,9 +139,23 @@ public sealed class AdminController : Controller
         return RedirectToAction(nameof(Index), new { searchTerm });
     }
 
-    public IActionResult Dashboard()
+    public async Task<IActionResult> Dashboard()
     {
-        return View();
+        var result = await _systemStatsHandler.HandleAsync(new GetSystemStatsQuery());
+
+        if (!result.Succeeded || result.Value is null)
+        {
+            _logger.LogError("Failed to load system statistics for dashboard");
+            return View(new DashboardViewModel());
+        }
+
+        var viewModel = new DashboardViewModel
+        {
+            TotalChecklists = result.Value.TotalChecklists,
+            TotalUsers = result.Value.TotalUsers
+        };
+
+        return View(viewModel);
     }
 
     [HttpPost]
