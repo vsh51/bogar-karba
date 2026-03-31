@@ -27,6 +27,6 @@ public class BanUserCommandHandler
         }
 
         _logger.LogInformation("Account blocking completed successfully for user {UserId}", command.UserId);
-        return true;
+        return Result<bool>.Success(true);
     }
 }

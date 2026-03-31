@@ -40,6 +40,6 @@ public class RegisterUserCommandHandler
         }
 
         _logger.LogInformation("User '{Email}' registered successfully", command.Email);
-        return true;
+        return Result<bool>.Success(true);
     }
 }

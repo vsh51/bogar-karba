@@ -46,6 +46,6 @@ public class LoginAdminCommandHandler
 
         await _signInService.SignInAsync(command.UserName, UserLookupMode.ByUserName);
         _logger.LogInformation("Admin '{UserName}' logged in successfully", command.UserName);
-        return true;
+        return Result<bool>.Success(true);
     }
 }

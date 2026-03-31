@@ -45,7 +45,7 @@ public sealed class ExportMarkdownQueryHandler
             "Successfully exported markdown for ChecklistId: {ChecklistId}",
             query.ChecklistId);
 
-        return new ExportChecklistResult { Content = markdown };
+        return Result<ExportChecklistResult>.Success(new ExportChecklistResult { Content = markdown });
     }
 
     private static string BuildMarkdown(Checklist checklist, HashSet<Guid> completedTaskIds)

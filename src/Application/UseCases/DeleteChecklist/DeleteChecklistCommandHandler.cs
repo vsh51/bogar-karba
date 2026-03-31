@@ -47,6 +47,6 @@ public class DeleteChecklistCommandHandler
 
         await _repository.DeleteAsync(command.Id);
         _logger.LogInformation("Checklist {Id} deleted successfully", command.Id);
-        return true;
+        return Result<bool>.Success(true);
     }
 }

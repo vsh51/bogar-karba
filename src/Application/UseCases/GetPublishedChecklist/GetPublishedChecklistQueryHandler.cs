@@ -38,6 +38,6 @@ public sealed class GetPublishedChecklistQueryHandler
 
         _logger.LogInformation("Checklist {ChecklistId} retrieved successfully", query.Id);
 
-        return result;
+        return Result<GetPublishedChecklistResult>.Success(result);
     }
 }

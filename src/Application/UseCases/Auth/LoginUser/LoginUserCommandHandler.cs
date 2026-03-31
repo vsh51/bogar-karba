@@ -45,6 +45,6 @@ public class LoginUserCommandHandler
 
         await _signInService.SignInAsync(command.Email, UserLookupMode.ByEmail);
         _logger.LogInformation("User '{Email}' logged in successfully", command.Email);
-        return true;
+        return Result<bool>.Success(true);
     }
 }

@@ -34,6 +34,6 @@ public sealed class GetSystemStatsQueryHandler
             totalChecklists,
             totalUsers);
 
-        return new SystemStatsDto(totalChecklists, totalUsers);
+        return Result<SystemStatsDto>.Success(new SystemStatsDto(totalChecklists, totalUsers));
     }
 }

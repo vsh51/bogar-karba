@@ -47,6 +47,6 @@ public class CreateChecklistCommandHandler(
 
         await repository.AddAsync(checklist);
         logger.LogInformation("Successfully created checklist {ChecklistId} for user {UserId}", checklist.Id, userId);
-        return checklist.Id;
+        return Result<Guid>.Success(checklist.Id);
     }
 }
