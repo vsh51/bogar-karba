@@ -7,6 +7,7 @@ using Application.UseCases.Auth.RegisterUser;
 using Application.UseCases.BanUser;
 using Application.UseCases.CreateChecklist;
 using Application.UseCases.DeleteChecklist;
+using Application.UseCases.EditChecklist;
 using Application.UseCases.ExportChecklist.Markdown;
 using Application.UseCases.GetPublishedChecklist;
 using Application.UseCases.GetSystemStats;
@@ -87,6 +88,7 @@ builder.Services.AddScoped<BanUserCommandHandler>();
 builder.Services.AddScoped<GetPublishedChecklistQueryHandler>();
 builder.Services.AddScoped<GetUserChecklistsQueryHandler>();
 builder.Services.AddScoped<CreateChecklistCommandHandler>();
+builder.Services.AddScoped<EditChecklistCommandHandler>();
 builder.Services.AddScoped<GetSystemStatsQueryHandler>();
 builder.Services.AddScoped<ExportMarkdownQueryHandler>();
 
