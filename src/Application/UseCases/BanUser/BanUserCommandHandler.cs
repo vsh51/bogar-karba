@@ -23,7 +23,7 @@ public class BanUserCommandHandler
         if (!banned)
         {
             _logger.LogWarning("Account blocking failed: user {UserId} was not found", command.UserId);
-            return "User not found.";
+            return ResultErrors.UserNotFound;
         }
 
         _logger.LogInformation("Account blocking completed successfully for user {UserId}", command.UserId);

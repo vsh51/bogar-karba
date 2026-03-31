@@ -41,7 +41,7 @@ public sealed class AuthorController : Controller
 
         var viewModel = new AuthorChecklistsViewModel
         {
-            Checklists = result.Value ?? new()
+            Checklists = result.Succeeded ? result.Value! : new()
         };
 
         return View(viewModel);

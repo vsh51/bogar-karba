@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.Interfaces;
 using Application.UseCases.BanUser;
 using Microsoft.Extensions.Logging;
@@ -39,7 +40,7 @@ public class BanUserCommandHandlerTests
         var result = await _handler.HandleAsync(new BanUserCommand("missing-user"));
 
         Assert.False(result.Succeeded);
-        Assert.Equal("User not found.", result.ErrorMessage);
+        Assert.Equal(ResultErrors.UserNotFound, result.ErrorMessage);
     }
 
     [Fact]

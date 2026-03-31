@@ -44,7 +44,7 @@ public sealed class AdminController : Controller
     {
         var result = _searchHandler.Handle(new SearchChecklistsQuery(searchTerm));
 
-        var viewModels = (result.Value ?? new())
+        var viewModels = (result.Succeeded ? result.Value! : new())
             .Select(c => new AdminChecklistViewModel
             {
                 Id = c.Id,
@@ -123,7 +123,7 @@ public sealed class AdminController : Controller
             TempData["AdminAlertType"] = "success";
             TempData["AdminAlertMessage"] = "The user has been blocked.";
         }
-        else if (result.ErrorMessage == "User not found.")
+        else if (result.ErrorMessage == ResultErrors.UserNotFound)
         {
             _logger.LogWarning("Admin {AdminUserName} attempted to block user {UserId}, but account was not found", adminUserName, userId);
             TempData["AdminAlertType"] = "warning";
