@@ -21,7 +21,8 @@ public partial class GetUserChecklistsQueryHandler(
                 Id = c.Id,
                 Title = c.Title,
                 Description = c.Description,
-                UserId = c.UserId
+                UserId = c.UserId,
+                Status = c.Status
             })
             .ToList();
 

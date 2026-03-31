@@ -48,8 +48,24 @@
                                 </form>
                             </li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#">Activate checklist</a></li>
-                            <li><a class="dropdown-item" href="#">Deactivate checklist</a></li>
+                            @if (item.Status != Domain.Entities.ChecklistStatus.Published)
+                            {
+                                <li>
+                                    <form asp-controller="Author" asp-action="Activate" asp-route-id="@item.Id" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="dropdown-item text-success">Activate checklist</button>
+                                    </form>
+                                </li>
+                            }
+                            @if (item.Status == Domain.Entities.ChecklistStatus.Published)
+                            {
+                                <li>
+                                    <form asp-controller="Author" asp-action="Deactivate" asp-route-id="@item.Id" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="dropdown-item text-warning">Deactivate checklist</button>
+                                    </form>
+                                </li>
+                            }
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="#"><i class="bi bi-share"></i> Get shareable link</a></li>
                         </ul>

@@ -78,6 +78,17 @@ public class SearchChecklistsQueryHandlerTests
             return Task.CompletedTask;
         }
 
+        public Task UpdateStatusAsync(Guid id, ChecklistStatus newStatus)
+        {
+            var item = _items.FirstOrDefault(c => c.Id == id);
+            if (item != null)
+            {
+                item.Status = newStatus;
+            }
+
+            return Task.CompletedTask;
+        }
+
         public Task<int> GetTotalCountAsync()
         {
             return Task.FromResult(_items.Count);

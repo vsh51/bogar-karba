@@ -8,6 +8,7 @@ using Application.UseCases.GetPublishedChecklist;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Web.Mappings;
 using Web.Models.Checklist;
 
 namespace Web.Controllers;
@@ -86,31 +87,7 @@ public sealed class ChecklistController(
             return NotFound();
         }
 
-        var viewModel = new ChecklistViewModel
-        {
-            Id = result.Value.Id,
-            Title = result.Value.Title,
-            Description = result.Value.Description,
-            Sections = result.Value.Sections
-                .OrderBy(s => s.Position)
-                .Select(section => new ChecklistSectionViewModel
-                {
-                    Id = section.Id,
-                    Name = section.Name,
-                    Position = section.Position,
-                    Items = section.Items
-                        .OrderBy(i => i.Position)
-                        .Select(item => new ChecklistItemViewModel
-                        {
-                            Id = item.Id,
-                            Content = item.Content
-                        })
-                        .ToList()
-                })
-                .ToList()
-        };
-
-        return View("Show", viewModel);
+        return View("Show", result.Value.ToChecklistViewModel());
     }
 
     [HttpPost("{id:guid}/export/markdown")]

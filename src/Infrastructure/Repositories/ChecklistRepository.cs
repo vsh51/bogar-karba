@@ -32,6 +32,16 @@ public class ChecklistRepository(ApplicationDbContext context) : IChecklistRepos
         }
     }
 
+    public async Task UpdateStatusAsync(Guid id, ChecklistStatus newStatus)
+    {
+        var checklist = await context.Checklists.FindAsync(id);
+        if (checklist != null)
+        {
+            checklist.Status = newStatus;
+            await context.SaveChangesAsync();
+        }
+    }
+
     public async Task<int> GetTotalCountAsync()
     {
         return await context.Checklists.CountAsync();
