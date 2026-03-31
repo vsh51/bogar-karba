@@ -11,8 +11,15 @@ public class CreateChecklistCommandHandler(
 {
     public async Task<Result<Guid>> HandleAsync(CreateChecklistCommand request, string userId)
     {
+        logger.LogInformation(
+            "Checklist creation requested by user {UserId}: title '{Title}', sections {SectionCount}",
+            userId,
+            request.Title,
+            request.Sections.Count);
+
         if (string.IsNullOrWhiteSpace(request.Title))
         {
+            logger.LogWarning("Checklist creation failed for user {UserId}: title is required", userId);
             return "Title is required.";
         }
 

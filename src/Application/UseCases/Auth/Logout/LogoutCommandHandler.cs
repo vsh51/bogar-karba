@@ -21,6 +21,7 @@ public class LogoutCommandHandler
     {
         _logger.LogInformation("Logout requested at {Time}", command.RequestedAt);
         await _signInService.SignOutAsync();
+        _logger.LogInformation("Logout completed at {Time}", DateTime.UtcNow);
         return true;
     }
 }

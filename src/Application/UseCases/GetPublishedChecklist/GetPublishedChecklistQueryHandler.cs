@@ -23,20 +23,20 @@ public sealed class GetPublishedChecklistQueryHandler
         GetPublishedChecklistQuery query,
         CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Handling GetPublishedChecklistQuery for ChecklistId: {ChecklistId}", query.Id);
+        _logger.LogInformation("Fetching published checklist {ChecklistId}", query.Id);
 
         var checklist = await _repository.GetPublishedChecklistAsync(
             query.Id, cancellationToken);
 
         if (checklist is null)
         {
-            _logger.LogInformation("Checklist with id {ChecklistId} was not found or not published", query.Id);
+            _logger.LogWarning("Checklist {ChecklistId} was not found or not published", query.Id);
             return "Checklist not found or not published.";
         }
 
         var result = checklist.ToPublishedChecklistResult();
 
-        _logger.LogInformation("Successfully handled GetPublishedChecklistQuery for ChecklistId: {ChecklistId}", query.Id);
+        _logger.LogInformation("Checklist {ChecklistId} retrieved successfully", query.Id);
 
         return result;
     }

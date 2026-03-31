@@ -29,6 +29,7 @@ public sealed class AccountController : Controller
     [HttpGet]
     public IActionResult Register()
     {
+        _logger.LogInformation("Registration page requested");
         return View();
     }
 
@@ -38,6 +39,7 @@ public sealed class AccountController : Controller
     {
         if (!ModelState.IsValid)
         {
+            _logger.LogWarning("Registration model validation failed with {ErrorCount} errors", ModelState.ErrorCount);
             return View(model);
         }
 
@@ -62,9 +64,11 @@ public sealed class AccountController : Controller
     {
         if (User.Identity?.IsAuthenticated == true)
         {
+            _logger.LogInformation("Authenticated user attempted to access login page and was redirected to home");
             return RedirectToAction("Index", "Home");
         }
 
+        _logger.LogInformation("Login page requested");
         return View();
     }
 
@@ -74,6 +78,7 @@ public sealed class AccountController : Controller
     {
         if (!ModelState.IsValid)
         {
+            _logger.LogWarning("Login model validation failed with {ErrorCount} errors", ModelState.ErrorCount);
             return View(model);
         }
 
@@ -96,8 +101,9 @@ public sealed class AccountController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout()
     {
+        var principalName = User.Identity?.Name ?? "anonymous";
         await _logoutHandler.HandleAsync(new LogoutCommand(DateTime.UtcNow));
-        _logger.LogInformation("User logged out");
+        _logger.LogInformation("User {PrincipalName} logged out successfully", principalName);
         return RedirectToAction("Login", "Account");
     }
 }
