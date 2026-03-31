@@ -31,7 +31,7 @@ public sealed class GetPublishedChecklistQueryHandler
         if (checklist is null)
         {
             _logger.LogWarning("Checklist {ChecklistId} was not found or not published", query.Id);
-            return "Checklist not found or not published.";
+            return Result<GetPublishedChecklistResult>.Failure("Checklist not found or not published.");
         }
 
         var result = checklist.ToPublishedChecklistResult();

@@ -35,7 +35,7 @@ public sealed class ExportMarkdownQueryHandler
             _logger.LogInformation(
                 "Checklist with id {ChecklistId} was not found or not published",
                 query.ChecklistId);
-            return "Checklist not found or not published.";
+            return Result<ExportChecklistResult>.Failure("Checklist not found or not published.");
         }
 
         var completedSet = new HashSet<Guid>(query.CompletedTaskIds);

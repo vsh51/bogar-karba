@@ -20,7 +20,7 @@ public class CreateChecklistCommandHandler(
         if (string.IsNullOrWhiteSpace(request.Title))
         {
             logger.LogWarning("Checklist creation failed for user {UserId}: title is required", userId);
-            return "Title is required.";
+            return Result<Guid>.Failure("Title is required.");
         }
 
         var checklist = new Checklist

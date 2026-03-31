@@ -28,19 +28,19 @@ public class LoginUserCommandHandler
         if (!await _repository.UserExistsAsync(command.Email, UserLookupMode.ByEmail))
         {
             _logger.LogWarning("Login failed: user '{Email}' not found", command.Email);
-            return "Invalid email or password.";
+            return Result<bool>.Failure("Invalid email or password.");
         }
 
         if (!await _repository.IsActiveAsync(command.Email, UserLookupMode.ByEmail))
         {
             _logger.LogWarning("Login denied for '{Email}': account is not active", command.Email);
-            return "Your account is blocked.";
+            return Result<bool>.Failure("Your account is blocked.");
         }
 
         if (!await _repository.CheckPasswordAsync(command.Email, command.Password, UserLookupMode.ByEmail))
         {
             _logger.LogWarning("Login failed: invalid password for '{Email}'", command.Email);
-            return "Invalid email or password.";
+            return Result<bool>.Failure("Invalid email or password.");
         }
 
         await _signInService.SignInAsync(command.Email, UserLookupMode.ByEmail);

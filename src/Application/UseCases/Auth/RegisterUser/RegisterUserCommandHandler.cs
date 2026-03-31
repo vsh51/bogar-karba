@@ -27,7 +27,7 @@ public class RegisterUserCommandHandler
         if (exists)
         {
             _logger.LogWarning("Registration failed: email '{Email}' is already taken", command.Email);
-            return "Email is already taken.";
+            return Result<bool>.Failure("Email is already taken.");
         }
 
         var (succeeded, errors) = await _repository.CreateUserAsync(
@@ -36,7 +36,7 @@ public class RegisterUserCommandHandler
         {
             var errorMessage = string.Join(" ", errors);
             _logger.LogWarning("Registration failed for email '{Email}': {Errors}", command.Email, errorMessage);
-            return errorMessage;
+            return Result<bool>.Failure(errorMessage);
         }
 
         _logger.LogInformation("User '{Email}' registered successfully", command.Email);
