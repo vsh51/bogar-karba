@@ -9,7 +9,7 @@ using Web.Models.Author;
 namespace Web.Controllers;
 
 [Authorize]
-public sealed class AuthorController : Controller
+public sealed class AuthorController : BaseController
 {
     private readonly GetUserChecklistsQueryHandler _handler;
     private readonly DeleteChecklistCommandHandler _deleteHandler;
@@ -28,11 +28,11 @@ public sealed class AuthorController : Controller
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = CurrentUserId;
 
         if (string.IsNullOrEmpty(userId))
         {
-            return RedirectToAction("Login", "Account");
+            return RedirectToLogin();
         }
 
         _logger.LogInformation("Author {UserId} requested their checklist page", userId);
@@ -56,11 +56,11 @@ public sealed class AuthorController : Controller
             return BadRequest(ModelState);
         }
 
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = CurrentUserId;
 
         if (string.IsNullOrEmpty(userId))
         {
-            return RedirectToAction("Login", "Account");
+            return RedirectToLogin();
         }
 
         var result = await _deleteHandler.HandleAsync(new DeleteChecklistCommand(id, userId));
@@ -68,7 +68,7 @@ public sealed class AuthorController : Controller
         if (!result.Succeeded)
         {
             _logger.LogWarning("Failed to delete checklist {ChecklistId} for user {UserId}: {Error}", id, userId, result.ErrorMessage);
-            TempData["Error"] = result.ErrorMessage;
+            SetErrorMessage(result.ErrorMessage ?? "Failed to delete checklist.");
         }
 
         return RedirectToAction(nameof(Index));

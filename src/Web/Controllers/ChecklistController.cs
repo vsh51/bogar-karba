@@ -18,7 +18,7 @@ public sealed class ChecklistController(
     CreateChecklistCommandHandler createHandler,
     DeleteChecklistCommandHandler deleteHandler,
     ExportMarkdownQueryHandler exportHandler,
-    ILogger<ChecklistController> logger) : Controller
+    ILogger<ChecklistController> logger) : BaseController
 {
     private readonly GetPublishedChecklistQueryHandler _handler = handler;
     private readonly CreateChecklistCommandHandler _createHandler = createHandler;
@@ -43,7 +43,7 @@ public sealed class ChecklistController(
             return BadRequest(ModelState);
         }
 
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = CurrentUserId;
         if (string.IsNullOrEmpty(userId))
         {
             return Unauthorized();
@@ -150,7 +150,7 @@ public sealed class ChecklistController(
             return BadRequest(ModelState);
         }
 
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = CurrentUserId;
         if (string.IsNullOrEmpty(userId))
         {
             return Unauthorized();

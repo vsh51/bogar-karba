@@ -4,7 +4,7 @@ using Web.Models;
 
 namespace Web.Controllers;
 
-public sealed class HomeController : Controller
+public sealed class HomeController : BaseController
 {
     public IActionResult Index()
     {
