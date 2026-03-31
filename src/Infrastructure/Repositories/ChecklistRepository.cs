@@ -31,4 +31,9 @@ public class ChecklistRepository(ApplicationDbContext context) : IChecklistRepos
             await context.SaveChangesAsync();
         }
     }
+
+    public async Task<int> GetTotalCountAsync()
+    {
+        return await context.Checklists.CountAsync();
+    }
 }

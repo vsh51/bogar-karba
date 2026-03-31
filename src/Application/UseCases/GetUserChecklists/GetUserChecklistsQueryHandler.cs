@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.DTOs.Checklist;
 using Application.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -8,7 +9,7 @@ public partial class GetUserChecklistsQueryHandler(
     IChecklistReadOnlyRepository repository,
     ILogger<GetUserChecklistsQueryHandler> logger)
 {
-    public async Task<GetUserChecklistsResult> HandleAsync(GetUserChecklistsQuery query)
+    public async Task<Result<List<ChecklistSummaryDto>>> HandleAsync(GetUserChecklistsQuery query)
     {
         LogRequest(logger, query.UserId);
 
@@ -26,7 +27,7 @@ public partial class GetUserChecklistsQueryHandler(
 
         LogResult(logger, results.Count);
 
-        return new GetUserChecklistsResult(results);
+        return results;
     }
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Fetching checklists for user: {UserId}")]

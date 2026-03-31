@@ -3,6 +3,7 @@ using Application.Interfaces;
 using Domain.Entities;
 using Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories;
 
@@ -75,6 +76,11 @@ public class UserRepository : IUserRepository
         user.AccountStatus = UserStatus.Banned;
         var result = await _userManager.UpdateSecurityStampAsync(user);
         return result.Succeeded;
+    }
+
+    public async Task<int> GetTotalCountAsync()
+    {
+        return await _userManager.Users.CountAsync();
     }
 
     private async Task<ApplicationUser?> FindUserAsync(string identifier, UserLookupMode lookupMode)

@@ -37,16 +37,14 @@ public class DeleteChecklistCommandHandlerTests
     }
 
     [Fact]
-    public async Task HandleAsyncShouldReturnFailureWhenRepositoryFails()
+    public async Task HandleAsyncShouldThrowWhenRepositoryFails()
     {
         var checklistId = Guid.NewGuid();
         _repositoryMock.Setup(repo => repo.DeleteAsync(checklistId))
                        .ThrowsAsync(new InvalidOperationException("DB Error"));
 
-        var result = await _handler.HandleAsync(new DeleteChecklistCommand(checklistId));
-
-        Assert.False(result.Succeeded);
-        Assert.Contains(checklistId.ToString(), result.ErrorMessage);
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            _handler.HandleAsync(new DeleteChecklistCommand(checklistId)));
     }
 
     [Fact]
@@ -88,7 +86,7 @@ public class DeleteChecklistCommandHandlerTests
         var result = await _handler.HandleAsync(new DeleteChecklistCommand(checklistId, userId));
 
         Assert.True(result.Succeeded);
-        _repositoryMock.Verify(r => r.DeleteAsync(checklistId), Times.Once);
+        _repositoryMock.Verify(repo => repo.DeleteAsync(checklistId), Times.Once);
     }
 
     [Fact]

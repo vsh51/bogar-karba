@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.DTOs.Checklist;
 using Application.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -8,7 +9,7 @@ public partial class SearchChecklistsQueryHandler(
     IChecklistRepository repository,
     ILogger<SearchChecklistsQueryHandler> logger)
 {
-    public SearchChecklistsResult Handle(SearchChecklistsQuery query)
+    public Result<List<ChecklistSummaryDto>> Handle(SearchChecklistsQuery query)
     {
         LogSearchQuery(logger, query.SearchTerm ?? "empty");
 
@@ -34,7 +35,7 @@ public partial class SearchChecklistsQueryHandler(
             .ToList();
         LogSearchResult(logger, results.Count);
 
-        return new SearchChecklistsResult(results);
+        return results;
     }
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Search query: {SearchTerm}")]

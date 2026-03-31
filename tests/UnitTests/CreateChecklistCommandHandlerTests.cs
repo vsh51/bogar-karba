@@ -1,13 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Application.DTOs.Checklist;
 using Application.Interfaces;
 using Application.UseCases.CreateChecklist;
 using Domain.Entities;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Xunit;
 
 namespace UnitTests;
 
@@ -41,7 +36,7 @@ public class CreateChecklistCommandHandlerTests
         var result = await _handler.HandleAsync(request, userId);
 
         Assert.True(result.Succeeded);
-        Assert.NotEqual(Guid.Empty, result.Id);
+        Assert.NotEqual(Guid.Empty, result.Value);
         _repositoryMock.Verify(
             r => r.AddAsync(It.Is<Checklist>(c =>
             c.Title == request.Title &&
@@ -59,18 +54,18 @@ public class CreateChecklistCommandHandlerTests
         var result = await _handler.HandleAsync(request, "user-123");
 
         Assert.False(result.Succeeded);
+        Assert.Equal("Title is required.", result.ErrorMessage);
         _repositoryMock.Verify(r => r.AddAsync(It.IsAny<Checklist>()), Times.Never);
     }
 
     [Fact]
-    public async Task HandleAsync_RepositoryThrows_ReturnsFailure()
+    public async Task HandleAsync_RepositoryThrows_PropagatesException()
     {
         var request = new CreateChecklistCommand("Valid", "Desc", new List<CreateSectionRequest>());
         _repositoryMock.Setup(r => r.AddAsync(It.IsAny<Checklist>()))
             .ThrowsAsync(new InvalidOperationException("DB Error"));
 
-        var result = await _handler.HandleAsync(request, "user-123");
-
-        Assert.False(result.Succeeded);
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            _handler.HandleAsync(request, "user-123"));
     }
 }

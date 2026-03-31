@@ -1,7 +1,9 @@
+using Application.Common;
 using Application.UseCases.Auth.LoginAdmin;
 using Application.UseCases.Auth.Logout;
 using Application.UseCases.BanUser;
 using Application.UseCases.DeleteChecklist;
+using Application.UseCases.GetSystemStats;
 using Application.UseCases.SearchChecklists;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,6 +19,7 @@ public sealed class AdminController : Controller
     private readonly SearchChecklistsQueryHandler _searchHandler;
     private readonly DeleteChecklistCommandHandler _deleteHandler;
     private readonly BanUserCommandHandler _banUserHandler;
+    private readonly GetSystemStatsQueryHandler _systemStatsHandler;
     private readonly ILogger<AdminController> _logger;
 
     public AdminController(
@@ -25,6 +28,7 @@ public sealed class AdminController : Controller
         SearchChecklistsQueryHandler searchHandler,
         DeleteChecklistCommandHandler deleteHandler,
         BanUserCommandHandler banUserHandler,
+        GetSystemStatsQueryHandler systemStatsHandler,
         ILogger<AdminController> logger)
     {
         _loginHandler = loginHandler;
@@ -32,6 +36,7 @@ public sealed class AdminController : Controller
         _searchHandler = searchHandler;
         _deleteHandler = deleteHandler;
         _banUserHandler = banUserHandler;
+        _systemStatsHandler = systemStatsHandler;
         _logger = logger;
     }
 
@@ -39,7 +44,7 @@ public sealed class AdminController : Controller
     {
         var result = _searchHandler.Handle(new SearchChecklistsQuery(searchTerm));
 
-        var viewModels = result.Checklists
+        var viewModels = (result.Succeeded ? result.Value! : new())
             .Select(c => new AdminChecklistViewModel
             {
                 Id = c.Id,
@@ -118,7 +123,7 @@ public sealed class AdminController : Controller
             TempData["AdminAlertType"] = "success";
             TempData["AdminAlertMessage"] = "The user has been blocked.";
         }
-        else if (result.ErrorType == BanUserErrorType.NotFound)
+        else if (result.ErrorMessage == ResultErrors.UserNotFound)
         {
             _logger.LogWarning("Admin {AdminUserName} attempted to block user {UserId}, but account was not found", adminUserName, userId);
             TempData["AdminAlertType"] = "warning";
@@ -134,9 +139,23 @@ public sealed class AdminController : Controller
         return RedirectToAction(nameof(Index), new { searchTerm });
     }
 
-    public IActionResult Dashboard()
+    public async Task<IActionResult> Dashboard()
     {
-        return View();
+        var result = await _systemStatsHandler.HandleAsync(new GetSystemStatsQuery());
+
+        if (!result.Succeeded || result.Value is null)
+        {
+            _logger.LogError("Failed to load system statistics for dashboard");
+            return View(new DashboardViewModel());
+        }
+
+        var viewModel = new DashboardViewModel
+        {
+            TotalChecklists = result.Value.TotalChecklists,
+            TotalUsers = result.Value.TotalUsers
+        };
+
+        return View(viewModel);
     }
 
     [HttpPost]

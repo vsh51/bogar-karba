@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.Enums;
 using Application.Interfaces;
 using Domain.Entities;
@@ -18,7 +19,7 @@ public class RegisterUserCommandHandler
         _logger = logger;
     }
 
-    public async Task<AuthResult> HandleAsync(RegisterUserCommand command)
+    public async Task<Result<bool>> HandleAsync(RegisterUserCommand command)
     {
         _logger.LogInformation("Registration attempt for email '{Email}'", command.Email);
 
@@ -26,7 +27,7 @@ public class RegisterUserCommandHandler
         if (exists)
         {
             _logger.LogWarning("Registration failed: email '{Email}' is already taken", command.Email);
-            return AuthResult.Failure("Email is already taken.");
+            return "Email is already taken.";
         }
 
         var (succeeded, errors) = await _repository.CreateUserAsync(
@@ -35,10 +36,10 @@ public class RegisterUserCommandHandler
         {
             var errorMessage = string.Join(" ", errors);
             _logger.LogWarning("Registration failed for email '{Email}': {Errors}", command.Email, errorMessage);
-            return AuthResult.Failure(errorMessage);
+            return errorMessage;
         }
 
         _logger.LogInformation("User '{Email}' registered successfully", command.Email);
-        return AuthResult.Success();
+        return true;
     }
 }

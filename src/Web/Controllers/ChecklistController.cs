@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Application.Common;
 using Application.UseCases.CreateChecklist;
 using Application.UseCases.DeleteChecklist;
 using Application.UseCases.GetPublishedChecklist;
@@ -44,7 +45,6 @@ public sealed class ChecklistController(
             return Unauthorized();
         }
 
-        // Map ViewModel to Application DTO
         var request = new CreateChecklistCommand(
             model.Title,
             model.Description,
@@ -57,10 +57,10 @@ public sealed class ChecklistController(
 
         if (result.Succeeded)
         {
-            return Json(new { success = true, id = result.Id, redirectUrl = Url.Action("Show", "Checklist", new { id = result.Id }) });
+            return Json(new { success = true, id = result.Value, redirectUrl = Url.Action("Show", "Checklist", new { id = result.Value }) });
         }
 
-        return BadRequest("An error occurred while creating the checklist.");
+        return BadRequest(result.ErrorMessage ?? "An error occurred while creating the checklist.");
     }
 
     [HttpGet("{id:guid}")]
@@ -76,7 +76,7 @@ public sealed class ChecklistController(
         var result = await _handler.HandleAsync(
             new GetPublishedChecklistQuery(id), cancellationToken);
 
-        if (result is null)
+        if (!result.Succeeded || result.Value is null)
         {
             _logger.LogInformation("Checklist {ChecklistId} not found or not published", id);
             return NotFound();
@@ -84,10 +84,10 @@ public sealed class ChecklistController(
 
         var viewModel = new ChecklistViewModel
         {
-            Id = result.Id,
-            Title = result.Title,
-            Description = result.Description,
-            Sections = result.Sections
+            Id = result.Value.Id,
+            Title = result.Value.Title,
+            Description = result.Value.Description,
+            Sections = result.Value.Sections
                 .OrderBy(s => s.Position)
                 .Select(section => new ChecklistSectionViewModel
                 {
@@ -125,7 +125,12 @@ public sealed class ChecklistController(
             return Unauthorized();
         }
 
-        await _deleteHandler.HandleAsync(new DeleteChecklistCommand(id, userId));
+        var result = await _deleteHandler.HandleAsync(new DeleteChecklistCommand(id, userId));
+
+        if (!result.Succeeded)
+        {
+            return BadRequest(result.ErrorMessage);
+        }
 
         return RedirectToAction("Index", "Author");
     }

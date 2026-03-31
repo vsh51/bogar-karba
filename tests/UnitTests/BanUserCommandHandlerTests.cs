@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.Interfaces;
 using Application.UseCases.BanUser;
 using Microsoft.Extensions.Logging;
@@ -27,7 +28,6 @@ public class BanUserCommandHandlerTests
         var result = await _handler.HandleAsync(new BanUserCommand("user-id"));
 
         Assert.True(result.Succeeded);
-        Assert.Equal(BanUserErrorType.None, result.ErrorType);
         _repositoryMock.Verify(repo => repo.BanUserAsync("user-id"), Times.Once);
     }
 
@@ -40,7 +40,7 @@ public class BanUserCommandHandlerTests
         var result = await _handler.HandleAsync(new BanUserCommand("missing-user"));
 
         Assert.False(result.Succeeded);
-        Assert.Equal(BanUserErrorType.NotFound, result.ErrorType);
+        Assert.Equal(ResultErrors.UserNotFound, result.ErrorMessage);
     }
 
     [Fact]

@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -19,41 +20,33 @@ public class DeleteChecklistCommandHandler
         _logger = logger;
     }
 
-    public async Task<DeleteChecklistResult> HandleAsync(DeleteChecklistCommand command)
+    public async Task<Result<bool>> HandleAsync(DeleteChecklistCommand command)
     {
         _logger.LogInformation("Initiated deletion of checklist {Id}", command.Id);
 
-        try
+        if (command.OwnerId is not null)
         {
-            if (command.OwnerId is not null)
+            var checklist = await _readRepository.GetByIdAsync(command.Id);
+
+            if (checklist is null)
             {
-                var checklist = await _readRepository.GetByIdAsync(command.Id);
-
-                if (checklist is null)
-                {
-                    _logger.LogWarning("Checklist {Id} not found", command.Id);
-                    return DeleteChecklistResult.Failure("Checklist not found.");
-                }
-
-                if (checklist.UserId != command.OwnerId)
-                {
-                    _logger.LogWarning(
-                        "User {OwnerId} attempted to delete checklist {Id} owned by {ActualOwner}",
-                        command.OwnerId,
-                        command.Id,
-                        checklist.UserId);
-                    return DeleteChecklistResult.Failure("You can only delete your own checklists.");
-                }
+                _logger.LogWarning("Checklist {Id} not found", command.Id);
+                return "Checklist not found.";
             }
 
-            await _repository.DeleteAsync(command.Id);
-            _logger.LogInformation("Checklist {Id} deleted successfully", command.Id);
-            return DeleteChecklistResult.Success();
+            if (checklist.UserId != command.OwnerId)
+            {
+                _logger.LogWarning(
+                    "User {OwnerId} attempted to delete checklist {Id} owned by {ActualOwner}",
+                    command.OwnerId,
+                    command.Id,
+                    checklist.UserId);
+                return "You can only delete your own checklists.";
+            }
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error deleting checklist {Id}", command.Id);
-            return DeleteChecklistResult.Failure($"Failed to delete checklist {command.Id}");
-        }
+
+        await _repository.DeleteAsync(command.Id);
+        _logger.LogInformation("Checklist {Id} deleted successfully", command.Id);
+        return true;
     }
 }
