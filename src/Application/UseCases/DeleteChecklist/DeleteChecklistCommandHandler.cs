@@ -31,7 +31,7 @@ public class DeleteChecklistCommandHandler
             if (checklist is null)
             {
                 _logger.LogWarning("Checklist {Id} not found", command.Id);
-                return "Checklist not found.";
+                return ResultErrors.ChecklistNotFound;
             }
 
             if (checklist.UserId != command.OwnerId)
@@ -41,7 +41,7 @@ public class DeleteChecklistCommandHandler
                     command.OwnerId,
                     command.Id,
                     checklist.UserId);
-                return "You can only delete your own checklists.";
+                return ResultErrors.NotChecklistOwner;
             }
         }
 

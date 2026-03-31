@@ -76,14 +76,14 @@ public sealed class ChecklistController(
             return BadRequest(ModelState);
         }
 
-        _logger.LogInformation("Anonymous user requested checklist page for {ChecklistId}", id);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         var result = await _handler.HandleAsync(
-            new GetPublishedChecklistQuery(id), cancellationToken);
+            new GetPublishedChecklistQuery(id, userId), cancellationToken);
 
         if (!result.Succeeded || result.Value is null)
         {
-            _logger.LogInformation("Checklist {ChecklistId} not found or not published", id);
+            _logger.LogInformation("Checklist {ChecklistId} not found or not available", id);
             return NotFound();
         }
 
