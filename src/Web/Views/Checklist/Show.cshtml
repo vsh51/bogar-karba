@@ -90,7 +90,7 @@
     <div class="checklist-toolbar">
         <div class="dropdown">
             <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Export
+                Options
             </button>
             <ul class="dropdown-menu dropdown-menu-end">
                 <li>
@@ -98,8 +98,20 @@
                         Copy as Markdown
                     </button>
                 </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <button id="export-progress-btn" class="dropdown-item" type="button">
+                        Export Progress
+                    </button>
+                </li>
+                <li>
+                    <button id="import-progress-btn" class="dropdown-item" type="button">
+                        Import Progress
+                    </button>
+                </li>
             </ul>
         </div>
+        <input type="file" id="import-progress-file" accept=".json" style="display: none;" />
     </div>
 
     <header class="mb-3">
@@ -148,4 +160,5 @@
 @section Scripts {
     <script src="~/js/checklist-progress.js" asp-append-version="true"></script>
     <script src="~/js/checklist-export.js" asp-append-version="true"></script>
+    <script src="~/js/checklist-sync.js" asp-append-version="true"></script>
 }
