@@ -78,9 +78,30 @@
         color: #6b7280;
         margin: 0.4rem 0 0;
     }
+
+    .checklist-toolbar {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 0.75rem;
+    }
 </style>
 
 <section class="checklist-page" data-checklist-id="@Model.Id">
+    <div class="checklist-toolbar">
+        <div class="dropdown">
+            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Export
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                    <button id="copy-md-btn" class="dropdown-item" type="button">
+                        Copy as Markdown
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+
     <header class="mb-3">
         <h1 class="checklist-title">@Model.Title</h1>
 
@@ -126,4 +147,5 @@
 
 @section Scripts {
     <script src="~/js/checklist-progress.js" asp-append-version="true"></script>
+    <script src="~/js/checklist-export.js" asp-append-version="true"></script>
 }
