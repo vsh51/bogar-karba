@@ -2,6 +2,8 @@ using System.Security.Claims;
 using Application.Common;
 using Application.UseCases.CreateChecklist;
 using Application.UseCases.DeleteChecklist;
+using Application.UseCases.ExportChecklist;
+using Application.UseCases.ExportChecklist.Markdown;
 using Application.UseCases.GetPublishedChecklist;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,11 +17,13 @@ public sealed class ChecklistController(
     GetPublishedChecklistQueryHandler handler,
     CreateChecklistCommandHandler createHandler,
     DeleteChecklistCommandHandler deleteHandler,
+    ExportMarkdownQueryHandler exportHandler,
     ILogger<ChecklistController> logger) : Controller
 {
     private readonly GetPublishedChecklistQueryHandler _handler = handler;
     private readonly CreateChecklistCommandHandler _createHandler = createHandler;
     private readonly DeleteChecklistCommandHandler _deleteHandler = deleteHandler;
+    private readonly ExportMarkdownQueryHandler _exportHandler = exportHandler;
     private readonly ILogger<ChecklistController> _logger = logger;
 
     [HttpGet("create")]
@@ -107,6 +111,33 @@ public sealed class ChecklistController(
         };
 
         return View("Show", viewModel);
+    }
+
+    [HttpPost("{id:guid}/export/markdown")]
+    public async Task<IActionResult> ExportMarkdown(
+        Guid id,
+        [FromBody] ExportChecklistRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var completedTaskIds = (request.CompletedTaskIds ?? Array.Empty<string>())
+            .Where(s => Guid.TryParse(s, out _))
+            .Select(Guid.Parse)
+            .ToList();
+
+        var query = new ExportChecklistQuery(id, completedTaskIds);
+        var result = await _exportHandler.HandleAsync(query, cancellationToken);
+
+        if (!result.Succeeded)
+        {
+            return NotFound();
+        }
+
+        return Json(new { content = result.Value!.Content });
     }
 
     [HttpPost("delete/{id:guid}")]
