@@ -39,12 +39,12 @@ public sealed class ChecklistReadOnlyRepository(
             .FirstOrDefaultAsync(c => c.Id == id);
     }
 
-    public async Task<Checklist?> GetByIdWithSectionsAsync(Guid id)
+    public async Task<Checklist?> GetByIdWithSectionsAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await dbContext.Checklists
             .AsNoTracking()
             .Include(c => c.Sections.OrderBy(s => s.Position))
             .ThenInclude(s => s.Tasks.OrderBy(t => t.Position))
-            .FirstOrDefaultAsync(c => c.Id == id);
+            .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
     }
 }
