@@ -12,7 +12,7 @@ using Web.Models.Admin;
 namespace Web.Controllers;
 
 [Authorize(Roles = "Admin")]
-public sealed class AdminController : Controller
+public sealed class AdminController : BaseController
 {
     private readonly LoginAdminCommandHandler _loginHandler;
     private readonly LogoutCommandHandler _logoutHandler;
@@ -113,27 +113,24 @@ public sealed class AdminController : Controller
             return BadRequest(ModelState);
         }
 
-        var adminUserName = User.Identity?.Name ?? "unknown-admin";
+        var adminUserName = CurrentUserName ?? "unknown-admin";
         _logger.LogInformation("Admin {AdminUserName} requested account blocking for user {UserId}", adminUserName, userId);
         var result = await _banUserHandler.HandleAsync(new BanUserCommand(userId));
 
         if (result.Succeeded)
         {
             _logger.LogInformation("Admin {AdminUserName} successfully blocked user account {UserId}", adminUserName, userId);
-            TempData["AdminAlertType"] = "success";
-            TempData["AdminAlertMessage"] = "The user has been blocked.";
+            SetSuccessMessage("The user has been blocked.");
         }
         else if (result.ErrorMessage == ResultErrors.UserNotFound)
         {
             _logger.LogWarning("Admin {AdminUserName} attempted to block user {UserId}, but account was not found", adminUserName, userId);
-            TempData["AdminAlertType"] = "warning";
-            TempData["AdminAlertMessage"] = "User not found.";
+            SetWarningMessage("User not found.");
         }
         else
         {
             _logger.LogError("Admin {AdminUserName} failed to block user account {UserId}", adminUserName, userId);
-            TempData["AdminAlertType"] = "danger";
-            TempData["AdminAlertMessage"] = "Failed to block the user.";
+            SetErrorMessage("Failed to block the user.");
         }
 
         return RedirectToAction(nameof(Index), new { searchTerm });

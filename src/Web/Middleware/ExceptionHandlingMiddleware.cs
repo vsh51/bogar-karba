@@ -1,5 +1,3 @@
-using System.Net;
-
 namespace Web.Middleware;
 
 public sealed class ExceptionHandlingMiddleware(
@@ -12,19 +10,12 @@ public sealed class ExceptionHandlingMiddleware(
         {
             await next(context);
         }
+#pragma warning disable S2139 // Log and rethrow is intentional: log here, UseExceptionHandler renders error page
         catch (Exception exception)
         {
             logger.LogError(exception, "Unhandled exception occurred while processing {Path}", context.Request.Path);
-
-            if (context.Response.HasStarted)
-            {
-                throw;
-            }
-
-            context.Response.Clear();
-            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-
-            context.Response.Redirect("/Home/Error");
+            throw;
         }
+#pragma warning restore S2139
     }
 }
