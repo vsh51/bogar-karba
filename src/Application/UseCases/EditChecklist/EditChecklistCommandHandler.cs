@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.UseCases.EditChecklist;
 
-public class EditChecklistCommandHandler(
+public sealed class EditChecklistCommandHandler(
     IChecklistRepository repository,
     ILogger<EditChecklistCommandHandler> logger)
 {

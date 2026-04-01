@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.UseCases.Auth.Logout;
 
-public class LogoutCommandHandler(
+public sealed class LogoutCommandHandler(
     ISignInService signInService,
     ILogger<LogoutCommandHandler> logger)
 {

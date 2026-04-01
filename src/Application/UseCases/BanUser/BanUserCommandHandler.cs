@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.UseCases.BanUser;
 
-public class BanUserCommandHandler(
+public sealed class BanUserCommandHandler(
     IUserRepository repository,
     ILogger<BanUserCommandHandler> logger)
 {

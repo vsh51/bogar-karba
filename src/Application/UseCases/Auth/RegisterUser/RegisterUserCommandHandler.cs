@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.UseCases.Auth.RegisterUser;
 
-public class RegisterUserCommandHandler(
+public sealed class RegisterUserCommandHandler(
     IUserRepository repository,
     ILogger<RegisterUserCommandHandler> logger)
 {

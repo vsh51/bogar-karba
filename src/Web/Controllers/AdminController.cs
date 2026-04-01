@@ -40,12 +40,12 @@ public sealed class AdminController : BaseController
         _logger = logger;
     }
 
-    public IActionResult Index(string? searchTerm)
+    public async Task<IActionResult> Index(string? searchTerm)
     {
         var adminUserName = User.Identity?.Name ?? "unknown-admin";
         _logger.LogInformation("Admin {AdminUserName} requested dashboard list with search term {SearchTerm}", adminUserName, searchTerm ?? "<empty>");
 
-        var result = _searchHandler.Handle(new SearchChecklistsQuery(searchTerm));
+        var result = await _searchHandler.HandleAsync(new SearchChecklistsQuery(searchTerm));
 
         var viewModels = (result.Succeeded ? result.Value! : new())
             .Select(c => new AdminChecklistViewModel

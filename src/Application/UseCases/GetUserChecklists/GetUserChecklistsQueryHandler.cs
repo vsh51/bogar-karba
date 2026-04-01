@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.UseCases.GetUserChecklists;
 
-public class GetUserChecklistsQueryHandler(
+public sealed class GetUserChecklistsQueryHandler(
     IChecklistReadOnlyRepository repository,
     ILogger<GetUserChecklistsQueryHandler> logger)
 {

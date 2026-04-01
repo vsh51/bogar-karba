@@ -7,7 +7,7 @@ namespace Infrastructure.Repositories;
 
 public class ChecklistRepository(ApplicationDbContext context) : IChecklistRepository
 {
-    public IEnumerable<Checklist> GetAll() => context.Checklists;
+    public async Task<List<Checklist>> GetAllAsync() => await context.Checklists.ToListAsync();
 
     public async Task<IEnumerable<Checklist>> GetByUserIdAsync(string userId)
     {

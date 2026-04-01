@@ -4,7 +4,7 @@ namespace Application.Interfaces;
 
 public interface IChecklistRepository
 {
-    IEnumerable<Checklist> GetAll();
+    Task<List<Checklist>> GetAllAsync();
 
     Task<IEnumerable<Checklist>> GetByUserIdAsync(string userId);
 

@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.UseCases.DeleteChecklist;
 
-public class DeleteChecklistCommandHandler(
+public sealed class DeleteChecklistCommandHandler(
     IChecklistRepository repository,
     IChecklistReadOnlyRepository readRepository,
     ILogger<DeleteChecklistCommandHandler> logger)

@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.UseCases.CreateChecklist;
 
-public class CreateChecklistCommandHandler(
+public sealed class CreateChecklistCommandHandler(
     IChecklistRepository repository,
     ILogger<CreateChecklistCommandHandler> logger)
 {

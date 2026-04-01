@@ -1,30 +1,31 @@
 using Application.Common;
 using Application.DTOs.Checklist;
 using Application.Interfaces;
+using Domain.Entities;
 using Microsoft.Extensions.Logging;
 
 namespace Application.UseCases.SearchChecklists;
 
-public class SearchChecklistsQueryHandler(
+public sealed class SearchChecklistsQueryHandler(
     IChecklistRepository repository,
     ILogger<SearchChecklistsQueryHandler> logger)
 {
-    public Result<List<ChecklistSummaryDto>> Handle(SearchChecklistsQuery query)
+    public async Task<Result<List<ChecklistSummaryDto>>> HandleAsync(SearchChecklistsQuery query)
     {
         logger.LogInformation("Search query: {SearchTerm}", query.SearchTerm ?? "empty");
 
-        var items = repository.GetAll();
+        var items = await repository.GetAllAsync();
 
+        IEnumerable<Checklist> filtered = items;
         if (!string.IsNullOrWhiteSpace(query.SearchTerm))
         {
             var normalizedSearch = query.SearchTerm.Trim();
-
-            items = items
-                .Where(c => c.Title.Contains(normalizedSearch, StringComparison.OrdinalIgnoreCase) ||
-                            c.Description.Contains(normalizedSearch, StringComparison.OrdinalIgnoreCase));
+            filtered = items.Where(c =>
+                c.Title.Contains(normalizedSearch, StringComparison.OrdinalIgnoreCase) ||
+                c.Description.Contains(normalizedSearch, StringComparison.OrdinalIgnoreCase));
         }
 
-        var results = items
+        var results = filtered
             .Select(c => new ChecklistSummaryDto
             {
                 Id = c.Id,

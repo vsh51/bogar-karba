@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.UseCases.Auth.LoginAdmin;
 
-public class LoginAdminCommandHandler(
+public sealed class LoginAdminCommandHandler(
     IUserRepository repository,
     ISignInService signInService,
     ILogger<LoginAdminCommandHandler> logger)
