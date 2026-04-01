@@ -97,6 +97,7 @@ builder.Services.AddControllersWithViews();
 var app = builder.Build();
 
 app.UseSerilogRequestLogging();
+app.UseExceptionHandler("/Home/Error");
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 using (var scope = app.Services.CreateScope())
