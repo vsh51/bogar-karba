@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using Application.Common;
 using Application.Interfaces;
 using Application.UseCases.CreateChecklist;
@@ -9,34 +8,44 @@ using Application.UseCases.ExportChecklist.Markdown;
 using Application.UseCases.GetPublishedChecklist;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Web.Models.Checklist;
 
 namespace Web.Controllers;
 
 [Route("checklist")]
-public sealed class ChecklistController(
-    GetPublishedChecklistQueryHandler handler,
-    CreateChecklistCommandHandler createHandler,
-    DeleteChecklistCommandHandler deleteHandler,
-    EditChecklistCommandHandler editHandler,
-    ExportMarkdownQueryHandler exportHandler,
-    IChecklistReadOnlyRepository readRepository,
-    ILogger<ChecklistController> logger) : BaseController
+public sealed class ChecklistController : BaseController
 {
-    private readonly GetPublishedChecklistQueryHandler _handler = handler;
-    private readonly CreateChecklistCommandHandler _createHandler = createHandler;
-    private readonly DeleteChecklistCommandHandler _deleteHandler = deleteHandler;
-    private readonly EditChecklistCommandHandler _editHandler = editHandler;
-    private readonly ExportMarkdownQueryHandler _exportHandler = exportHandler;
-    private readonly IChecklistReadOnlyRepository _readRepository = readRepository;
-    private readonly ILogger<ChecklistController> _logger = logger;
+    private readonly GetPublishedChecklistQueryHandler _handler;
+    private readonly CreateChecklistCommandHandler _createHandler;
+    private readonly DeleteChecklistCommandHandler _deleteHandler;
+    private readonly EditChecklistCommandHandler _editHandler;
+    private readonly ExportMarkdownQueryHandler _exportHandler;
+    private readonly IChecklistReadOnlyRepository _readRepository;
+    private readonly ILogger<ChecklistController> _logger;
+
+    public ChecklistController(
+        GetPublishedChecklistQueryHandler handler,
+        CreateChecklistCommandHandler createHandler,
+        DeleteChecklistCommandHandler deleteHandler,
+        EditChecklistCommandHandler editHandler,
+        ExportMarkdownQueryHandler exportHandler,
+        IChecklistReadOnlyRepository readRepository,
+        ILogger<ChecklistController> logger)
+    {
+        _handler = handler;
+        _createHandler = createHandler;
+        _deleteHandler = deleteHandler;
+        _editHandler = editHandler;
+        _exportHandler = exportHandler;
+        _readRepository = readRepository;
+        _logger = logger;
+    }
 
     [HttpGet("create")]
     [Authorize]
     public IActionResult Create()
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "unknown-user";
+        var userId = CurrentUserId ?? "unknown-user";
         _logger.LogInformation("Checklist create page requested by user {UserId}", userId);
         return View();
     }
@@ -230,7 +239,7 @@ public sealed class ChecklistController(
             return BadRequest(ModelState);
         }
 
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = CurrentUserId;
         if (string.IsNullOrEmpty(userId))
         {
             return Unauthorized();
@@ -283,7 +292,7 @@ public sealed class ChecklistController(
             return BadRequest(ModelState);
         }
 
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = CurrentUserId;
         if (string.IsNullOrEmpty(userId))
         {
             return Unauthorized();

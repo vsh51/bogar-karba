@@ -13,16 +13,6 @@
 
     <h2 class="fw-normal mb-4">Your checklists :</h2>
 
-    @if (TempData["Success"] is string success)
-    {
-        <div class="alert alert-success">@success</div>
-    }
-
-    @if (TempData["Error"] is string error)
-    {
-        <div class="alert alert-danger">@error</div>
-    }
-
     <div class="list-group list-group-flush">
         @if (!Model.Checklists.Any())
         {

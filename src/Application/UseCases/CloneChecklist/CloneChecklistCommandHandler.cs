@@ -4,42 +4,31 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.UseCases.CloneChecklist;
 
-public sealed class CloneChecklistCommandHandler
+public sealed class CloneChecklistCommandHandler(
+    IChecklistRepository repository,
+    IChecklistReadOnlyRepository readRepository,
+    ILogger<CloneChecklistCommandHandler> logger)
 {
-    private readonly IChecklistRepository _repository;
-    private readonly IChecklistReadOnlyRepository _readRepository;
-    private readonly ILogger<CloneChecklistCommandHandler> _logger;
-
-    public CloneChecklistCommandHandler(
-        IChecklistRepository repository,
-        IChecklistReadOnlyRepository readRepository,
-        ILogger<CloneChecklistCommandHandler> logger)
-    {
-        _repository = repository;
-        _readRepository = readRepository;
-        _logger = logger;
-    }
-
     public async Task<CloneChecklistResult> HandleAsync(CloneChecklistCommand command)
     {
-        _logger.LogInformation(
+        logger.LogInformation(
             "Initiated cloning of checklist {ChecklistId} for user {UserId}",
             command.SourceChecklistId,
             command.OwnerId);
 
         try
         {
-            var sourceChecklist = await _readRepository.GetByIdWithDetailsAsync(command.SourceChecklistId);
+            var sourceChecklist = await readRepository.GetByIdWithDetailsAsync(command.SourceChecklistId);
 
             if (sourceChecklist is null)
             {
-                _logger.LogWarning("Checklist {ChecklistId} not found for cloning", command.SourceChecklistId);
+                logger.LogWarning("Checklist {ChecklistId} not found for cloning", command.SourceChecklistId);
                 return CloneChecklistResult.Failure("Checklist not found.");
             }
 
             if (sourceChecklist.UserId != command.OwnerId)
             {
-                _logger.LogWarning(
+                logger.LogWarning(
                     "User {OwnerId} attempted to clone checklist {ChecklistId} owned by {ActualOwner}",
                     command.OwnerId,
                     sourceChecklist.Id,
@@ -47,6 +36,7 @@ public sealed class CloneChecklistCommandHandler
                 return CloneChecklistResult.Failure("You can only clone your own checklists.");
             }
 
+            // Clones start as Draft so the author can review before publishing.
             var clonedChecklist = new Checklist
             {
                 Id = Guid.NewGuid(),
@@ -75,9 +65,9 @@ public sealed class CloneChecklistCommandHandler
                     .ToList()
             };
 
-            await _repository.AddAsync(clonedChecklist);
+            await repository.AddAsync(clonedChecklist);
 
-            _logger.LogInformation(
+            logger.LogInformation(
                 "Checklist {SourceChecklistId} cloned to {ClonedChecklistId}",
                 command.SourceChecklistId,
                 clonedChecklist.Id);
@@ -86,7 +76,7 @@ public sealed class CloneChecklistCommandHandler
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error cloning checklist {ChecklistId}", command.SourceChecklistId);
+            logger.LogError(ex, "Error cloning checklist {ChecklistId}", command.SourceChecklistId);
             return CloneChecklistResult.Failure("An error occurred while cloning the checklist.");
         }
     }

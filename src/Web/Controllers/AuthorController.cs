@@ -77,7 +77,7 @@ public sealed class AuthorController : BaseController
         else
         {
             _logger.LogInformation("Checklist {ChecklistId} deleted successfully for user {UserId}", id, userId);
-            TempData["Success"] = "Checklist deleted successfully.";
+            SetSuccessMessage("Checklist deleted successfully.");
         }
 
         return RedirectToAction(nameof(Index));
@@ -106,12 +106,12 @@ public sealed class AuthorController : BaseController
         if (!result.Succeeded)
         {
             _logger.LogWarning("Failed to clone checklist {ChecklistId} for user {UserId}: {Error}", id, userId, result.ErrorMessage);
-            TempData["Error"] = result.ErrorMessage;
+            SetErrorMessage(result.ErrorMessage ?? "Failed to clone checklist.");
         }
         else
         {
             _logger.LogInformation("Checklist {ChecklistId} successfully cloned for user {UserId}", id, userId);
-            TempData["Success"] = "Checklist cloned successfully.";
+            SetSuccessMessage("Checklist cloned successfully.");
         }
 
         return RedirectToAction(nameof(Index));

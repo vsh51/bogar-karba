@@ -5,13 +5,13 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.UseCases.SearchChecklists;
 
-public partial class SearchChecklistsQueryHandler(
+public class SearchChecklistsQueryHandler(
     IChecklistRepository repository,
     ILogger<SearchChecklistsQueryHandler> logger)
 {
     public Result<List<ChecklistSummaryDto>> Handle(SearchChecklistsQuery query)
     {
-        LogSearchQuery(logger, query.SearchTerm ?? "empty");
+        logger.LogInformation("Search query: {SearchTerm}", query.SearchTerm ?? "empty");
 
         var items = repository.GetAll();
 
@@ -33,14 +33,9 @@ public partial class SearchChecklistsQueryHandler(
                 UserId = c.UserId
             })
             .ToList();
-        LogSearchResult(logger, results.Count);
+
+        logger.LogInformation("Found {Count} results", results.Count);
 
         return results;
     }
-
-    [LoggerMessage(Level = LogLevel.Information, Message = "Search query: {SearchTerm}")]
-    static partial void LogSearchQuery(ILogger logger, string searchTerm);
-
-    [LoggerMessage(Level = LogLevel.Information, Message = "Found {Count} results")]
-    static partial void LogSearchResult(ILogger logger, int count);
 }

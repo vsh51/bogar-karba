@@ -113,8 +113,7 @@ public sealed class AdminController : BaseController
         if (!result.Succeeded)
         {
             _logger.LogWarning("Admin failed to delete checklist {ChecklistId}: {Error}", id, result.ErrorMessage);
-            TempData["AdminAlertType"] = "danger";
-            TempData["AdminAlertMessage"] = result.ErrorMessage ?? "Failed to delete checklist.";
+            SetErrorMessage(result.ErrorMessage ?? "Failed to delete checklist.");
         }
 
         return RedirectToAction(nameof(Index), new { searchTerm });

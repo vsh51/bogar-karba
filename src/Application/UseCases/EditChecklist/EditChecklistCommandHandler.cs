@@ -10,6 +10,8 @@ public class EditChecklistCommandHandler(
 {
     public async Task<Result<bool>> HandleAsync(EditChecklistCommand command)
     {
+        logger.LogInformation("Initiated editing of checklist {Id} by user {OwnerId}", command.Id, command.OwnerId);
+
         if (string.IsNullOrWhiteSpace(command.Title))
         {
             return "Title is required.";

@@ -30,7 +30,7 @@ public class CreateChecklistCommandHandler(
             Description = request.Description,
             UserId = userId,
             CreatedAt = DateTime.UtcNow,
-            Status = ChecklistStatus.Published,
+            Status = ChecklistStatus.Published, // New checklists are published immediately; clones start as Draft.
             Sections = request.Sections.Select(s => new Section
             {
                 Id = Guid.NewGuid(),
