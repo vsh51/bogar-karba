@@ -11,4 +11,6 @@ public sealed class AuthorChecklistViewModel
     public string Description { get; init; } = string.Empty;
 
     public ChecklistStatus Status { get; init; }
+
+    public bool IsActive => Status == ChecklistStatus.Published;
 }
