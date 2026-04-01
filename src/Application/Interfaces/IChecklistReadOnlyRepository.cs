@@ -9,4 +9,6 @@ public interface IChecklistReadOnlyRepository
     Task<IEnumerable<Checklist>> GetByUserIdAsync(string userId);
 
     Task<Checklist?> GetByIdAsync(Guid id);
+
+    Task<Checklist?> GetByIdWithSectionsAsync(Guid id, CancellationToken cancellationToken = default);
 }

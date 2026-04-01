@@ -50,6 +50,45 @@ public class SearchChecklistsQueryHandlerTests
         Assert.Equal(2, result.Value.Count);
     }
 
+    [Fact]
+    public void HandleWithSearchTerm_WhenNoMatch_ReturnsEmptyList()
+    {
+        var items = new[]
+        {
+            new Checklist { Title = "Apple", Description = "Fruit" },
+            new Checklist { Title = "Banana", Description = "Yellow" },
+        };
+
+        var handler = new SearchChecklistsQueryHandler(
+            new FakeChecklistRepository(items),
+            NullLogger<SearchChecklistsQueryHandler>.Instance);
+
+        var result = handler.Handle(new SearchChecklistsQuery("Orange"));
+
+        Assert.True(result.Succeeded);
+        Assert.NotNull(result.Value);
+        Assert.Empty(result.Value);
+    }
+
+    [Fact]
+    public void HandleWithWhitespaceSearchTerm_ReturnsAllItems()
+    {
+        var items = new[]
+        {
+            new Checklist { Title = "A", Description = "a" },
+        };
+
+        var handler = new SearchChecklistsQueryHandler(
+            new FakeChecklistRepository(items),
+            NullLogger<SearchChecklistsQueryHandler>.Instance);
+
+        var result = handler.Handle(new SearchChecklistsQuery("   "));
+
+        Assert.True(result.Succeeded);
+        Assert.NotNull(result.Value);
+        Assert.Single(result.Value);
+    }
+
     private sealed class FakeChecklistRepository : IChecklistRepository
     {
         private readonly List<Checklist> _items;
@@ -92,6 +131,16 @@ public class SearchChecklistsQueryHandlerTests
         public Task<int> GetTotalCountAsync()
         {
             return Task.FromResult(_items.Count);
+        }
+
+        public Task<Checklist?> GetByIdWithSectionsAsync(Guid id)
+        {
+            return Task.FromResult(_items.FirstOrDefault(c => c.Id == id));
+        }
+
+        public Task UpdateAsync()
+        {
+            return Task.CompletedTask;
         }
     }
 }

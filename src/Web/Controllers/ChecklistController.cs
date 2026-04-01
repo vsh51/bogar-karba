@@ -1,7 +1,9 @@
 using System.Security.Claims;
 using Application.Common;
+using Application.Interfaces;
 using Application.UseCases.CreateChecklist;
 using Application.UseCases.DeleteChecklist;
+using Application.UseCases.EditChecklist;
 using Application.UseCases.ExportChecklist;
 using Application.UseCases.ExportChecklist.Markdown;
 using Application.UseCases.GetPublishedChecklist;
@@ -18,13 +20,17 @@ public sealed class ChecklistController(
     GetPublishedChecklistQueryHandler handler,
     CreateChecklistCommandHandler createHandler,
     DeleteChecklistCommandHandler deleteHandler,
+    EditChecklistCommandHandler editHandler,
     ExportMarkdownQueryHandler exportHandler,
-    ILogger<ChecklistController> logger) : Controller
+    IChecklistReadOnlyRepository readRepository,
+    ILogger<ChecklistController> logger) : BaseController
 {
     private readonly GetPublishedChecklistQueryHandler _handler = handler;
     private readonly CreateChecklistCommandHandler _createHandler = createHandler;
     private readonly DeleteChecklistCommandHandler _deleteHandler = deleteHandler;
+    private readonly EditChecklistCommandHandler _editHandler = editHandler;
     private readonly ExportMarkdownQueryHandler _exportHandler = exportHandler;
+    private readonly IChecklistReadOnlyRepository _readRepository = readRepository;
     private readonly ILogger<ChecklistController> _logger = logger;
 
     [HttpGet("create")]
@@ -44,7 +50,7 @@ public sealed class ChecklistController(
             return BadRequest(ModelState);
         }
 
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = CurrentUserId;
         if (string.IsNullOrEmpty(userId))
         {
             return Unauthorized();
@@ -127,7 +133,7 @@ public sealed class ChecklistController(
             return BadRequest(ModelState);
         }
 
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = CurrentUserId;
         if (string.IsNullOrEmpty(userId))
         {
             return Unauthorized();
@@ -141,5 +147,93 @@ public sealed class ChecklistController(
         }
 
         return RedirectToAction("Index", "Author");
+    }
+
+    [HttpGet("edit/{id:guid}")]
+    [Authorize]
+    public async Task<IActionResult> Edit(Guid id)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        var checklist = await _readRepository.GetByIdWithSectionsAsync(id);
+        if (checklist is null)
+        {
+            return NotFound();
+        }
+
+        if (checklist.UserId != userId)
+        {
+            return Forbid();
+        }
+
+        ViewData["ChecklistId"] = checklist.Id;
+        var viewModel = new EditChecklistViewModel
+        {
+            Title = checklist.Title,
+            Description = checklist.Description,
+            Sections = checklist.Sections
+                .OrderBy(s => s.Position)
+                .Select(s => new EditSectionViewModel
+                {
+                    Id = s.Id,
+                    Name = s.Name,
+                    Tasks = s.Tasks
+                        .OrderBy(t => t.Position)
+                        .Select(t => new EditTaskViewModel
+                        {
+                            Id = t.Id,
+                            Content = t.Content
+                        })
+                        .ToList()
+                })
+                .ToList()
+        };
+
+        return View(viewModel);
+    }
+
+    [HttpPost("edit/{id:guid}")]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(Guid id, [FromBody] EditChecklistViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        var command = new EditChecklistCommand(
+            id,
+            userId,
+            model.Title,
+            model.Description,
+            model.Sections.Select(s => new EditSectionRequest(
+                s.Id,
+                s.Name,
+                s.Tasks.Select(t => new EditTaskRequest(t.Id, t.Content)).ToList())).ToList());
+
+        var result = await _editHandler.HandleAsync(command);
+
+        if (result.Succeeded)
+        {
+            return Json(new { success = true, redirectUrl = Url.Action("Show", "Checklist", new { id }) });
+        }
+
+        return BadRequest(result.ErrorMessage ?? "An error occurred while updating the checklist.");
     }
 }
