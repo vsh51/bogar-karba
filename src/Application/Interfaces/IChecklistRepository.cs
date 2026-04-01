@@ -13,4 +13,8 @@ public interface IChecklistRepository
     Task DeleteAsync(Guid id);
 
     Task<int> GetTotalCountAsync();
+
+    Task<Checklist?> GetByIdWithSectionsAsync(Guid id);
+
+    Task UpdateAsync();
 }
