@@ -38,4 +38,13 @@ public sealed class ChecklistReadOnlyRepository(
             .AsNoTracking()
             .FirstOrDefaultAsync(c => c.Id == id);
     }
+
+    public async Task<Checklist?> GetByIdWithSectionsAsync(Guid id)
+    {
+        return await dbContext.Checklists
+            .AsNoTracking()
+            .Include(c => c.Sections.OrderBy(s => s.Position))
+            .ThenInclude(s => s.Tasks.OrderBy(t => t.Position))
+            .FirstOrDefaultAsync(c => c.Id == id);
+    }
 }

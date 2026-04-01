@@ -39,7 +39,7 @@
                             ...
                         </button>
                         <ul class="dropdown-menu shadow border-0">
-                            <li><a class="dropdown-item" href="#">Edit checklist</a></li>
+                            <li><a class="dropdown-item" href="@Url.Action("Edit", "Checklist", new { id = item.Id })">Edit checklist</a></li>
                             <li><a class="dropdown-item" href="#">Clone checklist</a></li>
                             <li>
                                 <form asp-controller="Checklist" asp-action="Delete" asp-route-id="@item.Id" method="post" onsubmit="return confirm('Are you sure you want to delete this checklist?');">

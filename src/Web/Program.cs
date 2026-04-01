@@ -7,6 +7,7 @@ using Application.UseCases.Auth.RegisterUser;
 using Application.UseCases.BanUser;
 using Application.UseCases.CreateChecklist;
 using Application.UseCases.DeleteChecklist;
+using Application.UseCases.EditChecklist;
 using Application.UseCases.ExportChecklist.Markdown;
 using Application.UseCases.GetPublishedChecklist;
 using Application.UseCases.GetSystemStats;
@@ -18,6 +19,7 @@ using Infrastructure.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using Web.Middleware;
 
 // Load environment variables from .env file
 DotNetEnv.Env.TraversePath().Load();
@@ -86,6 +88,7 @@ builder.Services.AddScoped<BanUserCommandHandler>();
 builder.Services.AddScoped<GetPublishedChecklistQueryHandler>();
 builder.Services.AddScoped<GetUserChecklistsQueryHandler>();
 builder.Services.AddScoped<CreateChecklistCommandHandler>();
+builder.Services.AddScoped<EditChecklistCommandHandler>();
 builder.Services.AddScoped<GetSystemStatsQueryHandler>();
 builder.Services.AddScoped<ExportMarkdownQueryHandler>();
 
@@ -94,6 +97,7 @@ builder.Services.AddControllersWithViews();
 var app = builder.Build();
 
 app.UseSerilogRequestLogging();
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 using (var scope = app.Services.CreateScope())
 {
@@ -106,7 +110,6 @@ using (var scope = app.Services.CreateScope())
 
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
 

@@ -82,5 +82,15 @@ public class SearchChecklistsQueryHandlerTests
         {
             return Task.FromResult(_items.Count);
         }
+
+        public Task<Checklist?> GetByIdWithSectionsAsync(Guid id)
+        {
+            return Task.FromResult(_items.FirstOrDefault(c => c.Id == id));
+        }
+
+        public Task UpdateAsync()
+        {
+            return Task.CompletedTask;
+        }
     }
 }
