@@ -13,6 +13,7 @@ using Application.UseCases.GetPublishedChecklist;
 using Application.UseCases.GetSystemStats;
 using Application.UseCases.GetUserChecklists;
 using Application.UseCases.SearchChecklists;
+using Application.UseCases.ToggleChecklistStatus;
 using Infrastructure.Identity;
 using Infrastructure.Persistence;
 using Infrastructure.Repositories;
@@ -91,6 +92,7 @@ builder.Services.AddScoped<CreateChecklistCommandHandler>();
 builder.Services.AddScoped<EditChecklistCommandHandler>();
 builder.Services.AddScoped<GetSystemStatsQueryHandler>();
 builder.Services.AddScoped<ExportMarkdownQueryHandler>();
+builder.Services.AddScoped<ToggleChecklistStatusCommandHandler>();
 
 builder.Services.AddControllersWithViews();
 

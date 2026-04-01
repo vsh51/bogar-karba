@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.Interfaces;
 using Application.UseCases.DeleteChecklist;
 using Domain.Entities;
@@ -99,7 +100,7 @@ public class DeleteChecklistCommandHandlerTests
         var result = await _handler.HandleAsync(new DeleteChecklistCommand(checklistId, "user-123"));
 
         Assert.False(result.Succeeded);
-        Assert.Equal("Checklist not found.", result.ErrorMessage);
+        Assert.Equal(ResultErrors.ChecklistNotFound, result.ErrorMessage);
         _repositoryMock.Verify(r => r.DeleteAsync(It.IsAny<Guid>()), Times.Never);
     }
 
@@ -113,7 +114,7 @@ public class DeleteChecklistCommandHandlerTests
         var result = await _handler.HandleAsync(new DeleteChecklistCommand(checklistId, "user-123"));
 
         Assert.False(result.Succeeded);
-        Assert.Equal("You can only delete your own checklists.", result.ErrorMessage);
+        Assert.Equal(ResultErrors.NotChecklistOwner, result.ErrorMessage);
         _repositoryMock.Verify(r => r.DeleteAsync(It.IsAny<Guid>()), Times.Never);
     }
 }
