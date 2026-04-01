@@ -31,7 +31,7 @@ public class DeleteChecklistCommandHandler
             if (checklist is null)
             {
                 _logger.LogWarning("Checklist {Id} not found", command.Id);
-                return Result<bool>.Failure("Checklist not found.");
+                return "Checklist not found.";
             }
 
             if (checklist.UserId != command.OwnerId)
@@ -41,12 +41,12 @@ public class DeleteChecklistCommandHandler
                     command.OwnerId,
                     command.Id,
                     checklist.UserId);
-                return Result<bool>.Failure("You can only delete your own checklists.");
+                return "You can only delete your own checklists.";
             }
         }
 
         await _repository.DeleteAsync(command.Id);
         _logger.LogInformation("Checklist {Id} deleted successfully", command.Id);
-        return Result<bool>.Success(true);
+        return true;
     }
 }

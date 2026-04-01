@@ -1,0 +1,135 @@
+@model Web.Models.Checklist.EditChecklistViewModel
+
+@{
+    ViewData["Title"] = "Edit Checklist";
+}
+
+<style>
+    .editor-content {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .section-container {
+        margin-top: 0.25rem;
+    }
+
+    .checklist-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.4rem 0.5rem;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .checklist-row:last-child {
+        border-bottom: none;
+    }
+
+    .item-checkbox {
+        width: 1rem;
+        height: 1rem;
+        border: 2px solid #adb5bd;
+        border-radius: 0.2rem;
+        flex-shrink: 0;
+    }
+
+    .item-input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        outline: none;
+        font-size: 0.95rem;
+    }
+
+    .section-row {
+        background: #f8f9fa;
+        border-bottom: 2px solid #dee2e6 !important;
+    }
+
+    .section-input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        outline: none;
+        font-size: 0.95rem;
+        font-weight: 600;
+    }
+
+    .btn-delete {
+        color: #dc3545;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        visibility: hidden;
+        font-size: 1.1rem;
+        line-height: 1;
+    }
+
+    .checklist-row:hover .btn-delete {
+        visibility: visible;
+    }
+</style>
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white text-center">
+                <h4 class="mb-0">Edit Checklist</h4>
+            </div>
+            <div class="card-body" id="checklist-editor">
+                <div class="mb-3">
+                    <label class="form-label">Title</label>
+                    <input type="text" class="form-control editable-title" value="@Model.Title" placeholder="Enter checklist title" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <input type="text" class="form-control editable-desc" value="@Model.Description" placeholder="Enter description (optional)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Items</label>
+                    <div class="editor-content border rounded" id="sections-container">
+                        @foreach (var sectionItem in Model.Sections)
+                        {
+                            <div class="section-container" data-section-id="@sectionItem.Id">
+                                <div class="checklist-row section-row">
+                                    <input type="text" class="section-input" value="@sectionItem.Name" placeholder="Section name..." />
+                                    <button type="button" class="btn-delete btn-delete-section">&times;</button>
+                                </div>
+                                <div class="tasks-container">
+                                    @foreach (var task in sectionItem.Tasks)
+                                    {
+                                        <div class="checklist-row task-row" data-task-id="@task.Id">
+                                            <div class="item-checkbox"></div>
+                                            <input type="text" class="item-input" value="@task.Content" placeholder="Item description..." />
+                                            <button type="button" class="btn-delete btn-delete-task">&times;</button>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="d-grid">
+                    <button type="button" class="btn btn-primary" id="save-checklist-btn">Save changes</button>
+                </div>
+
+                <div class="text-center mt-3">
+                    <a asp-controller="Author" asp-action="Index">Back to your checklists</a>
+                </div>
+
+                @Html.AntiForgeryToken()
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        window.checklistId = '@ViewData["ChecklistId"]';
+    </script>
+    <script src="~/js/checklist-edit.js"></script>
+}

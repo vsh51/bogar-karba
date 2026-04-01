@@ -28,24 +28,24 @@ public class LoginAdminCommandHandler
         if (!await _repository.UserExistsAsync(command.UserName, UserLookupMode.ByUserName))
         {
             _logger.LogWarning("Admin login failed: user '{UserName}' not found", command.UserName);
-            return Result<bool>.Failure("Invalid username or password.");
+            return "Invalid username or password.";
         }
 
         var roles = await _repository.GetRolesAsync(command.UserName, UserLookupMode.ByUserName);
         if (!roles.Contains("Admin"))
         {
             _logger.LogWarning("Login denied for user '{UserName}': not an admin", command.UserName);
-            return Result<bool>.Failure("Invalid username or password.");
+            return "Invalid username or password.";
         }
 
         if (!await _repository.CheckPasswordAsync(command.UserName, command.Password, UserLookupMode.ByUserName))
         {
             _logger.LogWarning("Admin login failed: invalid password for user '{UserName}'", command.UserName);
-            return Result<bool>.Failure("Invalid username or password.");
+            return "Invalid username or password.";
         }
 
         await _signInService.SignInAsync(command.UserName, UserLookupMode.ByUserName);
         _logger.LogInformation("Admin '{UserName}' logged in successfully", command.UserName);
-        return Result<bool>.Success(true);
+        return true;
     }
 }

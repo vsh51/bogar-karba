@@ -7,7 +7,7 @@ using Web.Models.Account;
 
 namespace Web.Controllers;
 
-public sealed class AccountController : Controller
+public sealed class AccountController : BaseController
 {
     private readonly RegisterUserCommandHandler _registerHandler;
     private readonly LoginUserCommandHandler _loginHandler;

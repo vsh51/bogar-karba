@@ -35,7 +35,7 @@ public partial class SearchChecklistsQueryHandler(
             .ToList();
         LogSearchResult(logger, results.Count);
 
-        return Result<List<ChecklistSummaryDto>>.Success(results);
+        return results;
     }
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Search query: {SearchTerm}")]

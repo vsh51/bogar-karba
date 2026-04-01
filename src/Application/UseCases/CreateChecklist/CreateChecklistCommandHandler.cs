@@ -20,7 +20,7 @@ public class CreateChecklistCommandHandler(
         if (string.IsNullOrWhiteSpace(request.Title))
         {
             logger.LogWarning("Checklist creation failed for user {UserId}: title is required", userId);
-            return Result<Guid>.Failure("Title is required.");
+            return "Title is required.";
         }
 
         var checklist = new Checklist
@@ -47,6 +47,6 @@ public class CreateChecklistCommandHandler(
 
         await repository.AddAsync(checklist);
         logger.LogInformation("Successfully created checklist {ChecklistId} for user {UserId}", checklist.Id, userId);
-        return Result<Guid>.Success(checklist.Id);
+        return checklist.Id;
     }
 }

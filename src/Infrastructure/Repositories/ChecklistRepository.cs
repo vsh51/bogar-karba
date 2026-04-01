@@ -36,4 +36,17 @@ public class ChecklistRepository(ApplicationDbContext context) : IChecklistRepos
     {
         return await context.Checklists.CountAsync();
     }
+
+    public async Task<Checklist?> GetByIdWithDetailsAsync(Guid id)
+    {
+        return await context.Checklists
+            .Include(c => c.Sections.OrderBy(s => s.Position))
+            .ThenInclude(s => s.Tasks.OrderBy(t => t.Position))
+            .FirstOrDefaultAsync(c => c.Id == id);
+    }
+
+    public async Task UpdateAsync()
+    {
+        await context.SaveChangesAsync();
+    }
 }

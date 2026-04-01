@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using Application.UseCases.CloneChecklist;
 using Application.UseCases.DeleteChecklist;
 using Application.UseCases.GetUserChecklists;
@@ -9,7 +8,7 @@ using Web.Models.Author;
 namespace Web.Controllers;
 
 [Authorize]
-public sealed class AuthorController : Controller
+public sealed class AuthorController : BaseController
 {
     private readonly GetUserChecklistsQueryHandler _handler;
     private readonly DeleteChecklistCommandHandler _deleteHandler;
@@ -31,11 +30,11 @@ public sealed class AuthorController : Controller
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = CurrentUserId;
 
         if (string.IsNullOrEmpty(userId))
         {
-            return RedirectToAction("Login", "Account");
+            return RedirectToLogin();
         }
 
         _logger.LogInformation("Author {UserId} requested their checklist page", userId);
@@ -60,11 +59,11 @@ public sealed class AuthorController : Controller
             return BadRequest(ModelState);
         }
 
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = CurrentUserId;
 
         if (string.IsNullOrEmpty(userId))
         {
-            return RedirectToAction("Login", "Account");
+            return RedirectToLogin();
         }
 
         _logger.LogInformation("User {UserId} requested deletion for checklist {ChecklistId}", userId, id);
@@ -73,7 +72,7 @@ public sealed class AuthorController : Controller
         if (!result.Succeeded)
         {
             _logger.LogWarning("Failed to delete checklist {ChecklistId} for user {UserId}: {Error}", id, userId, result.ErrorMessage);
-            TempData["Error"] = result.ErrorMessage;
+            SetErrorMessage(result.ErrorMessage ?? "Failed to delete checklist.");
         }
         else
         {
@@ -94,11 +93,11 @@ public sealed class AuthorController : Controller
             return BadRequest(ModelState);
         }
 
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = CurrentUserId;
 
         if (string.IsNullOrEmpty(userId))
         {
-            return RedirectToAction("Login", "Account");
+            return RedirectToLogin();
         }
 
         _logger.LogInformation("User {UserId} requested clone for checklist {ChecklistId}", userId, id);

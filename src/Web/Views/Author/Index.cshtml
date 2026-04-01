@@ -49,7 +49,7 @@
                             ...
                         </button>
                         <ul class="dropdown-menu shadow border-0">
-                            <li><a class="dropdown-item" href="#">Edit checklist</a></li>
+                            <li><a class="dropdown-item" href="@Url.Action("Edit", "Checklist", new { id = item.Id })">Edit checklist</a></li>
                             <li>
                                 <form asp-action="Clone" asp-controller="Author" asp-route-id="@item.Id" method="post">
                                     @Html.AntiForgeryToken()

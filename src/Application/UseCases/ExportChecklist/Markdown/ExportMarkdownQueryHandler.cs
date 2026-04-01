@@ -35,7 +35,7 @@ public sealed class ExportMarkdownQueryHandler
             _logger.LogInformation(
                 "Checklist with id {ChecklistId} was not found or not published",
                 query.ChecklistId);
-            return Result<ExportChecklistResult>.Failure("Checklist not found or not published.");
+            return "Checklist not found or not published.";
         }
 
         var completedSet = new HashSet<Guid>(query.CompletedTaskIds);
@@ -45,7 +45,7 @@ public sealed class ExportMarkdownQueryHandler
             "Successfully exported markdown for ChecklistId: {ChecklistId}",
             query.ChecklistId);
 
-        return Result<ExportChecklistResult>.Success(new ExportChecklistResult { Content = markdown });
+        return new ExportChecklistResult { Content = markdown };
     }
 
     private static string BuildMarkdown(Checklist checklist, HashSet<Guid> completedTaskIds)

@@ -27,7 +27,7 @@ public partial class GetUserChecklistsQueryHandler(
 
         LogResult(logger, results.Count);
 
-        return Result<List<ChecklistSummaryDto>>.Success(results);
+        return results;
     }
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Fetching checklists for user: {UserId}")]
