@@ -28,6 +28,10 @@
                     <div class="ms-2 me-auto">
                         <div class="text-uppercase fw-bold" style="font-size: 1.1rem; letter-spacing: 1px;">
                             <a href="@Url.Action("Show", "Checklist", new { id = item.Id })" class="text-decoration-none text-dark">@item.Title</a>
+                            @if (!item.IsActive)
+                            {
+                                <span class="badge bg-secondary fw-normal ms-2" style="font-size: 0.65rem; vertical-align: middle;">inactive</span>
+                            }
                         </div>
                         <div class="text-muted mt-1" style="max-width: 500px;">
                             @item.Description
@@ -48,21 +52,21 @@
                                 </form>
                             </li>
                             <li><hr class="dropdown-divider"></li>
-                            @if (item.Status != Domain.Entities.ChecklistStatus.Published)
+                            @if (!item.IsActive)
                             {
                                 <li>
                                     <form asp-controller="Author" asp-action="Activate" asp-route-id="@item.Id" method="post">
                                         @Html.AntiForgeryToken()
-                                        <button type="submit" class="dropdown-item text-success">Activate checklist</button>
+                                        <button type="submit" class="dropdown-item">Activate checklist</button>
                                     </form>
                                 </li>
                             }
-                            @if (item.Status == Domain.Entities.ChecklistStatus.Published)
+                            else
                             {
                                 <li>
                                     <form asp-controller="Author" asp-action="Deactivate" asp-route-id="@item.Id" method="post">
                                         @Html.AntiForgeryToken()
-                                        <button type="submit" class="dropdown-item text-warning">Deactivate checklist</button>
+                                        <button type="submit" class="dropdown-item">Deactivate checklist</button>
                                     </form>
                                 </li>
                             }
