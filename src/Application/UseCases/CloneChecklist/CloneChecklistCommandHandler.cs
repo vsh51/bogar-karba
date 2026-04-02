@@ -18,7 +18,7 @@ public sealed class CloneChecklistCommandHandler(
 
         try
         {
-            var sourceChecklist = await readRepository.GetByIdWithDetailsAsync(command.SourceChecklistId);
+            var sourceChecklist = await readRepository.GetByIdWithSectionsAsync(command.SourceChecklistId);
 
             if (sourceChecklist is null)
             {

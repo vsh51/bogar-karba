@@ -31,7 +31,7 @@ public class CloneChecklistCommandHandlerTests
     {
         var checklistId = Guid.NewGuid();
         _readRepositoryMock
-            .Setup(r => r.GetByIdWithDetailsAsync(checklistId))
+            .Setup(r => r.GetByIdWithSectionsAsync(checklistId, It.IsAny<CancellationToken>()))
             .ReturnsAsync((Checklist?)null);
 
         var result = await _handler.HandleAsync(new CloneChecklistCommand(checklistId, "user-1"));
@@ -54,7 +54,7 @@ public class CloneChecklistCommandHandlerTests
         };
 
         _readRepositoryMock
-            .Setup(r => r.GetByIdWithDetailsAsync(checklistId))
+            .Setup(r => r.GetByIdWithSectionsAsync(checklistId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(sourceChecklist);
 
         var result = await _handler.HandleAsync(new CloneChecklistCommand(checklistId, "user-2"));
@@ -102,7 +102,7 @@ public class CloneChecklistCommandHandlerTests
         };
 
         _readRepositoryMock
-            .Setup(r => r.GetByIdWithDetailsAsync(checklistId))
+            .Setup(r => r.GetByIdWithSectionsAsync(checklistId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(sourceChecklist);
 
         Checklist? persistedChecklist = null;
@@ -143,7 +143,7 @@ public class CloneChecklistCommandHandlerTests
         };
 
         _readRepositoryMock
-            .Setup(r => r.GetByIdWithDetailsAsync(checklistId))
+            .Setup(r => r.GetByIdWithSectionsAsync(checklistId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(sourceChecklist);
 
         _repositoryMock

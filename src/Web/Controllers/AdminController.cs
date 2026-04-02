@@ -7,6 +7,7 @@ using Application.UseCases.GetSystemStats;
 using Application.UseCases.SearchChecklists;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Web.Mappings;
 using Web.Models.Admin;
 
 namespace Web.Controllers;
@@ -48,13 +49,7 @@ public sealed class AdminController : BaseController
         var result = await _searchHandler.HandleAsync(new SearchChecklistsQuery(searchTerm));
 
         var viewModels = (result.Succeeded ? result.Value! : new())
-            .Select(c => new AdminChecklistViewModel
-            {
-                Id = c.Id,
-                Title = c.Title,
-                Description = c.Description,
-                UserId = c.UserId
-            })
+            .Select(c => c.ToAdminViewModel())
             .ToList();
 
         _logger.LogInformation("Admin {AdminUserName} search returned {Count} checklists", adminUserName, viewModels.Count);
@@ -162,13 +157,7 @@ public sealed class AdminController : BaseController
             return View(new DashboardViewModel());
         }
 
-        var viewModel = new DashboardViewModel
-        {
-            TotalChecklists = result.Value.TotalChecklists,
-            TotalUsers = result.Value.TotalUsers
-        };
-
-        return View(viewModel);
+        return View(result.Value.ToDashboardViewModel());
     }
 
     [HttpPost]

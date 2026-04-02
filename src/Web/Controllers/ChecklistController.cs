@@ -8,6 +8,7 @@ using Application.UseCases.ExportChecklist.Markdown;
 using Application.UseCases.GetPublishedChecklist;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Web.Mappings;
 using Web.Models.Checklist;
 
 namespace Web.Controllers;
@@ -112,43 +113,20 @@ public sealed class ChecklistController : BaseController
             return BadRequest(ModelState);
         }
 
-        _logger.LogInformation("Anonymous user requested checklist page for {ChecklistId}", id);
+        var userId = CurrentUserId;
 
         var result = await _handler.HandleAsync(
-            new GetPublishedChecklistQuery(id), cancellationToken);
+            new GetPublishedChecklistQuery(id, userId), cancellationToken);
 
         if (!result.Succeeded || result.Value is null)
         {
-            _logger.LogInformation("Checklist {ChecklistId} not found or not published", id);
+            _logger.LogInformation("Checklist {ChecklistId} not found or not available", id);
             return NotFound();
         }
 
-        var viewModel = new ChecklistViewModel
-        {
-            Id = result.Value.Id,
-            Title = result.Value.Title,
-            Description = result.Value.Description,
-            Sections = result.Value.Sections
-                .OrderBy(s => s.Position)
-                .Select(section => new ChecklistSectionViewModel
-                {
-                    Id = section.Id,
-                    Name = section.Name,
-                    Position = section.Position,
-                    Items = section.Items
-                        .OrderBy(i => i.Position)
-                        .Select(item => new ChecklistItemViewModel
-                        {
-                            Id = item.Id,
-                            Content = item.Content
-                        })
-                        .ToList()
-                })
-                .ToList()
-        };
         _logger.LogInformation("Checklist {ChecklistId} retrieved and displayed successfully", id);
 
-        return View("Show", viewModel);
+        return View("Show", result.Value.ToChecklistViewModel());
     }
 
     [HttpPost("{id:guid}/export/markdown")]
@@ -245,7 +223,7 @@ public sealed class ChecklistController : BaseController
             return Unauthorized();
         }
 
-        var checklist = await _readRepository.GetByIdWithDetailsAsync(id);
+        var checklist = await _readRepository.GetByIdWithSectionsAsync(id);
         if (checklist is null)
         {
             return NotFound();

@@ -18,7 +18,7 @@ public class GetPublishedChecklistQueryHandlerTests
 
         var repositoryMock = new Mock<IChecklistReadOnlyRepository>();
         repositoryMock
-            .Setup(r => r.GetPublishedChecklistAsync(checklistId, cancellationToken))
+            .Setup(r => r.GetByIdWithSectionsAsync(checklistId, cancellationToken))
             .ReturnsAsync(checklist);
 
         var loggerMock = new Mock<ILogger<GetPublishedChecklistQueryHandler>>();
@@ -42,7 +42,7 @@ public class GetPublishedChecklistQueryHandlerTests
         Assert.Equal("Task with position 2", result.Value.Sections[0].Items[1].Content);
 
         repositoryMock.Verify(
-            r => r.GetPublishedChecklistAsync(checklistId, cancellationToken),
+            r => r.GetByIdWithSectionsAsync(checklistId, cancellationToken),
             Times.Once);
     }
 
@@ -55,7 +55,7 @@ public class GetPublishedChecklistQueryHandlerTests
 
         var repositoryMock = new Mock<IChecklistReadOnlyRepository>();
         repositoryMock
-            .Setup(r => r.GetPublishedChecklistAsync(checklistId, cancellationToken))
+            .Setup(r => r.GetByIdWithSectionsAsync(checklistId, cancellationToken))
             .ReturnsAsync((Checklist?)null);
 
         var loggerMock = new Mock<ILogger<GetPublishedChecklistQueryHandler>>();
@@ -65,9 +65,9 @@ public class GetPublishedChecklistQueryHandlerTests
         var result = await sut.HandleAsync(query, cancellationToken);
 
         Assert.False(result.Succeeded);
-        Assert.Equal("Checklist not found or not published.", result.ErrorMessage);
+        Assert.Equal(Application.Common.ResultErrors.ChecklistNotFound, result.ErrorMessage);
         repositoryMock.Verify(
-            r => r.GetPublishedChecklistAsync(checklistId, cancellationToken),
+            r => r.GetByIdWithSectionsAsync(checklistId, cancellationToken),
             Times.Once);
     }
 
@@ -82,7 +82,7 @@ public class GetPublishedChecklistQueryHandlerTests
 
         var repositoryMock = new Mock<IChecklistReadOnlyRepository>();
         repositoryMock
-            .Setup(r => r.GetPublishedChecklistAsync(checklistId, cancellationToken))
+            .Setup(r => r.GetByIdWithSectionsAsync(checklistId, cancellationToken))
             .ThrowsAsync(repositoryException);
 
         var loggerMock = new Mock<ILogger<GetPublishedChecklistQueryHandler>>();
@@ -94,7 +94,7 @@ public class GetPublishedChecklistQueryHandlerTests
 
         Assert.Equal("Repository failure", exception.Message);
         repositoryMock.Verify(
-            r => r.GetPublishedChecklistAsync(checklistId, cancellationToken),
+            r => r.GetByIdWithSectionsAsync(checklistId, cancellationToken),
             Times.Once);
     }
 
