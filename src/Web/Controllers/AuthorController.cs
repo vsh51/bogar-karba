@@ -1,5 +1,4 @@
-using System.Security.Claims;
-using Application.Common;
+using Application.UseCases.CloneChecklist;
 using Application.UseCases.DeleteChecklist;
 using Application.UseCases.GetUserChecklists;
 using Application.UseCases.ToggleChecklistStatus;
@@ -16,17 +15,20 @@ public sealed class AuthorController : BaseController
 {
     private readonly GetUserChecklistsQueryHandler _handler;
     private readonly DeleteChecklistCommandHandler _deleteHandler;
+    private readonly CloneChecklistCommandHandler _cloneHandler;
     private readonly ToggleChecklistStatusCommandHandler _toggleStatusHandler;
     private readonly ILogger<AuthorController> _logger;
 
     public AuthorController(
         GetUserChecklistsQueryHandler handler,
         DeleteChecklistCommandHandler deleteHandler,
+        CloneChecklistCommandHandler cloneHandler,
         ToggleChecklistStatusCommandHandler toggleStatusHandler,
         ILogger<AuthorController> logger)
     {
         _handler = handler;
         _deleteHandler = deleteHandler;
+        _cloneHandler = cloneHandler;
         _toggleStatusHandler = toggleStatusHandler;
         _logger = logger;
     }
@@ -61,6 +63,7 @@ public sealed class AuthorController : BaseController
     {
         if (!ModelState.IsValid)
         {
+            _logger.LogWarning("Author checklist delete validation failed for checklist {ChecklistId}", id);
             return BadRequest(ModelState);
         }
 
@@ -71,12 +74,52 @@ public sealed class AuthorController : BaseController
             return RedirectToLogin();
         }
 
+        _logger.LogInformation("User {UserId} requested deletion for checklist {ChecklistId}", userId, id);
         var result = await _deleteHandler.HandleAsync(new DeleteChecklistCommand(id, userId));
 
         if (!result.Succeeded)
         {
             _logger.LogWarning("Failed to delete checklist {ChecklistId} for user {UserId}: {Error}", id, userId, result.ErrorMessage);
             SetErrorMessage(result.ErrorMessage ?? "Failed to delete checklist.");
+        }
+        else
+        {
+            _logger.LogInformation("Checklist {ChecklistId} deleted successfully for user {UserId}", id, userId);
+            SetSuccessMessage("Checklist deleted successfully.");
+        }
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost("/author/clone/{id:guid}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Clone(Guid id)
+    {
+        if (!ModelState.IsValid)
+        {
+            _logger.LogWarning("Author checklist clone validation failed for checklist {ChecklistId}", id);
+            return BadRequest(ModelState);
+        }
+
+        var userId = CurrentUserId;
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            return RedirectToLogin();
+        }
+
+        _logger.LogInformation("User {UserId} requested clone for checklist {ChecklistId}", userId, id);
+        var result = await _cloneHandler.HandleAsync(new CloneChecklistCommand(id, userId));
+
+        if (!result.Succeeded)
+        {
+            _logger.LogWarning("Failed to clone checklist {ChecklistId} for user {UserId}: {Error}", id, userId, result.ErrorMessage);
+            SetErrorMessage(result.ErrorMessage ?? "Failed to clone checklist.");
+        }
+        else
+        {
+            _logger.LogInformation("Checklist {ChecklistId} successfully cloned for user {UserId}", id, userId);
+            SetSuccessMessage("Checklist cloned successfully.");
         }
 
         return RedirectToAction(nameof(Index));
@@ -108,11 +151,11 @@ public sealed class AuthorController : BaseController
 
     private async Task<IActionResult> ToggleStatus(Guid id, ChecklistStatus newStatus)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = CurrentUserId;
 
         if (string.IsNullOrEmpty(userId))
         {
-            return RedirectToAction("Login", "Account");
+            return RedirectToLogin();
         }
 
         var result = await _toggleStatusHandler.HandleAsync(
@@ -121,7 +164,7 @@ public sealed class AuthorController : BaseController
         if (!result.Succeeded)
         {
             _logger.LogWarning("Failed to change status of checklist {ChecklistId} for user {UserId}: {Error}", id, userId, result.ErrorMessage);
-            TempData["Error"] = result.ErrorMessage;
+            SetErrorMessage(result.ErrorMessage ?? "Failed to change checklist status.");
         }
 
         return RedirectToAction(nameof(Index));

@@ -7,7 +7,7 @@ namespace Infrastructure.Repositories;
 
 public class ChecklistRepository(ApplicationDbContext context) : IChecklistRepository
 {
-    public IEnumerable<Checklist> GetAll() => context.Checklists;
+    public async Task<List<Checklist>> GetAllAsync() => await context.Checklists.ToListAsync();
 
     public async Task<IEnumerable<Checklist>> GetByUserIdAsync(string userId)
     {
@@ -47,7 +47,7 @@ public class ChecklistRepository(ApplicationDbContext context) : IChecklistRepos
         return await context.Checklists.CountAsync();
     }
 
-    public async Task<Checklist?> GetByIdWithSectionsAsync(Guid id)
+    public async Task<Checklist?> GetByIdWithDetailsAsync(Guid id)
     {
         return await context.Checklists
             .Include(c => c.Sections.OrderBy(s => s.Position))

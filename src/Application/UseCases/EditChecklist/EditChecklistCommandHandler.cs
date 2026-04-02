@@ -4,18 +4,20 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.UseCases.EditChecklist;
 
-public class EditChecklistCommandHandler(
+public sealed class EditChecklistCommandHandler(
     IChecklistRepository repository,
     ILogger<EditChecklistCommandHandler> logger)
 {
     public async Task<Result<bool>> HandleAsync(EditChecklistCommand command)
     {
+        logger.LogInformation("Initiated editing of checklist {Id} by user {OwnerId}", command.Id, command.OwnerId);
+
         if (string.IsNullOrWhiteSpace(command.Title))
         {
             return "Title is required.";
         }
 
-        var checklist = await repository.GetByIdWithSectionsAsync(command.Id);
+        var checklist = await repository.GetByIdWithDetailsAsync(command.Id);
 
         if (checklist is null)
         {

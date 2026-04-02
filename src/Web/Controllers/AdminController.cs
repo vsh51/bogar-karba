@@ -41,13 +41,18 @@ public sealed class AdminController : BaseController
         _logger = logger;
     }
 
-    public IActionResult Index(string? searchTerm)
+    public async Task<IActionResult> Index(string? searchTerm)
     {
-        var result = _searchHandler.Handle(new SearchChecklistsQuery(searchTerm));
+        var adminUserName = User.Identity?.Name ?? "unknown-admin";
+        _logger.LogInformation("Admin {AdminUserName} requested dashboard list with search term {SearchTerm}", adminUserName, searchTerm ?? "<empty>");
+
+        var result = await _searchHandler.HandleAsync(new SearchChecklistsQuery(searchTerm));
 
         var viewModels = (result.Succeeded ? result.Value! : new())
             .Select(c => c.ToAdminViewModel())
             .ToList();
+
+        _logger.LogInformation("Admin {AdminUserName} search returned {Count} checklists", adminUserName, viewModels.Count);
 
         ViewData["SearchTerm"] = searchTerm;
         return View(viewModels);
@@ -57,6 +62,7 @@ public sealed class AdminController : BaseController
     [HttpGet]
     public IActionResult Login()
     {
+        _logger.LogInformation("Admin login page requested");
         return View();
     }
 
@@ -67,6 +73,7 @@ public sealed class AdminController : BaseController
     {
         if (!ModelState.IsValid)
         {
+            _logger.LogWarning("Admin login model validation failed with {ErrorCount} errors", ModelState.ErrorCount);
             return View(model);
         }
 
@@ -91,11 +98,19 @@ public sealed class AdminController : BaseController
     {
         if (!ModelState.IsValid)
         {
+            _logger.LogWarning("Admin checklist delete validation failed for checklist {ChecklistId}", id);
             return BadRequest(ModelState);
         }
 
         _logger.LogInformation("Admin deleting checklist {ChecklistId}", id);
-        await _deleteHandler.HandleAsync(new DeleteChecklistCommand(id));
+        var result = await _deleteHandler.HandleAsync(new DeleteChecklistCommand(id));
+
+        if (!result.Succeeded)
+        {
+            _logger.LogWarning("Admin failed to delete checklist {ChecklistId}: {Error}", id, result.ErrorMessage);
+            SetErrorMessage(result.ErrorMessage ?? "Failed to delete checklist.");
+        }
+
         return RedirectToAction(nameof(Index), new { searchTerm });
     }
 
@@ -105,6 +120,7 @@ public sealed class AdminController : BaseController
     {
         if (!ModelState.IsValid)
         {
+            _logger.LogWarning("Admin ban user validation failed for user {UserId}", userId);
             return BadRequest(ModelState);
         }
 
@@ -148,8 +164,9 @@ public sealed class AdminController : BaseController
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout()
     {
+        var adminUserName = User.Identity?.Name ?? "unknown-admin";
         await _logoutHandler.HandleAsync(new LogoutCommand(DateTime.UtcNow));
-        _logger.LogInformation("Admin logged out");
+        _logger.LogInformation("Admin {AdminUserName} logged out successfully", adminUserName);
         return RedirectToAction("Index", "Home");
     }
 }

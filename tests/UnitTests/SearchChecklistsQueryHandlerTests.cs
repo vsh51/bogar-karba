@@ -9,7 +9,7 @@ namespace UnitTests;
 public class SearchChecklistsQueryHandlerTests
 {
     [Fact]
-    public void HandleWithSearchTermFiltersByTitleOrDescriptionIgnoringCase()
+    public async Task HandleWithSearchTermFiltersByTitleOrDescriptionIgnoringCase()
     {
         var items = new[]
         {
@@ -22,7 +22,7 @@ public class SearchChecklistsQueryHandlerTests
             new FakeChecklistRepository(items),
             NullLogger<SearchChecklistsQueryHandler>.Instance);
 
-        var result = handler.Handle(new SearchChecklistsQuery("deploy"));
+        var result = await handler.HandleAsync(new SearchChecklistsQuery("deploy"));
 
         Assert.True(result.Succeeded);
         Assert.NotNull(result.Value);
@@ -31,7 +31,7 @@ public class SearchChecklistsQueryHandlerTests
     }
 
     [Fact]
-    public void HandleWithEmptySearchTermReturnsAllItems()
+    public async Task HandleWithEmptySearchTermReturnsAllItems()
     {
         var items = new[]
         {
@@ -43,7 +43,7 @@ public class SearchChecklistsQueryHandlerTests
             new FakeChecklistRepository(items),
             NullLogger<SearchChecklistsQueryHandler>.Instance);
 
-        var result = handler.Handle(new SearchChecklistsQuery(null));
+        var result = await handler.HandleAsync(new SearchChecklistsQuery(null));
 
         Assert.True(result.Succeeded);
         Assert.NotNull(result.Value);
@@ -51,7 +51,7 @@ public class SearchChecklistsQueryHandlerTests
     }
 
     [Fact]
-    public void HandleWithSearchTerm_WhenNoMatch_ReturnsEmptyList()
+    public async Task HandleWithSearchTerm_WhenNoMatch_ReturnsEmptyList()
     {
         var items = new[]
         {
@@ -63,7 +63,7 @@ public class SearchChecklistsQueryHandlerTests
             new FakeChecklistRepository(items),
             NullLogger<SearchChecklistsQueryHandler>.Instance);
 
-        var result = handler.Handle(new SearchChecklistsQuery("Orange"));
+        var result = await handler.HandleAsync(new SearchChecklistsQuery("Orange"));
 
         Assert.True(result.Succeeded);
         Assert.NotNull(result.Value);
@@ -71,7 +71,7 @@ public class SearchChecklistsQueryHandlerTests
     }
 
     [Fact]
-    public void HandleWithWhitespaceSearchTerm_ReturnsAllItems()
+    public async Task HandleWithWhitespaceSearchTerm_ReturnsAllItems()
     {
         var items = new[]
         {
@@ -82,7 +82,7 @@ public class SearchChecklistsQueryHandlerTests
             new FakeChecklistRepository(items),
             NullLogger<SearchChecklistsQueryHandler>.Instance);
 
-        var result = handler.Handle(new SearchChecklistsQuery("   "));
+        var result = await handler.HandleAsync(new SearchChecklistsQuery("   "));
 
         Assert.True(result.Succeeded);
         Assert.NotNull(result.Value);
@@ -98,7 +98,7 @@ public class SearchChecklistsQueryHandlerTests
             _items = items.ToList();
         }
 
-        public IEnumerable<Checklist> GetAll() => _items;
+        public Task<List<Checklist>> GetAllAsync() => Task.FromResult(_items);
 
         public Task<IEnumerable<Checklist>> GetByUserIdAsync(string userId)
         {
@@ -133,7 +133,7 @@ public class SearchChecklistsQueryHandlerTests
             return Task.FromResult(_items.Count);
         }
 
-        public Task<Checklist?> GetByIdWithSectionsAsync(Guid id)
+        public Task<Checklist?> GetByIdWithDetailsAsync(Guid id)
         {
             return Task.FromResult(_items.FirstOrDefault(c => c.Id == id));
         }

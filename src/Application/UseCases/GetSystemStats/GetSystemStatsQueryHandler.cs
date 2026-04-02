@@ -1,28 +1,27 @@
 using Application.Common;
 using Application.DTOs;
 using Application.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace Application.UseCases.GetSystemStats;
 
-public sealed class GetSystemStatsQueryHandler
+public sealed class GetSystemStatsQueryHandler(
+    IChecklistRepository checklistRepository,
+    IUserRepository userRepository,
+    ILogger<GetSystemStatsQueryHandler> logger)
 {
-    private readonly IChecklistRepository _checklistRepository;
-    private readonly IUserRepository _userRepository;
-
-    public GetSystemStatsQueryHandler(
-        IChecklistRepository checklistRepository,
-        IUserRepository userRepository)
-    {
-        _checklistRepository = checklistRepository;
-        _userRepository = userRepository;
-    }
-
     public async Task<Result<SystemStatsDto>> HandleAsync(GetSystemStatsQuery query)
     {
         _ = query;
+        logger.LogInformation("Fetching system statistics");
 
-        var totalChecklists = await _checklistRepository.GetTotalCountAsync();
-        var totalUsers = await _userRepository.GetTotalCountAsync();
+        var totalChecklists = await checklistRepository.GetTotalCountAsync();
+        var totalUsers = await userRepository.GetTotalCountAsync();
+
+        logger.LogInformation(
+            "System statistics fetched successfully: {TotalChecklists} checklists, {TotalUsers} users",
+            totalChecklists,
+            totalUsers);
 
         return new SystemStatsDto(totalChecklists, totalUsers);
     }

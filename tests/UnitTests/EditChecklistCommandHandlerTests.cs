@@ -27,7 +27,7 @@ public class EditChecklistCommandHandlerTests
         var checklist = BuildChecklist();
         var sec = checklist.Sections[0];
 
-        _repositoryMock.Setup(r => r.GetByIdWithSectionsAsync(checklist.Id))
+        _repositoryMock.Setup(r => r.GetByIdWithDetailsAsync(checklist.Id))
             .ReturnsAsync(checklist);
 
         var command = new EditChecklistCommand(
@@ -51,7 +51,7 @@ public class EditChecklistCommandHandlerTests
         var checklist = BuildChecklist();
         var sec = checklist.Sections[0];
 
-        _repositoryMock.Setup(r => r.GetByIdWithSectionsAsync(checklist.Id))
+        _repositoryMock.Setup(r => r.GetByIdWithDetailsAsync(checklist.Id))
             .ReturnsAsync(checklist);
 
         var command = new EditChecklistCommand(
@@ -74,7 +74,7 @@ public class EditChecklistCommandHandlerTests
         var sec = checklist.Sections[0];
         var task = sec.Tasks[0];
 
-        _repositoryMock.Setup(r => r.GetByIdWithSectionsAsync(checklist.Id))
+        _repositoryMock.Setup(r => r.GetByIdWithDetailsAsync(checklist.Id))
             .ReturnsAsync(checklist);
 
         var command = new EditChecklistCommand(
@@ -95,7 +95,7 @@ public class EditChecklistCommandHandlerTests
     {
         var checklist = BuildChecklist();
 
-        _repositoryMock.Setup(r => r.GetByIdWithSectionsAsync(checklist.Id))
+        _repositoryMock.Setup(r => r.GetByIdWithDetailsAsync(checklist.Id))
             .ReturnsAsync(checklist);
 
         var command = new EditChecklistCommand(
@@ -119,7 +119,7 @@ public class EditChecklistCommandHandlerTests
         var sec = checklist.Sections[0];
         var taskToKeep = sec.Tasks[0];
 
-        _repositoryMock.Setup(r => r.GetByIdWithSectionsAsync(checklist.Id))
+        _repositoryMock.Setup(r => r.GetByIdWithDetailsAsync(checklist.Id))
             .ReturnsAsync(checklist);
 
         var command = new EditChecklistCommand(
@@ -139,7 +139,7 @@ public class EditChecklistCommandHandlerTests
     [Fact]
     public async Task HandleAsync_ChecklistNotFound_ReturnsFailure()
     {
-        _repositoryMock.Setup(r => r.GetByIdWithSectionsAsync(It.IsAny<Guid>()))
+        _repositoryMock.Setup(r => r.GetByIdWithDetailsAsync(It.IsAny<Guid>()))
             .ReturnsAsync((Checklist?)null);
 
         var command = new EditChecklistCommand(Guid.NewGuid(), OwnerId, "Title", string.Empty, []);
@@ -155,7 +155,7 @@ public class EditChecklistCommandHandlerTests
     public async Task HandleAsync_WrongOwner_ReturnsFailure()
     {
         var checklist = BuildChecklist("other-user");
-        _repositoryMock.Setup(r => r.GetByIdWithSectionsAsync(checklist.Id))
+        _repositoryMock.Setup(r => r.GetByIdWithDetailsAsync(checklist.Id))
             .ReturnsAsync(checklist);
 
         var command = new EditChecklistCommand(checklist.Id, OwnerId, "Title", string.Empty, []);
@@ -176,7 +176,7 @@ public class EditChecklistCommandHandlerTests
 
         Assert.False(result.Succeeded);
         Assert.Equal("Title is required.", result.ErrorMessage);
-        _repositoryMock.Verify(r => r.GetByIdWithSectionsAsync(It.IsAny<Guid>()), Times.Never);
+        _repositoryMock.Verify(r => r.GetByIdWithDetailsAsync(It.IsAny<Guid>()), Times.Never);
         _repositoryMock.Verify(r => r.UpdateAsync(), Times.Never);
     }
 
@@ -184,7 +184,7 @@ public class EditChecklistCommandHandlerTests
     public async Task HandleAsync_NewSectionId_ReturnsFailure()
     {
         var checklist = BuildChecklist();
-        _repositoryMock.Setup(r => r.GetByIdWithSectionsAsync(checklist.Id))
+        _repositoryMock.Setup(r => r.GetByIdWithDetailsAsync(checklist.Id))
             .ReturnsAsync(checklist);
 
         var command = new EditChecklistCommand(
@@ -207,7 +207,7 @@ public class EditChecklistCommandHandlerTests
         var checklist = BuildChecklist();
         var sec = checklist.Sections[0];
 
-        _repositoryMock.Setup(r => r.GetByIdWithSectionsAsync(checklist.Id))
+        _repositoryMock.Setup(r => r.GetByIdWithDetailsAsync(checklist.Id))
             .ReturnsAsync(checklist);
 
         var command = new EditChecklistCommand(
@@ -227,7 +227,7 @@ public class EditChecklistCommandHandlerTests
     [Fact]
     public async Task HandleAsync_RepositoryThrows_PropagatesException()
     {
-        _repositoryMock.Setup(r => r.GetByIdWithSectionsAsync(It.IsAny<Guid>()))
+        _repositoryMock.Setup(r => r.GetByIdWithDetailsAsync(It.IsAny<Guid>()))
             .ThrowsAsync(new InvalidOperationException("DB Error"));
 
         var command = new EditChecklistCommand(Guid.NewGuid(), OwnerId, "Title", string.Empty, []);

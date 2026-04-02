@@ -1,5 +1,6 @@
 using Application.Interfaces;
 using Application.UseCases.GetSystemStats;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -12,6 +13,7 @@ public class GetSystemStatsQueryHandlerTests
     {
         var checklistRepoMock = new Mock<IChecklistRepository>();
         var userRepoMock = new Mock<IUserRepository>();
+        var loggerMock = new Mock<ILogger<GetSystemStatsQueryHandler>>();
 
         checklistRepoMock
             .Setup(x => x.GetTotalCountAsync())
@@ -21,7 +23,10 @@ public class GetSystemStatsQueryHandlerTests
             .Setup(x => x.GetTotalCountAsync())
             .ReturnsAsync(15);
 
-        var handler = new GetSystemStatsQueryHandler(checklistRepoMock.Object, userRepoMock.Object);
+        var handler = new GetSystemStatsQueryHandler(
+            checklistRepoMock.Object,
+            userRepoMock.Object,
+            loggerMock.Object);
 
         var result = await handler.HandleAsync(new GetSystemStatsQuery());
 

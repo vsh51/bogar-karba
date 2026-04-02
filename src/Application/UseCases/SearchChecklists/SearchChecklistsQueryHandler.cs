@@ -1,30 +1,31 @@
 using Application.Common;
 using Application.DTOs.Checklist;
 using Application.Interfaces;
+using Domain.Entities;
 using Microsoft.Extensions.Logging;
 
 namespace Application.UseCases.SearchChecklists;
 
-public partial class SearchChecklistsQueryHandler(
+public sealed class SearchChecklistsQueryHandler(
     IChecklistRepository repository,
     ILogger<SearchChecklistsQueryHandler> logger)
 {
-    public Result<List<ChecklistSummaryDto>> Handle(SearchChecklistsQuery query)
+    public async Task<Result<List<ChecklistSummaryDto>>> HandleAsync(SearchChecklistsQuery query)
     {
-        LogSearchQuery(logger, query.SearchTerm ?? "empty");
+        logger.LogInformation("Search query: {SearchTerm}", query.SearchTerm ?? "empty");
 
-        var items = repository.GetAll();
+        var items = await repository.GetAllAsync();
 
+        IEnumerable<Checklist> filtered = items;
         if (!string.IsNullOrWhiteSpace(query.SearchTerm))
         {
             var normalizedSearch = query.SearchTerm.Trim();
-
-            items = items
-                .Where(c => c.Title.Contains(normalizedSearch, StringComparison.OrdinalIgnoreCase) ||
-                            c.Description.Contains(normalizedSearch, StringComparison.OrdinalIgnoreCase));
+            filtered = items.Where(c =>
+                c.Title.Contains(normalizedSearch, StringComparison.OrdinalIgnoreCase) ||
+                c.Description.Contains(normalizedSearch, StringComparison.OrdinalIgnoreCase));
         }
 
-        var results = items
+        var results = filtered
             .Select(c => new ChecklistSummaryDto
             {
                 Id = c.Id,
@@ -34,14 +35,9 @@ public partial class SearchChecklistsQueryHandler(
                 Status = c.Status
             })
             .ToList();
-        LogSearchResult(logger, results.Count);
+
+        logger.LogInformation("Found {Count} results", results.Count);
 
         return results;
     }
-
-    [LoggerMessage(Level = LogLevel.Information, Message = "Search query: {SearchTerm}")]
-    static partial void LogSearchQuery(ILogger logger, string searchTerm);
-
-    [LoggerMessage(Level = LogLevel.Information, Message = "Found {Count} results")]
-    static partial void LogSearchResult(ILogger logger, int count);
 }
