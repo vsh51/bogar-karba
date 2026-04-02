@@ -6,33 +6,24 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.UseCases.ExportChecklist.Markdown;
 
-public sealed class ExportMarkdownQueryHandler
+public sealed class ExportMarkdownQueryHandler(
+    IChecklistReadOnlyRepository repository,
+    ILogger<ExportMarkdownQueryHandler> logger)
 {
-    private readonly IChecklistReadOnlyRepository _repository;
-    private readonly ILogger<ExportMarkdownQueryHandler> _logger;
-
-    public ExportMarkdownQueryHandler(
-        IChecklistReadOnlyRepository repository,
-        ILogger<ExportMarkdownQueryHandler> logger)
-    {
-        _repository = repository;
-        _logger = logger;
-    }
-
     public async Task<Result<ExportChecklistResult>> HandleAsync(
         ExportChecklistQuery query,
         CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation(
+        logger.LogInformation(
             "Handling ExportMarkdownQuery for ChecklistId: {ChecklistId}",
             query.ChecklistId);
 
-        var checklist = await _repository.GetPublishedChecklistAsync(
+        var checklist = await repository.GetPublishedChecklistAsync(
             query.ChecklistId, cancellationToken);
 
         if (checklist is null)
         {
-            _logger.LogInformation(
+            logger.LogInformation(
                 "Checklist with id {ChecklistId} was not found or not published",
                 query.ChecklistId);
             return "Checklist not found or not published.";
@@ -41,7 +32,7 @@ public sealed class ExportMarkdownQueryHandler
         var completedSet = new HashSet<Guid>(query.CompletedTaskIds);
         string markdown = BuildMarkdown(checklist, completedSet);
 
-        _logger.LogInformation(
+        logger.LogInformation(
             "Successfully exported markdown for ChecklistId: {ChecklistId}",
             query.ChecklistId);
 

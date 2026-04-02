@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.Interfaces;
 using Application.UseCases.CloneChecklist;
 using Domain.Entities;
@@ -37,7 +38,7 @@ public class CloneChecklistCommandHandlerTests
         var result = await _handler.HandleAsync(new CloneChecklistCommand(checklistId, "user-1"));
 
         Assert.False(result.Succeeded);
-        Assert.Equal("Checklist not found.", result.ErrorMessage);
+        Assert.Equal(ResultErrors.ChecklistNotFound, result.ErrorMessage);
         _repositoryMock.Verify(r => r.AddAsync(It.IsAny<Checklist>()), Times.Never);
     }
 
@@ -60,7 +61,7 @@ public class CloneChecklistCommandHandlerTests
         var result = await _handler.HandleAsync(new CloneChecklistCommand(checklistId, "user-2"));
 
         Assert.False(result.Succeeded);
-        Assert.Equal("You can only clone your own checklists.", result.ErrorMessage);
+        Assert.Equal(ResultErrors.NotChecklistOwner, result.ErrorMessage);
         _repositoryMock.Verify(r => r.AddAsync(It.IsAny<Checklist>()), Times.Never);
     }
 
@@ -114,7 +115,7 @@ public class CloneChecklistCommandHandlerTests
         var result = await _handler.HandleAsync(new CloneChecklistCommand(checklistId, "owner-1"));
 
         Assert.True(result.Succeeded);
-        Assert.NotNull(result.ClonedChecklistId);
+        Assert.NotEqual(Guid.Empty, result.Value);
         Assert.NotNull(persistedChecklist);
 
         Assert.Equal("Original (Copy)", persistedChecklist!.Title);

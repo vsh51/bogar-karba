@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.Interfaces;
 using Domain.Entities;
 using Microsoft.Extensions.Logging;
@@ -9,7 +10,7 @@ public sealed class CloneChecklistCommandHandler(
     IChecklistReadOnlyRepository readRepository,
     ILogger<CloneChecklistCommandHandler> logger)
 {
-    public async Task<CloneChecklistResult> HandleAsync(CloneChecklistCommand command)
+    public async Task<Result<Guid>> HandleAsync(CloneChecklistCommand command)
     {
         logger.LogInformation(
             "Initiated cloning of checklist {ChecklistId} for user {UserId}",
@@ -23,7 +24,7 @@ public sealed class CloneChecklistCommandHandler(
             if (sourceChecklist is null)
             {
                 logger.LogWarning("Checklist {ChecklistId} not found for cloning", command.SourceChecklistId);
-                return CloneChecklistResult.Failure("Checklist not found.");
+                return ResultErrors.ChecklistNotFound;
             }
 
             if (sourceChecklist.UserId != command.OwnerId)
@@ -33,7 +34,7 @@ public sealed class CloneChecklistCommandHandler(
                     command.OwnerId,
                     sourceChecklist.Id,
                     sourceChecklist.UserId);
-                return CloneChecklistResult.Failure("You can only clone your own checklists.");
+                return ResultErrors.NotChecklistOwner;
             }
 
             // Clones start as Draft so the author can review before publishing.
@@ -72,12 +73,12 @@ public sealed class CloneChecklistCommandHandler(
                 command.SourceChecklistId,
                 clonedChecklist.Id);
 
-            return CloneChecklistResult.Success(clonedChecklist.Id);
+            return clonedChecklist.Id;
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Error cloning checklist {ChecklistId}", command.SourceChecklistId);
-            return CloneChecklistResult.Failure("An error occurred while cloning the checklist.");
+            return "An error occurred while cloning the checklist.";
         }
     }
 

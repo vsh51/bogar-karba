@@ -5,31 +5,20 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.UseCases.GetSystemStats;
 
-public sealed class GetSystemStatsQueryHandler
+public sealed class GetSystemStatsQueryHandler(
+    IChecklistRepository checklistRepository,
+    IUserRepository userRepository,
+    ILogger<GetSystemStatsQueryHandler> logger)
 {
-    private readonly IChecklistRepository _checklistRepository;
-    private readonly IUserRepository _userRepository;
-    private readonly ILogger<GetSystemStatsQueryHandler> _logger;
-
-    public GetSystemStatsQueryHandler(
-        IChecklistRepository checklistRepository,
-        IUserRepository userRepository,
-        ILogger<GetSystemStatsQueryHandler> logger)
-    {
-        _checklistRepository = checklistRepository;
-        _userRepository = userRepository;
-        _logger = logger;
-    }
-
     public async Task<Result<SystemStatsDto>> HandleAsync(GetSystemStatsQuery query)
     {
         _ = query;
-        _logger.LogInformation("Fetching system statistics");
+        logger.LogInformation("Fetching system statistics");
 
-        var totalChecklists = await _checklistRepository.GetTotalCountAsync();
-        var totalUsers = await _userRepository.GetTotalCountAsync();
+        var totalChecklists = await checklistRepository.GetTotalCountAsync();
+        var totalUsers = await userRepository.GetTotalCountAsync();
 
-        _logger.LogInformation(
+        logger.LogInformation(
             "System statistics fetched successfully: {TotalChecklists} checklists, {TotalUsers} users",
             totalChecklists,
             totalUsers);
