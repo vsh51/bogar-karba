@@ -1,3 +1,4 @@
+using Application.Enums;
 using Application.Interfaces;
 using Application.UseCases.SearchChecklists;
 using Domain.Entities;
@@ -20,6 +21,7 @@ public class SearchChecklistsQueryHandlerTests
 
         var handler = new SearchChecklistsQueryHandler(
             new FakeChecklistRepository(items),
+            new FakeUserRepository(),
             NullLogger<SearchChecklistsQueryHandler>.Instance);
 
         var result = await handler.HandleAsync(new SearchChecklistsQuery("deploy"));
@@ -41,6 +43,7 @@ public class SearchChecklistsQueryHandlerTests
 
         var handler = new SearchChecklistsQueryHandler(
             new FakeChecklistRepository(items),
+            new FakeUserRepository(),
             NullLogger<SearchChecklistsQueryHandler>.Instance);
 
         var result = await handler.HandleAsync(new SearchChecklistsQuery(null));
@@ -61,6 +64,7 @@ public class SearchChecklistsQueryHandlerTests
 
         var handler = new SearchChecklistsQueryHandler(
             new FakeChecklistRepository(items),
+            new FakeUserRepository(),
             NullLogger<SearchChecklistsQueryHandler>.Instance);
 
         var result = await handler.HandleAsync(new SearchChecklistsQuery("Orange"));
@@ -80,6 +84,7 @@ public class SearchChecklistsQueryHandlerTests
 
         var handler = new SearchChecklistsQueryHandler(
             new FakeChecklistRepository(items),
+            new FakeUserRepository(),
             NullLogger<SearchChecklistsQueryHandler>.Instance);
 
         var result = await handler.HandleAsync(new SearchChecklistsQuery("   "));
@@ -142,5 +147,24 @@ public class SearchChecklistsQueryHandlerTests
         {
             return Task.CompletedTask;
         }
+    }
+
+    private sealed class FakeUserRepository : IUserRepository
+    {
+        public Task<bool> UserExistsAsync(string identifier, UserLookupMode lookupMode) => Task.FromResult(false);
+
+        public Task<bool> CheckPasswordAsync(string identifier, string password, UserLookupMode lookupMode) => Task.FromResult(false);
+
+        public Task<bool> IsActiveAsync(string identifier, UserLookupMode lookupMode) => Task.FromResult(false);
+
+        public Task<IList<string>> GetRolesAsync(string identifier, UserLookupMode lookupMode) => Task.FromResult<IList<string>>(new List<string>());
+
+        public Task<(bool Succeeded, IEnumerable<string> Errors)> CreateUserAsync(string name, string surname, string email, string password, UserStatus accountStatus) => Task.FromResult((false, Enumerable.Empty<string>()));
+
+        public Task<bool> BanUserAsync(string userId) => Task.FromResult(false);
+
+        public Task<int> GetTotalCountAsync() => Task.FromResult(0);
+
+        public Task<Dictionary<string, string>> GetUsernamesByIdsAsync(IEnumerable<string> userIds) => Task.FromResult(new Dictionary<string, string>());
     }
 }

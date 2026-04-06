@@ -83,6 +83,14 @@ public class UserRepository : IUserRepository
         return await _userManager.Users.CountAsync();
     }
 
+    public async Task<Dictionary<string, string>> GetUsernamesByIdsAsync(IEnumerable<string> userIds)
+    {
+        var ids = userIds.ToList();
+        return await _userManager.Users
+            .Where(u => ids.Contains(u.Id))
+            .ToDictionaryAsync(u => u.Id, u => u.UserName ?? u.Id);
+    }
+
     private async Task<ApplicationUser?> FindUserAsync(string identifier, UserLookupMode lookupMode)
     {
         return lookupMode switch
