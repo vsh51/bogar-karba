@@ -7,15 +7,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories;
 
-public class UserRepository : IUserRepository
+public sealed class UserRepository(UserManager<ApplicationUser> userManager) : IUserRepository
 {
-    private readonly UserManager<ApplicationUser> _userManager;
-
-    public UserRepository(UserManager<ApplicationUser> userManager)
-    {
-        _userManager = userManager;
-    }
-
     public async Task<bool> UserExistsAsync(string identifier, UserLookupMode lookupMode)
     {
         return await FindUserAsync(identifier, lookupMode) is not null;
@@ -35,7 +28,7 @@ public class UserRepository : IUserRepository
             return false;
         }
 
-        return await _userManager.CheckPasswordAsync(user, password);
+        return await userManager.CheckPasswordAsync(user, password);
     }
 
     public async Task<IList<string>> GetRolesAsync(string identifier, UserLookupMode lookupMode)
@@ -46,7 +39,7 @@ public class UserRepository : IUserRepository
             return new List<string>();
         }
 
-        return await _userManager.GetRolesAsync(user);
+        return await userManager.GetRolesAsync(user);
     }
 
     public async Task<(bool Succeeded, IEnumerable<string> Errors)> CreateUserAsync(
@@ -61,32 +54,32 @@ public class UserRepository : IUserRepository
             AccountStatus = accountStatus,
         };
 
-        var result = await _userManager.CreateAsync(user, password);
+        var result = await userManager.CreateAsync(user, password);
         return (result.Succeeded, result.Errors.Select(e => e.Description));
     }
 
     public async Task<bool> BanUserAsync(string userId)
     {
-        var user = await _userManager.FindByIdAsync(userId);
+        var user = await userManager.FindByIdAsync(userId);
         if (user is null)
         {
             return false;
         }
 
         user.AccountStatus = UserStatus.Banned;
-        var result = await _userManager.UpdateSecurityStampAsync(user);
+        var result = await userManager.UpdateSecurityStampAsync(user);
         return result.Succeeded;
     }
 
     public async Task<int> GetTotalCountAsync()
     {
-        return await _userManager.Users.CountAsync();
+        return await userManager.Users.CountAsync();
     }
 
     public async Task<Dictionary<string, string>> GetUsernamesByIdsAsync(IEnumerable<string> userIds)
     {
         var ids = userIds.ToList();
-        return await _userManager.Users
+        return await userManager.Users
             .Where(u => ids.Contains(u.Id))
             .ToDictionaryAsync(u => u.Id, u => u.UserName ?? u.Id);
     }
@@ -95,8 +88,8 @@ public class UserRepository : IUserRepository
     {
         return lookupMode switch
         {
-            UserLookupMode.ByEmail => await _userManager.FindByEmailAsync(identifier),
-            UserLookupMode.ByUserName => await _userManager.FindByNameAsync(identifier),
+            UserLookupMode.ByEmail => await userManager.FindByEmailAsync(identifier),
+            UserLookupMode.ByUserName => await userManager.FindByNameAsync(identifier),
             _ => null,
         };
     }
