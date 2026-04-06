@@ -169,6 +169,20 @@
                 };
             }(input, taskId));
         }
+
+        let clearBtn = document.getElementById("clear-progress-btn");
+        if (clearBtn) {
+            clearBtn.addEventListener("click", function () {
+                if (!confirm("Clear all progress for this checklist?")) {
+                    return;
+                }
+
+                saveChecklistProgress(checklistId, []);
+                for (let i = 0; i < inputs.length; i++) {
+                    inputs[i].checked = false;
+                }
+            });
+        }
     }
 
     window.getChecklistProgress = getChecklistProgress;
