@@ -1,6 +1,7 @@
 using Application.Common;
 using Application.DTOs;
 using Application.Interfaces;
+using Domain.Entities;
 using Microsoft.Extensions.Logging;
 
 namespace Application.UseCases.GetSystemStats;
@@ -17,12 +18,23 @@ public sealed class GetSystemStatsQueryHandler(
 
         var totalChecklists = await checklistRepository.GetTotalCountAsync();
         var totalUsers = await userRepository.GetTotalCountAsync();
+        var publishedChecklists = await checklistRepository.GetCountByStatusAsync(ChecklistStatus.Published);
+        var draftChecklists = await checklistRepository.GetCountByStatusAsync(ChecklistStatus.Draft);
+        var archivedChecklists = await checklistRepository.GetCountByStatusAsync(ChecklistStatus.Archived);
 
         logger.LogInformation(
-            "System statistics fetched successfully: {TotalChecklists} checklists, {TotalUsers} users",
+            "System statistics fetched successfully: {TotalChecklists} checklists, {TotalUsers} users, {PublishedChecklists} published, {DraftChecklists} drafts, {ArchivedChecklists} archived",
             totalChecklists,
-            totalUsers);
+            totalUsers,
+            publishedChecklists,
+            draftChecklists,
+            archivedChecklists);
 
-        return new SystemStatsDto(totalChecklists, totalUsers);
+        return new SystemStatsDto(
+            totalChecklists,
+            totalUsers,
+            publishedChecklists,
+            draftChecklists,
+            archivedChecklists);
     }
 }

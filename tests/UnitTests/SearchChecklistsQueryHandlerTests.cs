@@ -133,6 +133,11 @@ public class SearchChecklistsQueryHandlerTests
             return Task.FromResult(_items.Count);
         }
 
+        public Task<int> GetCountByStatusAsync(ChecklistStatus status)
+        {
+            return Task.FromResult(_items.Count(c => c.Status == status));
+        }
+
         public Task<Checklist?> GetByIdWithDetailsAsync(Guid id)
         {
             return Task.FromResult(_items.FirstOrDefault(c => c.Id == id));
