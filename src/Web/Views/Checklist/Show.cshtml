@@ -109,6 +109,12 @@
                         Import Progress
                     </button>
                 </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <button id="share-progress-btn" class="dropdown-item" type="button" onclick="window.checklistProgressSync.copyShareLinkToClipboard('@Model.Id')">
+                        Share Progress Link
+                    </button>
+                </li>
             </ul>
         </div>
         <input type="file" id="import-progress-file" accept=".json" style="display: none;" />

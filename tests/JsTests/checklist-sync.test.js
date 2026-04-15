@@ -3,7 +3,29 @@ const assert = require('node:assert');
 const fs = require('fs');
 const path = require('path');
 
-global.window = {};
+global.window = {
+    location: {
+        origin: "http://localhost",
+        protocol: "http:",
+        host: "localhost",
+        pathname: "/checklist/c1",
+        search: "",
+        reload: () => {}
+    },
+    history: { replaceState: () => {} }
+};
+global.URLSearchParams = require('url').URLSearchParams;
+if (!global.navigator) {
+    global.navigator = {};
+}
+Object.defineProperty(global.navigator, 'clipboard', {
+    value: { writeText: async (text) => text },
+    writable: true,
+    configurable: true
+});
+global.btoa = (str) => Buffer.from(str).toString('base64');
+global.atob = (b64) => Buffer.from(b64, 'base64').toString('utf8');
+global.confirm = () => true;
 global.document = {
     readyState: "complete",
     getElementById: () => null,
@@ -114,4 +136,55 @@ test('checklist-sync operations', async (t) => {
         global.document.createElement = originalCreateElement;
     });
 
+    await t.test('copyShareLinkToClipboard should encode progress without throwing', () => {
+        const sync = window.checklistProgressSync;
+        mockStorage.set("bogarKarba.checklistProgress", JSON.stringify({
+            v: 1,
+            checklists: { "c1": { completed: ["t1", "t2"] } }
+        }));
+
+        let copiedText = "";
+        global.navigator.clipboard.writeText = async (text) => { copiedText = text; };
+
+        sync.copyShareLinkToClipboard("c1");
+        
+        let expectedBase64 = global.btoa(JSON.stringify(["t1", "t2"]));
+        let expectedUrl = encodeURIComponent(expectedBase64);
+        assert.ok(copiedText.includes("?p=" + expectedUrl), "Url should contain the encoded progress");
+    });
+
+    await t.test('checkForSharedProgress should merge parsed state into localStorage on load', () => {
+        global.window.location.search = "?p=" + encodeURIComponent(global.btoa(JSON.stringify(["t-new"])));
+        global.window.location.pathname = "/checklist/c-test";
+
+        mockStorage.set("bogarKarba.checklistProgress", JSON.stringify({
+            v: 1,
+            checklists: { "c-test": { completed: ["t-old"] } }
+        }));
+
+        if (window.checklistProgressSync && window.checklistProgressSync.test_checkForSharedProgress) {
+            window.checklistProgressSync.test_checkForSharedProgress();
+        }
+
+        const newData = JSON.parse(mockStorage.get("bogarKarba.checklistProgress"));
+        assert.deepStrictEqual(newData.checklists["c-test"].completed.sort(), ["t-new", "t-old"].sort());
+    });
+
+    await t.test('checkForSharedProgress should replace state if user chooses replace', () => {
+        global.window.location.search = "?p=" + encodeURIComponent(global.btoa(JSON.stringify(["t-new"])));
+        global.window.location.pathname = "/checklist/c-test2";
+
+        mockStorage.set("bogarKarba.checklistProgress", JSON.stringify({
+            v: 1,
+            checklists: { "c-test2": { completed: ["t-old"] } }
+        }));
+
+        window.checklistProgressSync.test_forceReplaceMode = true;
+        if (window.checklistProgressSync && window.checklistProgressSync.test_checkForSharedProgress) {
+            window.checklistProgressSync.test_checkForSharedProgress();
+        }
+
+        const newData = JSON.parse(mockStorage.get("bogarKarba.checklistProgress"));
+        assert.deepStrictEqual(newData.checklists["c-test2"].completed, ["t-new"]);
+    });
 });
