@@ -241,26 +241,24 @@
         let modalHtml = `
         <div class="modal fade" id="sharedProgressModal" tabindex="-1" aria-labelledby="sharedProgressLabel" aria-hidden="true" data-bs-backdrop="static">
           <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content shadow border-0" style="border-radius: 1rem;">
-              <div class="modal-header border-bottom-0 pb-0">
-                <h4 class="modal-title fw-bold text-dark" id="sharedProgressLabel">
-                  <i class="bi bi-cloud-arrow-down text-primary me-2"></i>Import Progress
-                </h4>
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="sharedProgressLabel">Import Progress</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="btn-cancel-top"></button>
               </div>
-              <div class="modal-body text-center pt-3">
-                <p class="text-muted mb-4 fs-6">This link contains saved progress for this checklist. How would you like to apply it?</p>
-                <div class="d-grid gap-3 px-4">
-                    <button type="button" class="btn btn-primary btn-lg rounded-pill shadow-sm" id="btn-merge-progress">
-                        <strong>Merge</strong> with my progress
+              <div class="modal-body">
+                <p class="text-muted mb-3">This link contains saved progress for this checklist. How would you like to apply it?</p>
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-outline-secondary" id="btn-merge-progress">
+                        Merge with my progress
                     </button>
-                    <button type="button" class="btn btn-outline-danger shadow-sm rounded-pill" id="btn-replace-progress">
-                        <strong>Replace</strong> my progress entirely
+                    <button type="button" class="btn btn-outline-danger" id="btn-replace-progress">
+                        Replace my progress entirely
                     </button>
                 </div>
               </div>
-              <div class="modal-footer border-top-0 justify-content-center pt-0 pb-4">
-                <button type="button" class="btn btn-link text-muted text-decoration-none" data-bs-dismiss="modal" id="btn-cancel-bottom">Ignore</button>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-link text-muted" data-bs-dismiss="modal" id="btn-cancel-bottom">Ignore</button>
               </div>
             </div>
           </div>

@@ -59,12 +59,12 @@
             
             html += `
                 <div class="col">
-                    <div class="card h-100 shadow-sm border-primary">
+                    <div class="card h-100">
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title">${title}</h5>
                             <p class="card-text text-muted small flex-grow-1">${desc}</p>
                             <div class="d-grid mt-3">
-                                <a href="${url}" class="btn btn-primary">Continue</a>
+                                <a href="${url}" class="btn btn-outline-secondary">Continue</a>
                             </div>
                         </div>
                     </div>

@@ -13,9 +13,8 @@
 
     .checklist-title {
         margin: 0 0 0.75rem;
-        font-size: clamp(1.7rem, 2.2vw, 2.25rem);
+        font-size: 1.75rem;
         font-weight: 700;
-        letter-spacing: 0.01em;
         line-height: 1.2;
     }
 
@@ -41,12 +40,7 @@
         margin: 0 0 0.7rem;
         cursor: pointer;
         user-select: none;
-        transition: opacity 0.2s ease;
         padding: 0.2rem 0;
-    }
-
-    .checklist-section-header:hover {
-        opacity: 0.8;
     }
 
     .checklist-section-title {
@@ -58,9 +52,8 @@
 
     .checklist-section-toggle {
         margin-right: 0.6rem;
-        color: #6c717a;
+        color: #6c757d;
         font-size: 1.1rem;
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .checklist-section-header[aria-expanded="false"] .checklist-section-toggle {
@@ -127,17 +120,16 @@
     }
 
     .checklist-progress-bar-wrap {
-        height: 0.65rem;
-        background: #e7ebf1;
-        border-radius: 999px;
+        height: 0.5rem;
+        background: #e9ecef;
+        border-radius: 0.25rem;
         overflow: hidden;
     }
 
     .checklist-progress-bar {
         width: 0;
         height: 100%;
-        background: linear-gradient(90deg, #1f7a5c, #2f9f76);
-        transition: width 180ms ease;
+        background: #198754;
     }
 </style>
 
