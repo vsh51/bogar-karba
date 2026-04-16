@@ -26,11 +26,38 @@
         border-bottom: none;
     }
 
-    .item-checkbox {
-        width: 1rem;
-        height: 1rem;
-        border: 2px solid #adb5bd;
-        border-radius: 0.2rem;
+    .drag-handle {
+        cursor: grab;
+        color: #ced4da;
+        user-select: none;
+        font-size: 1.1rem;
+        line-height: 1;
+        padding: 0 0.15rem;
+        flex-shrink: 0;
+    }
+
+    .checklist-row:hover .drag-handle {
+        color: #6c757d;
+    }
+
+    .drag-handle:active {
+        cursor: grabbing;
+    }
+
+    .task-row.dragging {
+        opacity: 0.45;
+    }
+
+    .task-row.drop-above {
+        border-top: 2px solid #0d6efd;
+    }
+
+    .task-row.drop-below {
+        border-bottom: 2px solid #0d6efd;
+    }
+
+    .select-task {
+        margin: 0;
         flex-shrink: 0;
     }
 
@@ -69,10 +96,33 @@
     .checklist-row:hover .btn-delete {
         visibility: visible;
     }
+
+    .group-bar {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        margin-bottom: 0.75rem;
+    }
+
+    .group-bar .selected-count {
+        color: #6c757d;
+        font-size: 0.85rem;
+        white-space: nowrap;
+    }
+
+    .toast-stack {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        z-index: 1080;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
 </style>
 
 <div class="row justify-content-center mt-5">
-    <div class="col-md-6">
+    <div class="col-md-7">
         <div class="card shadow">
             <div class="card-header bg-primary text-white text-center">
                 <h4 class="mb-0">Edit Checklist</h4>
@@ -89,7 +139,15 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Items</label>
+                    <label class="form-label d-flex justify-content-between align-items-center">
+                        <span>Items</span>
+                        <small class="text-muted">Drag <span class="drag-handle d-inline">&#8942;&#8942;</span> to reorder</small>
+                    </label>
+                    <div class="group-bar">
+                        <input type="text" class="form-control form-control-sm" id="group-section-name" placeholder="New section name for selected items..." />
+                        <span class="selected-count" id="selected-count">0 selected</span>
+                        <button type="button" class="btn btn-outline-primary btn-sm" id="group-selected-btn" disabled>Group selected</button>
+                    </div>
                     <div class="editor-content border rounded" id="sections-container">
                         @foreach (var sectionItem in Model.Sections)
                         {
@@ -101,8 +159,9 @@
                                 <div class="tasks-container">
                                     @foreach (var task in sectionItem.Tasks)
                                     {
-                                        <div class="checklist-row task-row" data-task-id="@task.Id">
-                                            <div class="item-checkbox"></div>
+                                        <div class="checklist-row task-row" data-task-id="@task.Id" draggable="true">
+                                            <span class="drag-handle" title="Drag to reorder">&#8942;&#8942;</span>
+                                            <input type="checkbox" class="select-task" title="Select for grouping" />
                                             <input type="text" class="item-input" value="@task.Content" placeholder="Item description..." />
                                             <button type="button" class="btn-delete btn-delete-task">&times;</button>
                                         </div>
@@ -126,6 +185,8 @@
         </div>
     </div>
 </div>
+
+<div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="true"></div>
 
 @section Scripts {
     <script>

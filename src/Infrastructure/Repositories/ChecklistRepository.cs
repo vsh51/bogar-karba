@@ -60,6 +60,11 @@ public class ChecklistRepository(ApplicationDbContext context) : IChecklistRepos
             .FirstOrDefaultAsync(c => c.Id == id);
     }
 
+    public async Task AddSectionAsync(Section section)
+    {
+        await context.Sections.AddAsync(section);
+    }
+
     public async Task UpdateAsync()
     {
         await context.SaveChangesAsync();

@@ -6,6 +6,8 @@ using Application.UseCases.EditChecklist;
 using Application.UseCases.ExportChecklist;
 using Application.UseCases.ExportChecklist.Markdown;
 using Application.UseCases.GetPublishedChecklist;
+using Application.UseCases.GroupTasksIntoSection;
+using Application.UseCases.ReorderChecklistItem;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Web.Mappings;
@@ -21,6 +23,8 @@ public sealed class ChecklistController : BaseController
     private readonly DeleteChecklistCommandHandler _deleteHandler;
     private readonly EditChecklistCommandHandler _editHandler;
     private readonly ExportMarkdownQueryHandler _exportHandler;
+    private readonly ReorderChecklistItemCommandHandler _reorderItemHandler;
+    private readonly GroupTasksIntoSectionCommandHandler _groupTasksHandler;
     private readonly IChecklistReadOnlyRepository _readRepository;
     private readonly ILogger<ChecklistController> _logger;
 
@@ -30,6 +34,8 @@ public sealed class ChecklistController : BaseController
         DeleteChecklistCommandHandler deleteHandler,
         EditChecklistCommandHandler editHandler,
         ExportMarkdownQueryHandler exportHandler,
+        ReorderChecklistItemCommandHandler reorderItemHandler,
+        GroupTasksIntoSectionCommandHandler groupTasksHandler,
         IChecklistReadOnlyRepository readRepository,
         ILogger<ChecklistController> logger)
     {
@@ -38,6 +44,8 @@ public sealed class ChecklistController : BaseController
         _deleteHandler = deleteHandler;
         _editHandler = editHandler;
         _exportHandler = exportHandler;
+        _reorderItemHandler = reorderItemHandler;
+        _groupTasksHandler = groupTasksHandler;
         _readRepository = readRepository;
         _logger = logger;
     }
@@ -294,5 +302,79 @@ public sealed class ChecklistController : BaseController
         }
 
         return BadRequest(result.ErrorMessage ?? "An error occurred while updating the checklist.");
+    }
+
+    [HttpPost("{id:guid}/items/reorder")]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ReorderItem(Guid id, [FromBody] ReorderChecklistItemViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var userId = CurrentUserId;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        _logger.LogInformation(
+            "Reorder item {TaskId} to section {TargetSectionId} position {Position} requested by user {UserId} for checklist {ChecklistId}",
+            model.TaskId,
+            model.TargetSectionId,
+            model.NewPosition,
+            userId,
+            id);
+
+        var command = new ReorderChecklistItemCommand(
+            id,
+            userId,
+            model.TaskId,
+            model.TargetSectionId,
+            model.NewPosition);
+        var result = await _reorderItemHandler.HandleAsync(command);
+
+        if (result.Succeeded)
+        {
+            return Json(new { success = true });
+        }
+
+        return BadRequest(result.ErrorMessage ?? "Failed to reorder item.");
+    }
+
+    [HttpPost("{id:guid}/sections/group")]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> GroupTasksIntoSection(Guid id, [FromBody] GroupTasksIntoSectionViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var userId = CurrentUserId;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        _logger.LogInformation(
+            "Group {Count} tasks into section '{SectionName}' requested by user {UserId} for checklist {ChecklistId}",
+            model.TaskIds.Count,
+            model.SectionName,
+            userId,
+            id);
+
+        var command = new GroupTasksIntoSectionCommand(id, userId, model.SectionName, model.TaskIds);
+        var result = await _groupTasksHandler.HandleAsync(command);
+
+        if (result.Succeeded)
+        {
+            return Json(new { success = true, id = result.Value });
+        }
+
+        return BadRequest(result.ErrorMessage ?? "Failed to group tasks into section.");
     }
 }
