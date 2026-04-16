@@ -1,11 +1,13 @@
 using Application.Common;
 using Application.Interfaces;
+using Application.UseCases.AddChecklistItem;
 using Application.UseCases.CreateChecklist;
 using Application.UseCases.DeleteChecklist;
 using Application.UseCases.EditChecklist;
 using Application.UseCases.ExportChecklist;
 using Application.UseCases.ExportChecklist.Markdown;
 using Application.UseCases.GetPublishedChecklist;
+using Application.UseCases.RemoveChecklistItem;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Web.Mappings;
@@ -21,6 +23,8 @@ public sealed class ChecklistController : BaseController
     private readonly DeleteChecklistCommandHandler _deleteHandler;
     private readonly EditChecklistCommandHandler _editHandler;
     private readonly ExportMarkdownQueryHandler _exportHandler;
+    private readonly AddChecklistItemCommandHandler _addItemHandler;
+    private readonly RemoveChecklistItemCommandHandler _removeItemHandler;
     private readonly IChecklistReadOnlyRepository _readRepository;
     private readonly ILogger<ChecklistController> _logger;
 
@@ -30,6 +34,8 @@ public sealed class ChecklistController : BaseController
         DeleteChecklistCommandHandler deleteHandler,
         EditChecklistCommandHandler editHandler,
         ExportMarkdownQueryHandler exportHandler,
+        AddChecklistItemCommandHandler addItemHandler,
+        RemoveChecklistItemCommandHandler removeItemHandler,
         IChecklistReadOnlyRepository readRepository,
         ILogger<ChecklistController> logger)
     {
@@ -38,6 +44,8 @@ public sealed class ChecklistController : BaseController
         _deleteHandler = deleteHandler;
         _editHandler = editHandler;
         _exportHandler = exportHandler;
+        _addItemHandler = addItemHandler;
+        _removeItemHandler = removeItemHandler;
         _readRepository = readRepository;
         _logger = logger;
     }
@@ -294,5 +302,71 @@ public sealed class ChecklistController : BaseController
         }
 
         return BadRequest(result.ErrorMessage ?? "An error occurred while updating the checklist.");
+    }
+
+    [HttpPost("{id:guid}/items/add")]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AddItem(Guid id, [FromBody] AddChecklistItemViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var userId = CurrentUserId;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        _logger.LogInformation(
+            "Add item requested by user {UserId} for checklist {ChecklistId}, section {SectionId}",
+            userId,
+            id,
+            model.SectionId);
+
+        var command = new AddChecklistItemCommand(id, userId, model.SectionId, model.Content);
+        var result = await _addItemHandler.HandleAsync(command);
+
+        if (result.Succeeded)
+        {
+            return Json(new { success = true, id = result.Value });
+        }
+
+        return BadRequest(result.ErrorMessage ?? "Failed to add item.");
+    }
+
+    [HttpPost("{id:guid}/items/{taskId:guid}/remove")]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RemoveItem(Guid id, Guid taskId)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var userId = CurrentUserId;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        _logger.LogInformation(
+            "Remove item {TaskId} requested by user {UserId} for checklist {ChecklistId}",
+            taskId,
+            userId,
+            id);
+
+        var command = new RemoveChecklistItemCommand(id, userId, taskId);
+        var result = await _removeItemHandler.HandleAsync(command);
+
+        if (result.Succeeded)
+        {
+            return Json(new { success = true });
+        }
+
+        return BadRequest(result.ErrorMessage ?? "Failed to remove item.");
     }
 }

@@ -138,6 +138,8 @@ public class SearchChecklistsQueryHandlerTests
             return Task.FromResult(_items.FirstOrDefault(c => c.Id == id));
         }
 
+        public Task AddTaskAsync(TaskItem task) => Task.CompletedTask;
+
         public Task UpdateAsync()
         {
             return Task.CompletedTask;
