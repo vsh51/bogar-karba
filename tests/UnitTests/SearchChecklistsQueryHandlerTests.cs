@@ -1,8 +1,10 @@
 using Application.Enums;
 using Application.Interfaces;
+using Application.Options;
 using Application.UseCases.SearchChecklists;
 using Domain.Entities;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 
 namespace UnitTests;
 
@@ -21,6 +23,7 @@ public class SearchChecklistsQueryHandlerTests
         var handler = new SearchChecklistsQueryHandler(
             new FakeChecklistRepository(items),
             new FakeUserRepository(),
+            Options.Create(new ChecklistOptions()),
             NullLogger<SearchChecklistsQueryHandler>.Instance);
 
         var result = await handler.HandleAsync(new SearchChecklistsQuery("deploy"));
@@ -43,6 +46,7 @@ public class SearchChecklistsQueryHandlerTests
         var handler = new SearchChecklistsQueryHandler(
             new FakeChecklistRepository(items),
             new FakeUserRepository(),
+            Options.Create(new ChecklistOptions()),
             NullLogger<SearchChecklistsQueryHandler>.Instance);
 
         var result = await handler.HandleAsync(new SearchChecklistsQuery(null));
@@ -64,6 +68,7 @@ public class SearchChecklistsQueryHandlerTests
         var handler = new SearchChecklistsQueryHandler(
             new FakeChecklistRepository(items),
             new FakeUserRepository(),
+            Options.Create(new ChecklistOptions()),
             NullLogger<SearchChecklistsQueryHandler>.Instance);
 
         var result = await handler.HandleAsync(new SearchChecklistsQuery("Orange"));
@@ -84,6 +89,7 @@ public class SearchChecklistsQueryHandlerTests
         var handler = new SearchChecklistsQueryHandler(
             new FakeChecklistRepository(items),
             new FakeUserRepository(),
+            Options.Create(new ChecklistOptions()),
             NullLogger<SearchChecklistsQueryHandler>.Instance);
 
         var result = await handler.HandleAsync(new SearchChecklistsQuery("   "));
