@@ -1,5 +1,6 @@
 using System.Globalization;
 using Application.Interfaces;
+using Application.Options;
 using Application.UseCases.AddChecklistItem;
 using Application.UseCases.Auth.LoginAdmin;
 using Application.UseCases.Auth.LoginUser;
@@ -11,6 +12,7 @@ using Application.UseCases.CreateChecklist;
 using Application.UseCases.DeleteChecklist;
 using Application.UseCases.EditChecklist;
 using Application.UseCases.ExportChecklist.Markdown;
+using Application.UseCases.GetChecklistForEdit;
 using Application.UseCases.GetChecklistsByIds;
 using Application.UseCases.GetPublishedChecklist;
 using Application.UseCases.GetSystemStats;
@@ -73,12 +75,17 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
+var cookieExpirationHours = builder.Configuration.GetValue("Authentication:CookieExpirationHours", 2);
+
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Account/Login";
     options.AccessDeniedPath = "/Account/Login";
-    options.ExpireTimeSpan = TimeSpan.FromHours(2);
+    options.ExpireTimeSpan = TimeSpan.FromHours(cookieExpirationHours);
 });
+
+builder.Services.Configure<ChecklistOptions>(
+    builder.Configuration.GetSection(ChecklistOptions.SectionName));
 
 builder.Services.AddScoped<IChecklistRepository, ChecklistRepository>();
 builder.Services.AddScoped<IChecklistReadOnlyRepository, ChecklistReadOnlyRepository>();
@@ -104,6 +111,7 @@ builder.Services.AddScoped<ReorderChecklistItemCommandHandler>();
 builder.Services.AddScoped<GroupTasksIntoSectionCommandHandler>();
 builder.Services.AddScoped<AddChecklistItemCommandHandler>();
 builder.Services.AddScoped<RemoveChecklistItemCommandHandler>();
+builder.Services.AddScoped<GetChecklistForEditQueryHandler>();
 builder.Services.AddScoped<GetChecklistsByIdsQueryHandler>();
 
 builder.Services.AddControllersWithViews();

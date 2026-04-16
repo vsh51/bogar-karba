@@ -1,4 +1,3 @@
-using Application.Common;
 using Application.UseCases.Auth.LoginUser;
 using Application.UseCases.Auth.Logout;
 using Application.UseCases.Auth.RegisterUser;
