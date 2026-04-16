@@ -108,6 +108,9 @@ function setupEnvironment(options = {}) {
 
             return null;
         },
+        getElementById() {
+            return null;
+        },
         addEventListener() {}
     };
 
