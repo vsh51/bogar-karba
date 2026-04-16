@@ -65,7 +65,10 @@ public static class ViewModelMappings
         return new DashboardViewModel
         {
             TotalChecklists = result.TotalChecklists,
-            TotalUsers = result.TotalUsers
+            TotalUsers = result.TotalUsers,
+            PublishedChecklists = result.PublishedChecklists,
+            DraftChecklists = result.DraftChecklists,
+            ArchivedChecklists = result.ArchivedChecklists
         };
     }
 }
