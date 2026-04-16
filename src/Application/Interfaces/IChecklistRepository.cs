@@ -18,5 +18,7 @@ public interface IChecklistRepository
 
     Task<Checklist?> GetByIdWithDetailsAsync(Guid id);
 
+    Task AddSectionAsync(Section section);
+
     Task UpdateAsync();
 }
