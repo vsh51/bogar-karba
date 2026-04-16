@@ -1,4 +1,3 @@
-using Application.Common;
 using Application.Interfaces;
 using Application.UseCases.AddChecklistItem;
 using Application.UseCases.CreateChecklist;
@@ -6,6 +5,7 @@ using Application.UseCases.DeleteChecklist;
 using Application.UseCases.EditChecklist;
 using Application.UseCases.ExportChecklist;
 using Application.UseCases.ExportChecklist.Markdown;
+using Application.UseCases.GetChecklistsByIds;
 using Application.UseCases.GetPublishedChecklist;
 using Application.UseCases.GroupTasksIntoSection;
 using Application.UseCases.ReorderChecklistItem;
@@ -29,6 +29,7 @@ public sealed class ChecklistController : BaseController
     private readonly GroupTasksIntoSectionCommandHandler _groupTasksHandler;
     private readonly AddChecklistItemCommandHandler _addItemHandler;
     private readonly RemoveChecklistItemCommandHandler _removeItemHandler;
+    private readonly GetChecklistsByIdsQueryHandler _getByIdsHandler;
     private readonly IChecklistReadOnlyRepository _readRepository;
     private readonly ILogger<ChecklistController> _logger;
 
@@ -42,6 +43,7 @@ public sealed class ChecklistController : BaseController
         GroupTasksIntoSectionCommandHandler groupTasksHandler,
         AddChecklistItemCommandHandler addItemHandler,
         RemoveChecklistItemCommandHandler removeItemHandler,
+        GetChecklistsByIdsQueryHandler getByIdsHandler,
         IChecklistReadOnlyRepository readRepository,
         ILogger<ChecklistController> logger)
     {
@@ -54,6 +56,7 @@ public sealed class ChecklistController : BaseController
         _groupTasksHandler = groupTasksHandler;
         _addItemHandler = addItemHandler;
         _removeItemHandler = removeItemHandler;
+        _getByIdsHandler = getByIdsHandler;
         _readRepository = readRepository;
         _logger = logger;
     }
@@ -450,5 +453,38 @@ public sealed class ChecklistController : BaseController
         }
 
         return BadRequest(result.ErrorMessage ?? "Failed to remove item.");
+    }
+
+    [HttpPost("get-by-ids")]
+    public async Task<IActionResult> GetByIds([FromBody] List<Guid> ids)
+    {
+        if (!ModelState.IsValid)
+        {
+            _logger.LogWarning("GetByIds validation failed");
+            return BadRequest(ModelState);
+        }
+
+        if (ids == null || ids.Count == 0)
+        {
+            _logger.LogInformation("GetByIds requested with empty list");
+            return Json(new List<object>());
+        }
+
+        _logger.LogInformation(
+            "Fetching multiple checklists by IDs. Count: {Count}",
+            ids.Count);
+
+        var query = new GetChecklistsByIdsQuery(ids);
+        var result = await _getByIdsHandler.HandleAsync(query);
+
+        if (!result.Succeeded)
+        {
+            _logger.LogWarning(
+                "Failed to fetch checklists by IDs: {Error}",
+                result.ErrorMessage);
+            return BadRequest(result.ErrorMessage);
+        }
+
+        return Json(result.Value);
     }
 }

@@ -3,7 +3,6 @@ using Application.UseCases.GetSystemStats;
 using Domain.Entities;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Xunit;
 
 namespace UnitTests;
 

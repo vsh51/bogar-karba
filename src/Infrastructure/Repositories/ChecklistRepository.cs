@@ -16,6 +16,11 @@ public class ChecklistRepository(ApplicationDbContext context) : IChecklistRepos
             .ToListAsync();
     }
 
+    public async Task<List<Checklist>> GetByIdsAsync(IEnumerable<Guid> ids)
+    {
+        return await context.Checklists.Where(c => ids.Contains(c.Id)).AsNoTracking().ToListAsync();
+    }
+
     public async Task AddAsync(Checklist checklist)
     {
         await context.Checklists.AddAsync(checklist);
