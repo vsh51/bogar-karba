@@ -8,6 +8,7 @@ namespace Application.UseCases.SearchChecklists;
 
 public sealed class SearchChecklistsQueryHandler(
     IChecklistRepository repository,
+    IUserRepository userRepository,
     ILogger<SearchChecklistsQueryHandler> logger)
 {
     public async Task<Result<List<ChecklistSummaryDto>>> HandleAsync(SearchChecklistsQuery query)
@@ -25,13 +26,19 @@ public sealed class SearchChecklistsQueryHandler(
                 c.Description.Contains(normalizedSearch, StringComparison.OrdinalIgnoreCase));
         }
 
-        var results = filtered
+        var filteredList = filtered.ToList();
+
+        var userIds = filteredList.Select(c => c.UserId).Distinct();
+        var usernames = await userRepository.GetUsernamesByIdsAsync(userIds);
+
+        var results = filteredList
             .Select(c => new ChecklistSummaryDto
             {
                 Id = c.Id,
                 Title = c.Title,
                 Description = c.Description,
                 UserId = c.UserId,
+                UserName = usernames.GetValueOrDefault(c.UserId, c.UserId),
                 Status = c.Status
             })
             .ToList();

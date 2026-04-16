@@ -10,5 +10,7 @@ public sealed class ChecklistSummaryDto
 
     public string UserId { get; init; } = string.Empty;
 
+    public string UserName { get; init; } = string.Empty;
+
     public Domain.Entities.ChecklistStatus Status { get; init; }
 }

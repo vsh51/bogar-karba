@@ -19,4 +19,6 @@ public interface IUserRepository
     Task<bool> BanUserAsync(string userId);
 
     Task<int> GetTotalCountAsync();
+
+    Task<Dictionary<string, string>> GetUsernamesByIdsAsync(IEnumerable<string> userIds);
 }
