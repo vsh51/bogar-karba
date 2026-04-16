@@ -1,5 +1,6 @@
 using System.Globalization;
 using Application.Interfaces;
+using Application.UseCases.AddChecklistItem;
 using Application.UseCases.Auth.LoginAdmin;
 using Application.UseCases.Auth.LoginUser;
 using Application.UseCases.Auth.Logout;
@@ -15,6 +16,7 @@ using Application.UseCases.GetSystemStats;
 using Application.UseCases.GetUserChecklists;
 using Application.UseCases.GroupTasksIntoSection;
 using Application.UseCases.ReorderChecklistItem;
+using Application.UseCases.RemoveChecklistItem;
 using Application.UseCases.SearchChecklists;
 using Application.UseCases.ToggleChecklistStatus;
 using Infrastructure.Identity;
@@ -99,6 +101,8 @@ builder.Services.AddScoped<ExportMarkdownQueryHandler>();
 builder.Services.AddScoped<ToggleChecklistStatusCommandHandler>();
 builder.Services.AddScoped<ReorderChecklistItemCommandHandler>();
 builder.Services.AddScoped<GroupTasksIntoSectionCommandHandler>();
+builder.Services.AddScoped<AddChecklistItemCommandHandler>();
+builder.Services.AddScoped<RemoveChecklistItemCommandHandler>();
 
 builder.Services.AddControllersWithViews();
 

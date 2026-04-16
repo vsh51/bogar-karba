@@ -110,6 +110,41 @@
         white-space: nowrap;
     }
 
+    .add-item-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.35rem 0.5rem;
+        border-top: 1px dashed #e9ecef;
+    }
+
+    .add-item-row input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        outline: none;
+        font-size: 0.95rem;
+        color: #495057;
+    }
+
+    .add-item-row input::placeholder {
+        color: #adb5bd;
+        font-style: italic;
+    }
+
+    .add-item-row .btn-add-confirm {
+        background: transparent;
+        border: none;
+        color: #0d6efd;
+        cursor: pointer;
+        font-size: 0.9rem;
+        padding: 0.15rem 0.4rem;
+    }
+
+    .add-item-row .btn-add-confirm:hover {
+        text-decoration: underline;
+    }
+
     .toast-stack {
         position: fixed;
         top: 1rem;
@@ -163,9 +198,13 @@
                                             <span class="drag-handle" title="Drag to reorder">&#8942;&#8942;</span>
                                             <input type="checkbox" class="select-task" title="Select for grouping" />
                                             <input type="text" class="item-input" value="@task.Content" placeholder="Item description..." />
-                                            <button type="button" class="btn-delete btn-delete-task">&times;</button>
+                                            <button type="button" class="btn-delete btn-delete-task" title="Remove item">&times;</button>
                                         </div>
                                     }
+                                </div>
+                                <div class="add-item-row">
+                                    <input type="text" class="add-item-input" placeholder="+ Add item..." />
+                                    <button type="button" class="btn-add-confirm" tabindex="-1">Add</button>
                                 </div>
                             </div>
                         }

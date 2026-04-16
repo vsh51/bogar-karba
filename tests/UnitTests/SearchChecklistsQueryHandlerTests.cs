@@ -150,6 +150,8 @@ public class SearchChecklistsQueryHandlerTests
 
         public Task AddSectionAsync(Section section) => Task.CompletedTask;
 
+        public Task AddTaskAsync(TaskItem task) => Task.CompletedTask;
+
         public Task UpdateAsync()
         {
             return Task.CompletedTask;
