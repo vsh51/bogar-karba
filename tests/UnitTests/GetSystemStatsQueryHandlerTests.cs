@@ -2,7 +2,6 @@ using Application.Interfaces;
 using Application.UseCases.GetSystemStats;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Xunit;
 
 namespace UnitTests;
 

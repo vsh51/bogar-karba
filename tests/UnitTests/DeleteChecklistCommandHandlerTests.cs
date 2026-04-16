@@ -4,7 +4,6 @@ using Application.UseCases.DeleteChecklist;
 using Domain.Entities;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Xunit;
 
 namespace UnitTests;
 

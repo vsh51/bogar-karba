@@ -2,7 +2,6 @@ using Application.Interfaces;
 using Application.UseCases.SearchChecklists;
 using Domain.Entities;
 using Microsoft.Extensions.Logging.Abstractions;
-using Xunit;
 
 namespace UnitTests;
 
@@ -103,6 +102,12 @@ public class SearchChecklistsQueryHandlerTests
         public Task<IEnumerable<Checklist>> GetByUserIdAsync(string userId)
         {
             return Task.FromResult<IEnumerable<Checklist>>(_items.Where(c => c.UserId == userId));
+        }
+
+        public Task<List<Checklist>> GetByIdsAsync(IEnumerable<Guid> ids)
+        {
+            var idSet = ids.ToHashSet();
+            return Task.FromResult(_items.Where(c => idSet.Contains(c.Id)).ToList());
         }
 
         public Task AddAsync(Checklist checklist)

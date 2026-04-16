@@ -1,10 +1,10 @@
-using Application.Common;
 using Application.Interfaces;
 using Application.UseCases.CreateChecklist;
 using Application.UseCases.DeleteChecklist;
 using Application.UseCases.EditChecklist;
 using Application.UseCases.ExportChecklist;
 using Application.UseCases.ExportChecklist.Markdown;
+using Application.UseCases.GetChecklistsByIds;
 using Application.UseCases.GetPublishedChecklist;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -21,6 +21,7 @@ public sealed class ChecklistController : BaseController
     private readonly DeleteChecklistCommandHandler _deleteHandler;
     private readonly EditChecklistCommandHandler _editHandler;
     private readonly ExportMarkdownQueryHandler _exportHandler;
+    private readonly GetChecklistsByIdsQueryHandler _getByIdsHandler;
     private readonly IChecklistReadOnlyRepository _readRepository;
     private readonly ILogger<ChecklistController> _logger;
 
@@ -30,6 +31,7 @@ public sealed class ChecklistController : BaseController
         DeleteChecklistCommandHandler deleteHandler,
         EditChecklistCommandHandler editHandler,
         ExportMarkdownQueryHandler exportHandler,
+        GetChecklistsByIdsQueryHandler getByIdsHandler,
         IChecklistReadOnlyRepository readRepository,
         ILogger<ChecklistController> logger)
     {
@@ -38,6 +40,7 @@ public sealed class ChecklistController : BaseController
         _deleteHandler = deleteHandler;
         _editHandler = editHandler;
         _exportHandler = exportHandler;
+        _getByIdsHandler = getByIdsHandler;
         _readRepository = readRepository;
         _logger = logger;
     }
@@ -294,5 +297,38 @@ public sealed class ChecklistController : BaseController
         }
 
         return BadRequest(result.ErrorMessage ?? "An error occurred while updating the checklist.");
+    }
+
+    [HttpPost("get-by-ids")]
+    public async Task<IActionResult> GetByIds([FromBody] List<Guid> ids)
+    {
+        if (!ModelState.IsValid)
+        {
+            _logger.LogWarning("GetByIds validation failed");
+            return BadRequest(ModelState);
+        }
+
+        if (ids == null || ids.Count == 0)
+        {
+            _logger.LogInformation("GetByIds requested with empty list");
+            return Json(new List<object>());
+        }
+
+        _logger.LogInformation(
+            "Fetching multiple checklists by IDs. Count: {Count}",
+            ids.Count);
+
+        var query = new GetChecklistsByIdsQuery(ids);
+        var result = await _getByIdsHandler.HandleAsync(query);
+
+        if (!result.Succeeded)
+        {
+            _logger.LogWarning(
+                "Failed to fetch checklists by IDs: {Error}",
+                result.ErrorMessage);
+            return BadRequest(result.ErrorMessage);
+        }
+
+        return Json(result.Value);
     }
 }
