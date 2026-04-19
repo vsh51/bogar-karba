@@ -16,7 +16,9 @@ public static class ViewModelMappings
             Id = dto.Id,
             Title = dto.Title,
             Description = dto.Description,
-            UserId = dto.UserId
+            UserId = dto.UserId,
+            UserName = dto.UserName,
+            Status = dto.Status
         };
     }
 
@@ -63,7 +65,10 @@ public static class ViewModelMappings
         return new DashboardViewModel
         {
             TotalChecklists = result.TotalChecklists,
-            TotalUsers = result.TotalUsers
+            TotalUsers = result.TotalUsers,
+            PublishedChecklists = result.PublishedChecklists,
+            DraftChecklists = result.DraftChecklists,
+            ArchivedChecklists = result.ArchivedChecklists
         };
     }
 }

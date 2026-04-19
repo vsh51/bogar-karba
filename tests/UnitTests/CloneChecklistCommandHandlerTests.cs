@@ -4,7 +4,6 @@ using Application.UseCases.CloneChecklist;
 using Domain.Entities;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Xunit;
 
 namespace UnitTests;
 
@@ -133,7 +132,7 @@ public class CloneChecklistCommandHandlerTests
     }
 
     [Fact]
-    public async Task HandleAsyncShouldReturnFailureWhenRepositoryThrows()
+    public async Task HandleAsyncShouldPropagateExceptionWhenRepositoryThrows()
     {
         var checklistId = Guid.NewGuid();
         var sourceChecklist = new Checklist
@@ -151,9 +150,9 @@ public class CloneChecklistCommandHandlerTests
             .Setup(r => r.AddAsync(It.IsAny<Checklist>()))
             .ThrowsAsync(new InvalidOperationException("DB error"));
 
-        var result = await _handler.HandleAsync(new CloneChecklistCommand(checklistId, "owner-1"));
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _handler.HandleAsync(new CloneChecklistCommand(checklistId, "owner-1")));
 
-        Assert.False(result.Succeeded);
-        Assert.Equal("An error occurred while cloning the checklist.", result.ErrorMessage);
+        Assert.Equal("DB error", ex.Message);
     }
 }

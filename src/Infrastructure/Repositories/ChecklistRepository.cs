@@ -16,6 +16,11 @@ public class ChecklistRepository(ApplicationDbContext context) : IChecklistRepos
             .ToListAsync();
     }
 
+    public async Task<List<Checklist>> GetByIdsAsync(IEnumerable<Guid> ids)
+    {
+        return await context.Checklists.Where(c => ids.Contains(c.Id)).AsNoTracking().ToListAsync();
+    }
+
     public async Task AddAsync(Checklist checklist)
     {
         await context.Checklists.AddAsync(checklist);
@@ -47,12 +52,27 @@ public class ChecklistRepository(ApplicationDbContext context) : IChecklistRepos
         return await context.Checklists.CountAsync();
     }
 
+    public async Task<int> GetCountByStatusAsync(ChecklistStatus status)
+    {
+        return await context.Checklists.CountAsync(c => c.Status == status);
+    }
+
     public async Task<Checklist?> GetByIdWithDetailsAsync(Guid id)
     {
         return await context.Checklists
             .Include(c => c.Sections.OrderBy(s => s.Position))
             .ThenInclude(s => s.Tasks.OrderBy(t => t.Position))
             .FirstOrDefaultAsync(c => c.Id == id);
+    }
+
+    public async Task AddSectionAsync(Section section)
+    {
+        await context.Sections.AddAsync(section);
+    }
+
+    public async Task AddTaskAsync(TaskItem task)
+    {
+        await context.Tasks.AddAsync(task);
     }
 
     public async Task UpdateAsync()

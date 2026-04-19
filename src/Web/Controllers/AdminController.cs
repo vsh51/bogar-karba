@@ -7,6 +7,7 @@ using Application.UseCases.GetSystemStats;
 using Application.UseCases.SearchChecklists;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Web.Filters;
 using Web.Mappings;
 using Web.Models.Admin;
 
@@ -94,14 +95,9 @@ public sealed class AdminController : BaseController
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [ValidateModelState]
     public async Task<IActionResult> Delete(Guid id, string? searchTerm)
     {
-        if (!ModelState.IsValid)
-        {
-            _logger.LogWarning("Admin checklist delete validation failed for checklist {ChecklistId}", id);
-            return BadRequest(ModelState);
-        }
-
         _logger.LogInformation("Admin deleting checklist {ChecklistId}", id);
         var result = await _deleteHandler.HandleAsync(new DeleteChecklistCommand(id));
 
@@ -116,14 +112,9 @@ public sealed class AdminController : BaseController
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [ValidateModelState]
     public async Task<IActionResult> BanUser(string userId, string? searchTerm)
     {
-        if (!ModelState.IsValid)
-        {
-            _logger.LogWarning("Admin ban user validation failed for user {UserId}", userId);
-            return BadRequest(ModelState);
-        }
-
         var adminUserName = CurrentUserName ?? "unknown-admin";
         _logger.LogInformation("Admin {AdminUserName} requested account blocking for user {UserId}", adminUserName, userId);
         var result = await _banUserHandler.HandleAsync(new BanUserCommand(userId));

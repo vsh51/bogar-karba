@@ -135,6 +135,45 @@
         return saveChecklistProgress(checklistId, current);
     }
 
+    function renderChecklistProgress(page) {
+        if (!page) {
+            return;
+        }
+
+        let inputs = page.querySelectorAll(
+            "input.checklist-item-input[data-task-id]");
+        let total = inputs.length;
+        let completed = 0;
+
+        for (let i = 0; i < total; i++) {
+            if (inputs[i].checked) {
+                completed++;
+            }
+        }
+
+        let percent = total === 0 ? 0 : Math.round((completed / total) * 100);
+        let percentEl = page.querySelector("[data-progress-percent]");
+        let countEl = page.querySelector("[data-progress-count]");
+        let barEl = page.querySelector("[data-progress-bar]");
+        let barWrapEl = page.querySelector("[data-progress-bar-wrap]");
+
+        if (percentEl) {
+            percentEl.textContent = percent + "%";
+        }
+
+        if (countEl) {
+            countEl.textContent = completed + "/" + total;
+        }
+
+        if (barEl) {
+            barEl.style.width = percent + "%";
+        }
+
+        if (barWrapEl) {
+            barWrapEl.setAttribute("aria-valuenow", String(percent));
+        }
+    }
+
     function initChecklistPage() {
         let page = document.querySelector(".checklist-page[data-checklist-id]");
         if (!page) {
@@ -166,9 +205,27 @@
                     toggleTask(checklistId, tid);
                     let list = getChecklistProgress(checklistId);
                     el.checked = list.indexOf(tid) >= 0;
+                    renderChecklistProgress(page);
                 };
             }(input, taskId));
         }
+
+        let clearBtn = document.getElementById("clear-progress-btn");
+        if (clearBtn) {
+            clearBtn.addEventListener("click", function () {
+                if (!confirm("Clear all progress for this checklist?")) {
+                    return;
+                }
+
+                saveChecklistProgress(checklistId, []);
+                for (let i = 0; i < inputs.length; i++) {
+                    inputs[i].checked = false;
+                }
+                renderChecklistProgress(page);
+            });
+        }
+
+        renderChecklistProgress(page);
     }
 
     window.getChecklistProgress = getChecklistProgress;

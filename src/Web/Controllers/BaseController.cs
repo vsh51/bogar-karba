@@ -12,6 +12,14 @@ public abstract class BaseController : Controller
     protected string? CurrentUserId => User.FindFirstValue(ClaimTypes.NameIdentifier);
 
     /// <summary>
+    /// Gets the current user's ID, throwing if not available.
+    /// Use in actions guarded by [Authorize] where the claim is guaranteed.
+    /// </summary>
+    protected string RequiredUserId =>
+        User.FindFirstValue(ClaimTypes.NameIdentifier)
+        ?? throw new InvalidOperationException("User ID claim is missing. Ensure the endpoint requires authorization.");
+
+    /// <summary>
     /// Gets the current user's username.
     /// Returns null if the user is not authenticated.
     /// </summary>

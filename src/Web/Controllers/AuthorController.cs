@@ -5,12 +5,14 @@ using Application.UseCases.ToggleChecklistStatus;
 using Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Web.Filters;
 using Web.Mappings;
 using Web.Models.Author;
 
 namespace Web.Controllers;
 
 [Authorize]
+[ValidateModelState]
 public sealed class AuthorController : BaseController
 {
     private readonly GetUserChecklistsQueryHandler _handler;
@@ -36,13 +38,7 @@ public sealed class AuthorController : BaseController
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        var userId = CurrentUserId;
-
-        if (string.IsNullOrEmpty(userId))
-        {
-            return RedirectToLogin();
-        }
-
+        var userId = RequiredUserId;
         _logger.LogInformation("Author {UserId} requested their checklist page", userId);
 
         var result = await _handler.HandleAsync(new GetUserChecklistsQuery(userId));
@@ -61,18 +57,7 @@ public sealed class AuthorController : BaseController
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(Guid id)
     {
-        if (!ModelState.IsValid)
-        {
-            _logger.LogWarning("Author checklist delete validation failed for checklist {ChecklistId}", id);
-            return BadRequest(ModelState);
-        }
-
-        var userId = CurrentUserId;
-
-        if (string.IsNullOrEmpty(userId))
-        {
-            return RedirectToLogin();
-        }
+        var userId = RequiredUserId;
 
         _logger.LogInformation("User {UserId} requested deletion for checklist {ChecklistId}", userId, id);
         var result = await _deleteHandler.HandleAsync(new DeleteChecklistCommand(id, userId));
@@ -95,18 +80,7 @@ public sealed class AuthorController : BaseController
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Clone(Guid id)
     {
-        if (!ModelState.IsValid)
-        {
-            _logger.LogWarning("Author checklist clone validation failed for checklist {ChecklistId}", id);
-            return BadRequest(ModelState);
-        }
-
-        var userId = CurrentUserId;
-
-        if (string.IsNullOrEmpty(userId))
-        {
-            return RedirectToLogin();
-        }
+        var userId = RequiredUserId;
 
         _logger.LogInformation("User {UserId} requested clone for checklist {ChecklistId}", userId, id);
         var result = await _cloneHandler.HandleAsync(new CloneChecklistCommand(id, userId));
@@ -129,11 +103,6 @@ public sealed class AuthorController : BaseController
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Activate(Guid id)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-
         return await ToggleStatus(id, ChecklistStatus.Published);
     }
 
@@ -141,22 +110,12 @@ public sealed class AuthorController : BaseController
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Deactivate(Guid id)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-
         return await ToggleStatus(id, ChecklistStatus.Draft);
     }
 
     private async Task<IActionResult> ToggleStatus(Guid id, ChecklistStatus newStatus)
     {
-        var userId = CurrentUserId;
-
-        if (string.IsNullOrEmpty(userId))
-        {
-            return RedirectToLogin();
-        }
+        var userId = RequiredUserId;
 
         var result = await _toggleStatusHandler.HandleAsync(
             new ToggleChecklistStatusCommand(id, newStatus, userId));

@@ -1,8 +1,10 @@
+using Application.Enums;
 using Application.Interfaces;
+using Application.Options;
 using Application.UseCases.SearchChecklists;
 using Domain.Entities;
 using Microsoft.Extensions.Logging.Abstractions;
-using Xunit;
+using Microsoft.Extensions.Options;
 
 namespace UnitTests;
 
@@ -20,6 +22,8 @@ public class SearchChecklistsQueryHandlerTests
 
         var handler = new SearchChecklistsQueryHandler(
             new FakeChecklistRepository(items),
+            new FakeUserRepository(),
+            Options.Create(new ChecklistOptions()),
             NullLogger<SearchChecklistsQueryHandler>.Instance);
 
         var result = await handler.HandleAsync(new SearchChecklistsQuery("deploy"));
@@ -41,6 +45,8 @@ public class SearchChecklistsQueryHandlerTests
 
         var handler = new SearchChecklistsQueryHandler(
             new FakeChecklistRepository(items),
+            new FakeUserRepository(),
+            Options.Create(new ChecklistOptions()),
             NullLogger<SearchChecklistsQueryHandler>.Instance);
 
         var result = await handler.HandleAsync(new SearchChecklistsQuery(null));
@@ -61,6 +67,8 @@ public class SearchChecklistsQueryHandlerTests
 
         var handler = new SearchChecklistsQueryHandler(
             new FakeChecklistRepository(items),
+            new FakeUserRepository(),
+            Options.Create(new ChecklistOptions()),
             NullLogger<SearchChecklistsQueryHandler>.Instance);
 
         var result = await handler.HandleAsync(new SearchChecklistsQuery("Orange"));
@@ -80,6 +88,8 @@ public class SearchChecklistsQueryHandlerTests
 
         var handler = new SearchChecklistsQueryHandler(
             new FakeChecklistRepository(items),
+            new FakeUserRepository(),
+            Options.Create(new ChecklistOptions()),
             NullLogger<SearchChecklistsQueryHandler>.Instance);
 
         var result = await handler.HandleAsync(new SearchChecklistsQuery("   "));
@@ -103,6 +113,12 @@ public class SearchChecklistsQueryHandlerTests
         public Task<IEnumerable<Checklist>> GetByUserIdAsync(string userId)
         {
             return Task.FromResult<IEnumerable<Checklist>>(_items.Where(c => c.UserId == userId));
+        }
+
+        public Task<List<Checklist>> GetByIdsAsync(IEnumerable<Guid> ids)
+        {
+            var idSet = ids.ToHashSet();
+            return Task.FromResult(_items.Where(c => idSet.Contains(c.Id)).ToList());
         }
 
         public Task AddAsync(Checklist checklist)
@@ -133,14 +149,42 @@ public class SearchChecklistsQueryHandlerTests
             return Task.FromResult(_items.Count);
         }
 
+        public Task<int> GetCountByStatusAsync(ChecklistStatus status)
+        {
+            return Task.FromResult(_items.Count(c => c.Status == status));
+        }
+
         public Task<Checklist?> GetByIdWithDetailsAsync(Guid id)
         {
             return Task.FromResult(_items.FirstOrDefault(c => c.Id == id));
         }
 
+        public Task AddSectionAsync(Section section) => Task.CompletedTask;
+
+        public Task AddTaskAsync(TaskItem task) => Task.CompletedTask;
+
         public Task UpdateAsync()
         {
             return Task.CompletedTask;
         }
+    }
+
+    private sealed class FakeUserRepository : IUserRepository
+    {
+        public Task<bool> UserExistsAsync(string identifier, UserLookupMode lookupMode) => Task.FromResult(false);
+
+        public Task<bool> CheckPasswordAsync(string identifier, string password, UserLookupMode lookupMode) => Task.FromResult(false);
+
+        public Task<bool> IsActiveAsync(string identifier, UserLookupMode lookupMode) => Task.FromResult(false);
+
+        public Task<IList<string>> GetRolesAsync(string identifier, UserLookupMode lookupMode) => Task.FromResult<IList<string>>(new List<string>());
+
+        public Task<(bool Succeeded, IEnumerable<string> Errors)> CreateUserAsync(string name, string surname, string email, string password, UserStatus accountStatus) => Task.FromResult((false, Enumerable.Empty<string>()));
+
+        public Task<bool> BanUserAsync(string userId) => Task.FromResult(false);
+
+        public Task<int> GetTotalCountAsync() => Task.FromResult(0);
+
+        public Task<Dictionary<string, string>> GetUsernamesByIdsAsync(IEnumerable<string> userIds) => Task.FromResult(new Dictionary<string, string>());
     }
 }
