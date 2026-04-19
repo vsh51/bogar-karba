@@ -11,4 +11,10 @@ public sealed class GetPublishedChecklistResult
     public string Description { get; init; } = string.Empty;
 
     public IReadOnlyList<ChecklistSectionDto> Sections { get; init; } = Array.Empty<ChecklistSectionDto>();
+
+    public DateOnly? Deadline { get; init; }
+
+    public bool IsOutdated { get; init; }
+
+    public string? DeadlineRemaining { get; init; }
 }

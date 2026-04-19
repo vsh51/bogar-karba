@@ -6,5 +6,7 @@ public class CreateChecklistViewModel
 
     public string Description { get; set; } = string.Empty;
 
+    public DateOnly? Deadline { get; set; }
+
     public List<CreateSectionViewModel> Sections { get; set; } = new();
 }

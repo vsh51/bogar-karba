@@ -13,4 +13,10 @@ public sealed class ChecklistSummaryDto
     public string UserName { get; init; } = string.Empty;
 
     public Domain.Entities.ChecklistStatus Status { get; init; }
+
+    public DateOnly? Deadline { get; init; }
+
+    public bool IsOutdated { get; init; }
+
+    public string? DeadlineRemaining { get; init; }
 }

@@ -1,7 +1,9 @@
 using Application.Interfaces;
+using Application.Options;
 using Application.UseCases.CreateChecklist;
 using Domain.Entities;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 
 namespace UnitTests;
@@ -16,7 +18,8 @@ public class CreateChecklistCommandHandlerTests
     {
         _repositoryMock = new Mock<IChecklistRepository>();
         _loggerMock = new Mock<ILogger<CreateChecklistCommandHandler>>();
-        _handler = new CreateChecklistCommandHandler(_repositoryMock.Object, _loggerMock.Object);
+        var options = Options.Create(new ChecklistOptions());
+        _handler = new CreateChecklistCommandHandler(_repositoryMock.Object, options, _loggerMock.Object);
     }
 
     [Fact]
@@ -31,7 +34,7 @@ public class CreateChecklistCommandHandlerTests
         {
             new CreateSectionRequest("Section 1", 0, tasks),
         };
-        var request = new CreateChecklistCommand("Test Checklist", "Test Description", sections);
+        var request = new CreateChecklistCommand("Test Checklist", "Test Description", null, sections);
 
         var result = await _handler.HandleAsync(request, userId);
 
@@ -49,7 +52,7 @@ public class CreateChecklistCommandHandlerTests
     [Fact]
     public async Task HandleAsync_EmptyTitle_ReturnsFailure()
     {
-        var request = new CreateChecklistCommand(string.Empty, "Desc", new List<CreateSectionRequest>());
+        var request = new CreateChecklistCommand(string.Empty, "Desc", null, new List<CreateSectionRequest>());
 
         var result = await _handler.HandleAsync(request, "user-123");
 
@@ -59,9 +62,35 @@ public class CreateChecklistCommandHandlerTests
     }
 
     [Fact]
+    public async Task HandleAsync_DeadlineInPast_ReturnsFailure()
+    {
+        var yesterday = DateOnly.FromDateTime(DateTime.UtcNow).AddDays(-1);
+        var request = new CreateChecklistCommand("Valid", "Desc", yesterday, new List<CreateSectionRequest>());
+
+        var result = await _handler.HandleAsync(request, "user-123");
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(Application.Common.ResultErrors.DeadlineInPast, result.ErrorMessage);
+        _repositoryMock.Verify(r => r.AddAsync(It.IsAny<Checklist>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task HandleAsync_DeadlineBeyondMax_ReturnsFailure()
+    {
+        var farFuture = DateOnly.FromDateTime(DateTime.UtcNow).AddYears(5);
+        var request = new CreateChecklistCommand("Valid", "Desc", farFuture, new List<CreateSectionRequest>());
+
+        var result = await _handler.HandleAsync(request, "user-123");
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(Application.Common.ResultErrors.DeadlineTooFar, result.ErrorMessage);
+        _repositoryMock.Verify(r => r.AddAsync(It.IsAny<Checklist>()), Times.Never);
+    }
+
+    [Fact]
     public async Task HandleAsync_RepositoryThrows_PropagatesException()
     {
-        var request = new CreateChecklistCommand("Valid", "Desc", new List<CreateSectionRequest>());
+        var request = new CreateChecklistCommand("Valid", "Desc", null, new List<CreateSectionRequest>());
         _repositoryMock.Setup(r => r.AddAsync(It.IsAny<Checklist>()))
             .ThrowsAsync(new InvalidOperationException("DB Error"));
 

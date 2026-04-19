@@ -37,6 +37,7 @@ public sealed class GetChecklistForEditQueryHandler(
             checklist.Id,
             checklist.Title,
             checklist.Description,
+            checklist.Deadline,
             checklist.Sections
                 .OrderBy(s => s.Position)
                 .Select(s => new EditSectionResult(

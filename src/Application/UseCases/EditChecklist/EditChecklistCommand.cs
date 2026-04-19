@@ -5,4 +5,5 @@ public record EditChecklistCommand(
     string OwnerId,
     string Title,
     string Description,
+    DateOnly? Deadline,
     List<EditSectionRequest> Sections);

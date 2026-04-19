@@ -45,7 +45,9 @@ document.addEventListener('DOMContentLoaded', () => {
     createBtn.addEventListener('click', async () => {
         const title = editor.querySelector('.editable-title').value.trim();
         const description = editor.querySelector('.editable-desc').value.trim();
-        
+        const deadlineInput = editor.querySelector('.editable-deadline');
+        const deadline = deadlineInput && deadlineInput.value ? deadlineInput.value : null;
+
         const sections = [];
         let currentSection = { name: "General", position: 0, tasks: [] };
         
@@ -74,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const requestData = {
             title: title || "Untitled Checklist",
             description: description || "",
+            deadline: deadline,
             sections: sections
         };
 

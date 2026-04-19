@@ -1,11 +1,14 @@
 using Application.Common;
 using Application.Interfaces;
+using Application.Options;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Application.UseCases.EditChecklist;
 
 public sealed class EditChecklistCommandHandler(
     IChecklistRepository repository,
+    IOptions<ChecklistOptions> options,
     ILogger<EditChecklistCommandHandler> logger)
 {
     public async Task<Result<bool>> HandleAsync(EditChecklistCommand command)
@@ -15,6 +18,14 @@ public sealed class EditChecklistCommandHandler(
         if (string.IsNullOrWhiteSpace(command.Title))
         {
             return "Title is required.";
+        }
+
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var deadlineError = DeadlineValidator.Validate(
+            command.Deadline, today, options.Value.MaxDeadlineYears);
+        if (deadlineError is not null)
+        {
+            return deadlineError;
         }
 
         var checklist = await repository.GetByIdWithDetailsAsync(command.Id);
@@ -55,6 +66,7 @@ public sealed class EditChecklistCommandHandler(
 
         checklist.Title = command.Title;
         checklist.Description = command.Description;
+        checklist.Deadline = command.Deadline;
 
         var requestedSectionIds = command.Sections.Select(s => s.Id).ToHashSet();
         var sectionsToRemove = checklist.Sections

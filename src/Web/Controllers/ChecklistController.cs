@@ -88,6 +88,7 @@ public sealed class ChecklistController : BaseController
         var request = new CreateChecklistCommand(
             model.Title,
             model.Description,
+            model.Deadline,
             model.Sections.Select(s => new CreateSectionRequest(
                 s.Name,
                 s.Position,
@@ -205,6 +206,7 @@ public sealed class ChecklistController : BaseController
         {
             Title = data.Title,
             Description = data.Description,
+            Deadline = data.Deadline,
             Sections = data.Sections
                 .Select(s => new EditSectionViewModel
                 {
@@ -236,6 +238,7 @@ public sealed class ChecklistController : BaseController
             userId,
             model.Title,
             model.Description,
+            model.Deadline,
             model.Sections.Select(s => new EditSectionRequest(
                 s.Id,
                 s.Name,

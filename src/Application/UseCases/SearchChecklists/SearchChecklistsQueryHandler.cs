@@ -1,6 +1,7 @@
 using Application.Common;
 using Application.DTOs.Checklist;
 using Application.Interfaces;
+using Application.Mappings;
 using Application.Options;
 using Domain.Entities;
 using Microsoft.Extensions.Logging;
@@ -33,17 +34,10 @@ public sealed class SearchChecklistsQueryHandler(
 
         var userIds = filteredList.Select(c => c.UserId).Distinct();
         var usernames = await userRepository.GetUsernamesByIdsAsync(userIds);
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
 
         var results = filteredList
-            .Select(c => new ChecklistSummaryDto
-            {
-                Id = c.Id,
-                Title = c.Title,
-                Description = c.Description,
-                UserId = c.UserId,
-                UserName = usernames.GetValueOrDefault(c.UserId, c.UserId),
-                Status = c.Status
-            })
+            .Select(c => c.ToSummaryDto(today, usernames.GetValueOrDefault(c.UserId, c.UserId)))
             .ToList();
 
         logger.LogInformation("Found {Count} results", results.Count);
