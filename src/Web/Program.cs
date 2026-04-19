@@ -22,11 +22,14 @@ using Application.UseCases.RemoveChecklistItem;
 using Application.UseCases.ReorderChecklistItem;
 using Application.UseCases.SearchChecklists;
 using Application.UseCases.ToggleChecklistStatus;
+using Infrastructure.Caching;
 using Infrastructure.Identity;
 using Infrastructure.Persistence;
 using Infrastructure.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 using Serilog;
 using Web.Middleware;
 
@@ -87,8 +90,26 @@ builder.Services.ConfigureApplicationCookie(options =>
 builder.Services.Configure<ChecklistOptions>(
     builder.Configuration.GetSection(ChecklistOptions.SectionName));
 
-builder.Services.AddScoped<IChecklistRepository, ChecklistRepository>();
-builder.Services.AddScoped<IChecklistReadOnlyRepository, ChecklistReadOnlyRepository>();
+builder.Services.Configure<CacheOptions>(
+    builder.Configuration.GetSection(CacheOptions.SectionName));
+
+builder.Services.AddMemoryCache();
+
+builder.Services.AddScoped<ChecklistRepository>();
+builder.Services.AddScoped<IChecklistRepository>(sp =>
+    new CachedChecklistRepository(
+        sp.GetRequiredService<ChecklistRepository>(),
+        sp.GetRequiredService<IMemoryCache>(),
+        sp.GetRequiredService<ILogger<CachedChecklistRepository>>()));
+
+builder.Services.AddScoped<ChecklistReadOnlyRepository>();
+builder.Services.AddScoped<IChecklistReadOnlyRepository>(sp =>
+    new CachedChecklistReadOnlyRepository(
+        sp.GetRequiredService<ChecklistReadOnlyRepository>(),
+        sp.GetRequiredService<IMemoryCache>(),
+        sp.GetRequiredService<IOptions<CacheOptions>>(),
+        sp.GetRequiredService<ILogger<CachedChecklistReadOnlyRepository>>()));
+
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ISignInService, SignInService>();
 
