@@ -1,12 +1,15 @@
 using Application.Common;
 using Application.Interfaces;
+using Application.Options;
 using Domain.Entities;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Application.UseCases.CreateChecklist;
 
 public sealed class CreateChecklistCommandHandler(
     IChecklistRepository repository,
+    IOptions<ChecklistOptions> options,
     ILogger<CreateChecklistCommandHandler> logger)
 {
     public async Task<Result<Guid>> HandleAsync(CreateChecklistCommand request, string userId)
@@ -23,6 +26,16 @@ public sealed class CreateChecklistCommandHandler(
             return "Title is required.";
         }
 
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var deadlineError = DeadlineValidator.Validate(
+            request.Deadline, today, options.Value.MaxDeadlineYears);
+        if (deadlineError is not null)
+        {
+            logger.LogWarning(
+                "Checklist creation failed for user {UserId}: {Error}", userId, deadlineError);
+            return deadlineError;
+        }
+
         var checklist = new Checklist
         {
             Id = Guid.NewGuid(),
@@ -30,6 +43,7 @@ public sealed class CreateChecklistCommandHandler(
             Description = request.Description,
             UserId = userId,
             CreatedAt = DateTime.UtcNow,
+            Deadline = request.Deadline,
             Status = ChecklistStatus.Published, // New checklists are published immediately; clones start as Draft.
             Sections = request.Sections.Select(s => new Section
             {

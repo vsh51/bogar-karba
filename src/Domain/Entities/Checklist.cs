@@ -19,6 +19,8 @@ public class Checklist
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+    public DateOnly? Deadline { get; set; }
+
     public string UserId { get; set; } = string.Empty;
 
     public List<Section> Sections { get; set; } = new();

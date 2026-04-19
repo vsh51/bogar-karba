@@ -1,7 +1,12 @@
 @model Web.Models.Checklist.EditChecklistViewModel
+@using Microsoft.Extensions.Options
+@using Application.Options
+@inject IOptions<ChecklistOptions> ChecklistOptionsAccessor
 
 @{
     ViewData["Title"] = "Edit Checklist";
+    var today = DateOnly.FromDateTime(DateTime.UtcNow);
+    var maxDate = today.AddYears(ChecklistOptionsAccessor.Value.MaxDeadlineYears);
 }
 
 <style>
@@ -167,6 +172,15 @@
                 <div class="mb-3">
                     <label class="form-label">Description</label>
                     <input type="text" class="form-control editable-desc" value="@Model.Description" placeholder="Enter description (optional)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Deadline <span class="text-muted small">(optional)</span></label>
+                    <input type="date" class="form-control editable-deadline"
+                           value="@(Model.Deadline?.ToString("yyyy-MM-dd"))"
+                           min="@today.ToString("yyyy-MM-dd")"
+                           max="@maxDate.ToString("yyyy-MM-dd")" />
+                    <div class="form-text small">Maximum @ChecklistOptionsAccessor.Value.MaxDeadlineYears years ahead. Leave empty to clear.</div>
                 </div>
 
                 <div class="mb-3">

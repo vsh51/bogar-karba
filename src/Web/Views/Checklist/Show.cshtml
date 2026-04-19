@@ -131,6 +131,34 @@
         height: 100%;
         background: #198754;
     }
+
+    .checklist-deadline {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        margin: 0 0 0.9rem;
+        padding: 0.3rem 0.6rem;
+        font-size: 0.85rem;
+        color: #495057;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 999px;
+    }
+
+    .checklist-deadline.is-outdated {
+        color: #842029;
+        background: #f8d7da;
+        border-color: #f5c2c7;
+    }
+
+    .checklist-deadline-remaining {
+        color: #6c757d;
+        font-weight: 500;
+    }
+
+    .checklist-deadline.is-outdated .checklist-deadline-remaining {
+        color: #842029;
+    }
 </style>
 
 <section class="checklist-page" data-checklist-id="@Model.Id">
@@ -193,6 +221,17 @@
     <header class="mb-3">
         <h1 class="checklist-title">@Model.Title</h1>
 
+        @if (Model.Deadline.HasValue)
+        {
+            var deadlineIso = Model.Deadline.Value.ToString("yyyy-MM-dd");
+            <div class="checklist-deadline @(Model.IsOutdated ? "is-outdated" : null)"
+                 title="Deadline">
+                <i class="bi bi-calendar-event" aria-hidden="true"></i>
+                <time datetime="@deadlineIso" data-deadline="@deadlineIso">@Model.Deadline.Value.ToString("yyyy-MM-dd")</time>
+                <span class="checklist-deadline-remaining">· @Model.DeadlineRemaining</span>
+            </div>
+        }
+
         @if (!string.IsNullOrWhiteSpace(Model.Description))
         {
             <p class="checklist-description">@Model.Description</p>
@@ -246,4 +285,5 @@
     <script src="~/js/checklist-progress.js" asp-append-version="true"></script>
     <script src="~/js/checklist-export.js" asp-append-version="true"></script>
     <script src="~/js/checklist-sync.js" asp-append-version="true"></script>
+    <script src="~/js/checklist-deadline.js" asp-append-version="true"></script>
 }

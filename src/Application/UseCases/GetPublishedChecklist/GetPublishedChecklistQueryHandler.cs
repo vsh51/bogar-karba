@@ -32,7 +32,8 @@ public sealed class GetPublishedChecklistQueryHandler(
             return ResultErrors.ChecklistNotFound;
         }
 
-        var result = checklist.ToPublishedChecklistResult();
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var result = checklist.ToPublishedChecklistResult(today);
 
         logger.LogInformation("Checklist {ChecklistId} retrieved successfully", query.Id);
 

@@ -1,7 +1,9 @@
 using Application.Interfaces;
+using Application.Options;
 using Application.UseCases.EditChecklist;
 using Domain.Entities;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 
 namespace UnitTests;
@@ -18,7 +20,8 @@ public class EditChecklistCommandHandlerTests
     {
         _repositoryMock = new Mock<IChecklistRepository>();
         _loggerMock = new Mock<ILogger<EditChecklistCommandHandler>>();
-        _handler = new EditChecklistCommandHandler(_repositoryMock.Object, _loggerMock.Object);
+        var options = Options.Create(new ChecklistOptions());
+        _handler = new EditChecklistCommandHandler(_repositoryMock.Object, options, _loggerMock.Object);
     }
 
     [Fact]
@@ -35,6 +38,7 @@ public class EditChecklistCommandHandlerTests
             OwnerId,
             "New Title",
             "New Description",
+            null,
             [new EditSectionRequest(sec.Id, sec.Name, sec.Tasks.Select(t => new EditTaskRequest(t.Id, t.Content)).ToList())]);
 
         var result = await _handler.HandleAsync(command);
@@ -59,6 +63,7 @@ public class EditChecklistCommandHandlerTests
             OwnerId,
             checklist.Title,
             checklist.Description,
+            null,
             [new EditSectionRequest(sec.Id, "Renamed Section", sec.Tasks.Select(t => new EditTaskRequest(t.Id, t.Content)).ToList())]);
 
         var result = await _handler.HandleAsync(command);
@@ -82,6 +87,7 @@ public class EditChecklistCommandHandlerTests
             OwnerId,
             checklist.Title,
             checklist.Description,
+            null,
             [new EditSectionRequest(sec.Id, sec.Name, [new EditTaskRequest(task.Id, "Renamed Task"), new EditTaskRequest(sec.Tasks[1].Id, sec.Tasks[1].Content)])]);
 
         var result = await _handler.HandleAsync(command);
@@ -103,6 +109,7 @@ public class EditChecklistCommandHandlerTests
             OwnerId,
             checklist.Title,
             checklist.Description,
+            null,
             []);
 
         var result = await _handler.HandleAsync(command);
@@ -127,6 +134,7 @@ public class EditChecklistCommandHandlerTests
             OwnerId,
             checklist.Title,
             checklist.Description,
+            null,
             [new EditSectionRequest(sec.Id, sec.Name, [new EditTaskRequest(taskToKeep.Id, taskToKeep.Content)])]);
 
         var result = await _handler.HandleAsync(command);
@@ -142,7 +150,7 @@ public class EditChecklistCommandHandlerTests
         _repositoryMock.Setup(r => r.GetByIdWithDetailsAsync(It.IsAny<Guid>()))
             .ReturnsAsync((Checklist?)null);
 
-        var command = new EditChecklistCommand(Guid.NewGuid(), OwnerId, "Title", string.Empty, []);
+        var command = new EditChecklistCommand(Guid.NewGuid(), OwnerId, "Title", string.Empty, null, []);
 
         var result = await _handler.HandleAsync(command);
 
@@ -158,7 +166,7 @@ public class EditChecklistCommandHandlerTests
         _repositoryMock.Setup(r => r.GetByIdWithDetailsAsync(checklist.Id))
             .ReturnsAsync(checklist);
 
-        var command = new EditChecklistCommand(checklist.Id, OwnerId, "Title", string.Empty, []);
+        var command = new EditChecklistCommand(checklist.Id, OwnerId, "Title", string.Empty, null, []);
 
         var result = await _handler.HandleAsync(command);
 
@@ -170,7 +178,7 @@ public class EditChecklistCommandHandlerTests
     [Fact]
     public async Task HandleAsync_EmptyTitle_ReturnsFailure()
     {
-        var command = new EditChecklistCommand(Guid.NewGuid(), OwnerId, string.Empty, string.Empty, []);
+        var command = new EditChecklistCommand(Guid.NewGuid(), OwnerId, string.Empty, string.Empty, null, []);
 
         var result = await _handler.HandleAsync(command);
 
@@ -192,6 +200,7 @@ public class EditChecklistCommandHandlerTests
             OwnerId,
             checklist.Title,
             checklist.Description,
+            null,
             [new EditSectionRequest(Guid.NewGuid(), "New Section", [])]);
 
         var result = await _handler.HandleAsync(command);
@@ -215,6 +224,7 @@ public class EditChecklistCommandHandlerTests
             OwnerId,
             checklist.Title,
             checklist.Description,
+            null,
             [new EditSectionRequest(sec.Id, sec.Name, [new EditTaskRequest(Guid.NewGuid(), "New Task")])]);
 
         var result = await _handler.HandleAsync(command);
@@ -230,7 +240,7 @@ public class EditChecklistCommandHandlerTests
         _repositoryMock.Setup(r => r.GetByIdWithDetailsAsync(It.IsAny<Guid>()))
             .ThrowsAsync(new InvalidOperationException("DB Error"));
 
-        var command = new EditChecklistCommand(Guid.NewGuid(), OwnerId, "Title", string.Empty, []);
+        var command = new EditChecklistCommand(Guid.NewGuid(), OwnerId, "Title", string.Empty, null, []);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => _handler.HandleAsync(command));
     }

@@ -32,6 +32,16 @@
                             {
                                 <span class="badge bg-secondary ms-2">inactive</span>
                             }
+                            @if (item.Deadline.HasValue)
+                            {
+                                var deadlineIso = item.Deadline.Value.ToString("yyyy-MM-dd");
+                                var badgeClass = item.IsOutdated ? "bg-danger-subtle text-danger-emphasis" : "bg-light text-muted";
+                                <span class="badge @badgeClass ms-2 fw-normal">
+                                    <i class="bi bi-calendar-event" aria-hidden="true"></i>
+                                    <time datetime="@deadlineIso" data-deadline="@deadlineIso">@item.Deadline.Value.ToString("yyyy-MM-dd")</time>
+                                    · @item.DeadlineRemaining
+                                </span>
+                            }
                         </div>
                         <div class="text-muted mt-1">
                             @item.Description
@@ -91,3 +101,6 @@
     </div>
 </div>
 
+@section Scripts {
+    <script src="~/js/checklist-deadline.js" asp-append-version="true"></script>
+}

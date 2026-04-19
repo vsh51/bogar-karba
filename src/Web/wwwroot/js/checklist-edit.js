@@ -270,6 +270,8 @@ document.addEventListener('DOMContentLoaded', () => {
     saveBtn.addEventListener('click', async () => {
         const title = editor.querySelector('.editable-title').value.trim();
         const description = editor.querySelector('.editable-desc').value.trim();
+        const deadlineInput = editor.querySelector('.editable-deadline');
+        const deadline = deadlineInput && deadlineInput.value ? deadlineInput.value : null;
 
         const sections = Array.from(sectionsContainer.querySelectorAll('.section-container')).map(sc => ({
             id: sc.dataset.sectionId,
@@ -283,6 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const requestData = {
             title: title || 'Untitled Checklist',
             description: description || '',
+            deadline: deadline,
             sections: sections
         };
 

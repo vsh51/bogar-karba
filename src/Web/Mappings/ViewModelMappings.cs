@@ -29,7 +29,10 @@ public static class ViewModelMappings
             Id = dto.Id,
             Title = dto.Title,
             Description = dto.Description,
-            Status = dto.Status
+            Status = dto.Status,
+            Deadline = dto.Deadline,
+            IsOutdated = dto.IsOutdated,
+            DeadlineRemaining = dto.DeadlineRemaining
         };
     }
 
@@ -40,6 +43,9 @@ public static class ViewModelMappings
             Id = result.Id,
             Title = result.Title,
             Description = result.Description,
+            Deadline = result.Deadline,
+            IsOutdated = result.IsOutdated,
+            DeadlineRemaining = result.DeadlineRemaining,
             Sections = result.Sections
                 .OrderBy(s => s.Position)
                 .Select(section => new ChecklistSectionViewModel
