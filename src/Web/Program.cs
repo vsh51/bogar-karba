@@ -1,18 +1,37 @@
 using System.Globalization;
 using Application.Interfaces;
+using Application.Options;
+using Application.UseCases.AddChecklistItem;
 using Application.UseCases.Auth.LoginAdmin;
 using Application.UseCases.Auth.LoginUser;
 using Application.UseCases.Auth.Logout;
 using Application.UseCases.Auth.RegisterUser;
+using Application.UseCases.BanUser;
+using Application.UseCases.CloneChecklist;
+using Application.UseCases.CreateChecklist;
 using Application.UseCases.DeleteChecklist;
+using Application.UseCases.EditChecklist;
+using Application.UseCases.ExportChecklist.Markdown;
+using Application.UseCases.GetChecklistForEdit;
+using Application.UseCases.GetChecklistsByIds;
 using Application.UseCases.GetPublishedChecklist;
+using Application.UseCases.GetSystemStats;
+using Application.UseCases.GetUserChecklists;
+using Application.UseCases.GroupTasksIntoSection;
+using Application.UseCases.RemoveChecklistItem;
+using Application.UseCases.ReorderChecklistItem;
 using Application.UseCases.SearchChecklists;
+using Application.UseCases.ToggleChecklistStatus;
+using Infrastructure.Caching;
 using Infrastructure.Identity;
 using Infrastructure.Persistence;
 using Infrastructure.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 using Serilog;
+using Web.Middleware;
 
 // Load environment variables from .env file
 DotNetEnv.Env.TraversePath().Load();
@@ -59,15 +78,38 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
+var cookieExpirationHours = builder.Configuration.GetValue("Authentication:CookieExpirationHours", 2);
+
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Account/Login";
     options.AccessDeniedPath = "/Account/Login";
-    options.ExpireTimeSpan = TimeSpan.FromHours(2);
+    options.ExpireTimeSpan = TimeSpan.FromHours(cookieExpirationHours);
 });
 
-builder.Services.AddScoped<IChecklistRepository, ChecklistRepository>();
-builder.Services.AddScoped<IChecklistReadOnlyRepository, ChecklistReadOnlyRepository>();
+builder.Services.Configure<ChecklistOptions>(
+    builder.Configuration.GetSection(ChecklistOptions.SectionName));
+
+builder.Services.Configure<CacheOptions>(
+    builder.Configuration.GetSection(CacheOptions.SectionName));
+
+builder.Services.AddMemoryCache();
+
+builder.Services.AddScoped<ChecklistRepository>();
+builder.Services.AddScoped<IChecklistRepository>(sp =>
+    new CachedChecklistRepository(
+        sp.GetRequiredService<ChecklistRepository>(),
+        sp.GetRequiredService<IMemoryCache>(),
+        sp.GetRequiredService<ILogger<CachedChecklistRepository>>()));
+
+builder.Services.AddScoped<ChecklistReadOnlyRepository>();
+builder.Services.AddScoped<IChecklistReadOnlyRepository>(sp =>
+    new CachedChecklistReadOnlyRepository(
+        sp.GetRequiredService<ChecklistReadOnlyRepository>(),
+        sp.GetRequiredService<IMemoryCache>(),
+        sp.GetRequiredService<IOptions<CacheOptions>>(),
+        sp.GetRequiredService<ILogger<CachedChecklistReadOnlyRepository>>()));
+
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ISignInService, SignInService>();
 
@@ -77,13 +119,29 @@ builder.Services.AddScoped<LogoutCommandHandler>();
 builder.Services.AddScoped<RegisterUserCommandHandler>();
 builder.Services.AddScoped<SearchChecklistsQueryHandler>();
 builder.Services.AddScoped<DeleteChecklistCommandHandler>();
+builder.Services.AddScoped<CloneChecklistCommandHandler>();
+builder.Services.AddScoped<BanUserCommandHandler>();
 builder.Services.AddScoped<GetPublishedChecklistQueryHandler>();
+builder.Services.AddScoped<GetUserChecklistsQueryHandler>();
+builder.Services.AddScoped<CreateChecklistCommandHandler>();
+builder.Services.AddScoped<EditChecklistCommandHandler>();
+builder.Services.AddScoped<GetSystemStatsQueryHandler>();
+builder.Services.AddScoped<ExportMarkdownQueryHandler>();
+builder.Services.AddScoped<ToggleChecklistStatusCommandHandler>();
+builder.Services.AddScoped<ReorderChecklistItemCommandHandler>();
+builder.Services.AddScoped<GroupTasksIntoSectionCommandHandler>();
+builder.Services.AddScoped<AddChecklistItemCommandHandler>();
+builder.Services.AddScoped<RemoveChecklistItemCommandHandler>();
+builder.Services.AddScoped<GetChecklistForEditQueryHandler>();
+builder.Services.AddScoped<GetChecklistsByIdsQueryHandler>();
 
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
 app.UseSerilogRequestLogging();
+app.UseExceptionHandler("/Home/Error");
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 using (var scope = app.Services.CreateScope())
 {
@@ -91,12 +149,11 @@ using (var scope = app.Services.CreateScope())
         .Database.MigrateAsync();
 
     await AdminSeeder.SeedAsync(scope.ServiceProvider, app.Configuration);
-    await ChecklistSeeder.SeedAsync(scope.ServiceProvider);
+    await ChecklistSeeder.SeedAsync(scope.ServiceProvider, app.Configuration);
 }
 
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
 

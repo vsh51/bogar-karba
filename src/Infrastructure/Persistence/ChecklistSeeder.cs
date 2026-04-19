@@ -1,5 +1,8 @@
 using Domain.Entities;
+using Infrastructure.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -7,11 +10,15 @@ namespace Infrastructure.Persistence;
 
 public static class ChecklistSeeder
 {
+    private const string DemoChecklistOwnerUserName = "demochecklist";
+
     public static async Task SeedAsync(
         IServiceProvider serviceProvider,
+        IConfiguration configuration,
         CancellationToken cancellationToken = default)
     {
         var context = serviceProvider.GetRequiredService<ApplicationDbContext>();
+        var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         var logger = serviceProvider.GetRequiredService<ILoggerFactory>()
             .CreateLogger(typeof(ChecklistSeeder));
         if (await context.Checklists.AnyAsync(cancellationToken))
@@ -20,32 +27,98 @@ public static class ChecklistSeeder
             return;
         }
 
-        var ownerId = await GetDefaultOwnerIdAsync(context, cancellationToken);
-        var checklist = BuildDemoChecklist(ownerId);
+        var ownerId = await EnsureDemoChecklistOwnerAsync(userManager, configuration, logger);
+        if (string.IsNullOrEmpty(ownerId))
+        {
+            logger.LogWarning(
+                "Skipping demo checklist seed: could not resolve user {UserName}.",
+                DemoChecklistOwnerUserName);
+            return;
+        }
 
-        context.Checklists.Add(checklist);
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+        var checklistA = BuildDemoChecklist(
+            Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+            "Large demo checklist for scrolling tests (A)",
+            ownerId,
+            deadline: today.AddMonths(6));
+
+        var checklistB = BuildDemoChecklist(
+            Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
+            "Second demo checklist (B)",
+            ownerId,
+            deadline: today.AddDays(-14));
+
+        context.Checklists.AddRange(checklistA, checklistB);
         await context.SaveChangesAsync(cancellationToken);
 
-        logger.LogInformation("Seeded demo checklist {ChecklistId}", checklist.Id);
+        logger.LogInformation(
+            "Seeded demo checklists {ChecklistAId} and {ChecklistBId}",
+            checklistA.Id,
+            checklistB.Id);
     }
 
-    private static async Task<string> GetDefaultOwnerIdAsync(
-        ApplicationDbContext context,
-        CancellationToken cancellationToken)
+    private static async Task<string?> EnsureDemoChecklistOwnerAsync(
+        UserManager<ApplicationUser> userManager,
+        IConfiguration configuration,
+        ILogger logger)
     {
-        var firstUser = await context.Users.FirstOrDefaultAsync(cancellationToken);
-        return firstUser?.Id ?? string.Empty;
+        var existing = await userManager.FindByNameAsync(DemoChecklistOwnerUserName);
+        if (existing is not null)
+        {
+            return existing.Id;
+        }
+
+        var password = configuration["Seed:DemoChecklistOwnerPassword"];
+        if (string.IsNullOrEmpty(password))
+        {
+            logger.LogError(
+                "Cannot create {UserName}: configure Seed:DemoChecklistOwnerPassword.",
+                DemoChecklistOwnerUserName);
+            return null;
+        }
+
+        var email = configuration["Seed:DemoChecklistOwnerEmail"];
+        if (string.IsNullOrEmpty(password))
+        {
+            logger.LogError(
+                "Cannot create {UserName}: configure Seed:DemoChecklistOwnerEmail.",
+                DemoChecklistOwnerUserName);
+            return null;
+        }
+
+        var user = new ApplicationUser
+        {
+            UserName = DemoChecklistOwnerUserName,
+            Email = email,
+            EmailConfirmed = true,
+            AccountStatus = UserStatus.Active,
+        };
+
+        var result = await userManager.CreateAsync(user, password);
+        if (!result.Succeeded)
+        {
+            logger.LogError(
+                "Failed to create seed user {UserName}: {Errors}",
+                DemoChecklistOwnerUserName,
+                string.Join("; ", result.Errors.Select(e => e.Description)));
+            return null;
+        }
+
+        return user.Id;
     }
 
-    private static Checklist BuildDemoChecklist(string ownerId)
+    private static Checklist BuildDemoChecklist(Guid id, string title, string ownerId, DateOnly? deadline)
     {
         return new Checklist
         {
-            Id = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
-            Title = "Large demo checklist for scrolling tests",
+            Id = id,
+            Title = title,
             Description = "This seeded checklist intentionally contains many sections and items so you can validate layout, typography, spacing, and long-page scrolling behavior in the UI.",
             Status = ChecklistStatus.Published,
             CreatedAt = DateTime.UtcNow,
+            Deadline = deadline,
             UserId = ownerId,
             Sections = BuildDemoSections()
         };

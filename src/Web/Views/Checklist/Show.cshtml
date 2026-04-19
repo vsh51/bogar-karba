@@ -13,17 +13,16 @@
 
     .checklist-title {
         margin: 0 0 0.75rem;
-        font-size: clamp(1.7rem, 2.2vw, 2.25rem);
+        font-size: 1.75rem;
         font-weight: 700;
-        letter-spacing: 0.01em;
         line-height: 1.2;
     }
 
     .checklist-description {
         margin: 0 0 1.75rem;
         padding: 0.85rem 1rem;
-        background: #f7f8fa;
-        color: #5f646d;
+        background: #f8f9fa;
+        color: #6c757d;
         border-radius: 0.5rem;
         line-height: 1.45;
         white-space: pre-wrap;
@@ -32,20 +31,33 @@
     .checklist-section {
         margin-top: 1.5rem;
         padding-top: 0.75rem;
-        border-top: 1px solid #eceef2;
+        border-top: 1px solid #dee2e6;
+    }
+
+    .checklist-section-header {
+        display: flex;
+        align-items: center;
+        margin: 0 0 0.7rem;
+        cursor: pointer;
+        user-select: none;
+        padding: 0.2rem 0;
     }
 
     .checklist-section-title {
-        margin: 0 0 0.7rem;
+        margin: 0;
         font-size: 1.2rem;
         font-weight: 600;
-        color: #3d4047;
+        color: #495057;
     }
 
-    .checklist-section-title::before {
-        content: ">> ";
-        color: #6c717a;
-        font-weight: 500;
+    .checklist-section-toggle {
+        margin-right: 0.6rem;
+        color: #6c757d;
+        font-size: 1.1rem;
+    }
+
+    .checklist-section-header[aria-expanded="false"] .checklist-section-toggle {
+        transform: rotate(-90deg);
     }
 
     .checklist-items {
@@ -59,7 +71,7 @@
         align-items: flex-start;
         gap: 0.65rem;
         margin: 0.45rem 0;
-        color: #2f3339;
+        color: #212529;
     }
 
     .checklist-item-input {
@@ -75,14 +87,150 @@
     }
 
     .checklist-empty {
-        color: #6b7280;
+        color: #6c757d;
         margin: 0.4rem 0 0;
+    }
+
+    .checklist-collapse-body {
+        padding: 0.1rem 0 0.5rem 0;
+    }
+
+    .checklist-toolbar {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 0.75rem;
+    }
+
+    .checklist-progress {
+        margin-bottom: 1.25rem;
+    }
+
+    .checklist-progress-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 0.4rem;
+        color: #6c757d;
+        font-size: 0.95rem;
+    }
+
+    .checklist-progress-percent {
+        font-weight: 700;
+        color: #212529;
+    }
+
+    .checklist-progress-bar-wrap {
+        height: 0.5rem;
+        background: #e9ecef;
+        border-radius: 0.25rem;
+        overflow: hidden;
+    }
+
+    .checklist-progress-bar {
+        width: 0;
+        height: 100%;
+        background: #198754;
+    }
+
+    .checklist-deadline {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        margin: 0 0 0.9rem;
+        padding: 0.3rem 0.6rem;
+        font-size: 0.85rem;
+        color: #495057;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 999px;
+    }
+
+    .checklist-deadline.is-outdated {
+        color: #842029;
+        background: #f8d7da;
+        border-color: #f5c2c7;
+    }
+
+    .checklist-deadline-remaining {
+        color: #6c757d;
+        font-weight: 500;
+    }
+
+    .checklist-deadline.is-outdated .checklist-deadline-remaining {
+        color: #842029;
     }
 </style>
 
-<section class="checklist-page">
+<section class="checklist-page" data-checklist-id="@Model.Id">
+    <div class="checklist-toolbar">
+        <div class="dropdown">
+            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Options
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                    <button id="copy-md-btn" class="dropdown-item" type="button">
+                        Copy as Markdown
+                    </button>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <button id="export-progress-btn" class="dropdown-item" type="button">
+                        Export Progress
+                    </button>
+                </li>
+                <li>
+                    <button id="import-progress-btn" class="dropdown-item" type="button">
+                        Import Progress
+                    </button>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <button id="share-progress-btn" class="dropdown-item" type="button" onclick="window.checklistProgressSync.copyShareLinkToClipboard('@Model.Id')">
+                        Share Progress Link
+                    </button>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <button id="clear-progress-btn" class="dropdown-item text-danger" type="button">
+                        Clear Progress
+                    </button>
+                </li>
+            </ul>
+        </div>
+        <input type="file" id="import-progress-file" accept=".json" style="display: none;" />
+    </div>
+
+    <div class="checklist-progress" aria-live="polite">
+        <div class="checklist-progress-meta">
+            <span class="checklist-progress-percent" data-progress-percent>0%</span>
+            <span data-progress-count>0/0</span>
+        </div>
+        <div
+            class="checklist-progress-bar-wrap"
+            role="progressbar"
+            aria-label="Checklist completion"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="0"
+            data-progress-bar-wrap>
+            <div class="checklist-progress-bar" data-progress-bar></div>
+        </div>
+    </div>
+
     <header class="mb-3">
         <h1 class="checklist-title">@Model.Title</h1>
+
+        @if (Model.Deadline.HasValue)
+        {
+            var deadlineIso = Model.Deadline.Value.ToString("yyyy-MM-dd");
+            <div class="checklist-deadline @(Model.IsOutdated ? "is-outdated" : null)"
+                 title="Deadline">
+                <i class="bi bi-calendar-event" aria-hidden="true"></i>
+                <time datetime="@deadlineIso" data-deadline="@deadlineIso">@Model.Deadline.Value.ToString("yyyy-MM-dd")</time>
+                <span class="checklist-deadline-remaining">· @Model.DeadlineRemaining</span>
+            </div>
+        }
 
         @if (!string.IsNullOrWhiteSpace(Model.Description))
         {
@@ -92,29 +240,38 @@
 
     @if (Model.Sections.Any())
     {
+        int secIndex = 0;
         @foreach (var sec in Model.Sections.OrderBy(s => s.Position))
         {
+            var collapseId = $"collapse-sec-{secIndex++}";
             <article class="checklist-section">
-                <h2 class="checklist-section-title">@sec.Name</h2>
+                <div class="checklist-section-header" data-bs-toggle="collapse" data-bs-target="#@collapseId" aria-expanded="true" aria-controls="@collapseId">
+                    <i class="bi bi-chevron-down checklist-section-toggle"></i>
+                    <h2 class="checklist-section-title">@sec.Name</h2>
+                </div>
 
-                @if (sec.Items.Any())
-                {
-                    <ul class="checklist-items">
-                        @foreach (var item in sec.Items)
+                <div class="collapse show" id="@collapseId">
+                    <div class="checklist-collapse-body">
+                        @if (sec.Items.Any())
                         {
-                            var itemId = $"item-{item.Id}";
+                            <ul class="checklist-items">
+                                @foreach (var item in sec.Items)
+                                {
+                                    var itemId = $"item-{item.Id}";
 
-                            <li class="checklist-item">
-                                <input id="@itemId" type="checkbox" class="form-check-input checklist-item-input" />
-                                <label for="@itemId" class="checklist-item-label">@item.Content</label>
-                            </li>
+                                    <li class="checklist-item">
+                                        <input id="@itemId" type="checkbox" class="form-check-input checklist-item-input" data-task-id="@item.Id" />
+                                        <label for="@itemId" class="checklist-item-label">@item.Content</label>
+                                    </li>
+                                }
+                            </ul>
                         }
-                    </ul>
-                }
-                else
-                {
-                    <p class="checklist-empty">No items in this section yet.</p>
-                }
+                        else
+                        {
+                            <p class="checklist-empty">No items in this section yet.</p>
+                        }
+                    </div>
+                </div>
             </article>
         }
     }
@@ -124,3 +281,9 @@
     }
 </section>
 
+@section Scripts {
+    <script src="~/js/checklist-progress.js" asp-append-version="true"></script>
+    <script src="~/js/checklist-export.js" asp-append-version="true"></script>
+    <script src="~/js/checklist-sync.js" asp-append-version="true"></script>
+    <script src="~/js/checklist-deadline.js" asp-append-version="true"></script>
+}

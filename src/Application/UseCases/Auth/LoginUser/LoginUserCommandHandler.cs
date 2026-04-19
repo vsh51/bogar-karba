@@ -1,49 +1,39 @@
+using Application.Common;
 using Application.Enums;
 using Application.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace Application.UseCases.Auth.LoginUser;
 
-public class LoginUserCommandHandler
+public sealed class LoginUserCommandHandler(
+    IUserRepository repository,
+    ISignInService signInService,
+    ILogger<LoginUserCommandHandler> logger)
 {
-    private readonly IUserRepository _repository;
-    private readonly ISignInService _signInService;
-    private readonly ILogger<LoginUserCommandHandler> _logger;
-
-    public LoginUserCommandHandler(
-        IUserRepository repository,
-        ISignInService signInService,
-        ILogger<LoginUserCommandHandler> logger)
+    public async Task<Result<bool>> HandleAsync(LoginUserCommand command)
     {
-        _repository = repository;
-        _signInService = signInService;
-        _logger = logger;
-    }
+        logger.LogInformation("Login attempt for '{Email}'", command.Email);
 
-    public async Task<AuthResult> HandleAsync(LoginUserCommand command)
-    {
-        _logger.LogInformation("Login attempt for '{Email}'", command.Email);
-
-        if (!await _repository.UserExistsAsync(command.Email, UserLookupMode.ByEmail))
+        if (!await repository.UserExistsAsync(command.Email, UserLookupMode.ByEmail))
         {
-            _logger.LogWarning("Login failed: user '{Email}' not found", command.Email);
-            return AuthResult.Failure("Invalid email or password.");
+            logger.LogWarning("Login failed: user '{Email}' not found", command.Email);
+            return "Invalid email or password.";
         }
 
-        if (!await _repository.IsActiveAsync(command.Email, UserLookupMode.ByEmail))
+        if (!await repository.IsActiveAsync(command.Email, UserLookupMode.ByEmail))
         {
-            _logger.LogWarning("Login denied for '{Email}': account is not active", command.Email);
-            return AuthResult.Failure("Invalid email or password.");
+            logger.LogWarning("Login denied for '{Email}': account is not active", command.Email);
+            return "Your account is blocked.";
         }
 
-        if (!await _repository.CheckPasswordAsync(command.Email, command.Password, UserLookupMode.ByEmail))
+        if (!await repository.CheckPasswordAsync(command.Email, command.Password, UserLookupMode.ByEmail))
         {
-            _logger.LogWarning("Login failed: invalid password for '{Email}'", command.Email);
-            return AuthResult.Failure("Invalid email or password.");
+            logger.LogWarning("Login failed: invalid password for '{Email}'", command.Email);
+            return "Invalid email or password.";
         }
 
-        await _signInService.SignInAsync(command.Email, UserLookupMode.ByEmail);
-        _logger.LogInformation("User '{Email}' logged in successfully", command.Email);
-        return AuthResult.Success();
+        await signInService.SignInAsync(command.Email, UserLookupMode.ByEmail);
+        logger.LogInformation("User '{Email}' logged in successfully", command.Email);
+        return true;
     }
 }

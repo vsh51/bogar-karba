@@ -1,20 +1,27 @@
+using Application.Common;
 using Application.UseCases.Auth.LoginAdmin;
 using Application.UseCases.Auth.Logout;
+using Application.UseCases.BanUser;
 using Application.UseCases.DeleteChecklist;
+using Application.UseCases.GetSystemStats;
 using Application.UseCases.SearchChecklists;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Web.Filters;
+using Web.Mappings;
 using Web.Models.Admin;
 
 namespace Web.Controllers;
 
 [Authorize(Roles = "Admin")]
-public sealed class AdminController : Controller
+public sealed class AdminController : BaseController
 {
     private readonly LoginAdminCommandHandler _loginHandler;
     private readonly LogoutCommandHandler _logoutHandler;
     private readonly SearchChecklistsQueryHandler _searchHandler;
     private readonly DeleteChecklistCommandHandler _deleteHandler;
+    private readonly BanUserCommandHandler _banUserHandler;
+    private readonly GetSystemStatsQueryHandler _systemStatsHandler;
     private readonly ILogger<AdminController> _logger;
 
     public AdminController(
@@ -22,28 +29,31 @@ public sealed class AdminController : Controller
         LogoutCommandHandler logoutHandler,
         SearchChecklistsQueryHandler searchHandler,
         DeleteChecklistCommandHandler deleteHandler,
+        BanUserCommandHandler banUserHandler,
+        GetSystemStatsQueryHandler systemStatsHandler,
         ILogger<AdminController> logger)
     {
         _loginHandler = loginHandler;
         _logoutHandler = logoutHandler;
         _searchHandler = searchHandler;
         _deleteHandler = deleteHandler;
+        _banUserHandler = banUserHandler;
+        _systemStatsHandler = systemStatsHandler;
         _logger = logger;
     }
 
-    public IActionResult Index(string? searchTerm)
+    public async Task<IActionResult> Index(string? searchTerm)
     {
-        var result = _searchHandler.Handle(new SearchChecklistsQuery(searchTerm));
+        var adminUserName = User.Identity?.Name ?? "unknown-admin";
+        _logger.LogInformation("Admin {AdminUserName} requested dashboard list with search term {SearchTerm}", adminUserName, searchTerm ?? "<empty>");
 
-        var viewModels = result.Checklists
-            .Select(c => new AdminChecklistViewModel
-            {
-                Id = c.Id,
-                Title = c.Title,
-                Description = c.Description,
-                UserId = c.UserId
-            })
+        var result = await _searchHandler.HandleAsync(new SearchChecklistsQuery(searchTerm));
+
+        var viewModels = (result.Succeeded ? result.Value! : new())
+            .Select(c => c.ToAdminViewModel())
             .ToList();
+
+        _logger.LogInformation("Admin {AdminUserName} search returned {Count} checklists", adminUserName, viewModels.Count);
 
         ViewData["SearchTerm"] = searchTerm;
         return View(viewModels);
@@ -53,6 +63,7 @@ public sealed class AdminController : Controller
     [HttpGet]
     public IActionResult Login()
     {
+        _logger.LogInformation("Admin login page requested");
         return View();
     }
 
@@ -63,6 +74,7 @@ public sealed class AdminController : Controller
     {
         if (!ModelState.IsValid)
         {
+            _logger.LogWarning("Admin login model validation failed with {ErrorCount} errors", ModelState.ErrorCount);
             return View(model);
         }
 
@@ -83,29 +95,69 @@ public sealed class AdminController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [ValidateModelState]
     public async Task<IActionResult> Delete(Guid id, string? searchTerm)
     {
-        if (!ModelState.IsValid)
+        _logger.LogInformation("Admin deleting checklist {ChecklistId}", id);
+        var result = await _deleteHandler.HandleAsync(new DeleteChecklistCommand(id));
+
+        if (!result.Succeeded)
         {
-            return BadRequest(ModelState);
+            _logger.LogWarning("Admin failed to delete checklist {ChecklistId}: {Error}", id, result.ErrorMessage);
+            SetErrorMessage(result.ErrorMessage ?? "Failed to delete checklist.");
         }
 
-        _logger.LogInformation("Admin deleting checklist {ChecklistId}", id);
-        await _deleteHandler.HandleAsync(new DeleteChecklistCommand(id));
         return RedirectToAction(nameof(Index), new { searchTerm });
     }
 
-    public IActionResult Dashboard()
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [ValidateModelState]
+    public async Task<IActionResult> BanUser(string userId, string? searchTerm)
     {
-        return View();
+        var adminUserName = CurrentUserName ?? "unknown-admin";
+        _logger.LogInformation("Admin {AdminUserName} requested account blocking for user {UserId}", adminUserName, userId);
+        var result = await _banUserHandler.HandleAsync(new BanUserCommand(userId));
+
+        if (result.Succeeded)
+        {
+            _logger.LogInformation("Admin {AdminUserName} successfully blocked user account {UserId}", adminUserName, userId);
+            SetSuccessMessage("The user has been blocked.");
+        }
+        else if (result.ErrorMessage == ResultErrors.UserNotFound)
+        {
+            _logger.LogWarning("Admin {AdminUserName} attempted to block user {UserId}, but account was not found", adminUserName, userId);
+            SetWarningMessage("User not found.");
+        }
+        else
+        {
+            _logger.LogError("Admin {AdminUserName} failed to block user account {UserId}", adminUserName, userId);
+            SetErrorMessage("Failed to block the user.");
+        }
+
+        return RedirectToAction(nameof(Index), new { searchTerm });
+    }
+
+    public async Task<IActionResult> Dashboard()
+    {
+        var result = await _systemStatsHandler.HandleAsync(new GetSystemStatsQuery());
+
+        if (!result.Succeeded || result.Value is null)
+        {
+            _logger.LogError("Failed to load system statistics for dashboard");
+            return View(new DashboardViewModel());
+        }
+
+        return View(result.Value.ToDashboardViewModel());
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout()
     {
+        var adminUserName = User.Identity?.Name ?? "unknown-admin";
         await _logoutHandler.HandleAsync(new LogoutCommand(DateTime.UtcNow));
-        _logger.LogInformation("Admin logged out");
+        _logger.LogInformation("Admin {AdminUserName} logged out successfully", adminUserName);
         return RedirectToAction("Index", "Home");
     }
 }

@@ -15,4 +15,10 @@ public interface IUserRepository
 
     Task<(bool Succeeded, IEnumerable<string> Errors)> CreateUserAsync(
         string name, string surname, string email, string password, UserStatus accountStatus);
+
+    Task<bool> BanUserAsync(string userId);
+
+    Task<int> GetTotalCountAsync();
+
+    Task<Dictionary<string, string>> GetUsernamesByIdsAsync(IEnumerable<string> userIds);
 }

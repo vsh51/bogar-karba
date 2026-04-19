@@ -23,4 +23,28 @@ public sealed class ChecklistReadOnlyRepository(
             .Where(c => c.Id == id && c.Status == ChecklistStatus.Published)
             .SingleOrDefaultAsync(cancellationToken);
     }
+
+    public async Task<IEnumerable<Checklist>> GetByUserIdAsync(string userId)
+    {
+        return await dbContext.Checklists
+            .AsNoTracking()
+            .Where(c => c.UserId == userId)
+            .ToListAsync();
+    }
+
+    public async Task<Checklist?> GetByIdAsync(Guid id)
+    {
+        return await dbContext.Checklists
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.Id == id);
+    }
+
+    public async Task<Checklist?> GetByIdWithSectionsAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Checklists
+            .AsNoTracking()
+            .Include(c => c.Sections.OrderBy(s => s.Position))
+            .ThenInclude(s => s.Tasks.OrderBy(t => t.Position))
+            .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
+    }
 }

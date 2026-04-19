@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.Interfaces;
 using Application.Mappings;
 using Domain.Entities;
@@ -5,38 +6,36 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.UseCases.GetPublishedChecklist;
 
-public sealed class GetPublishedChecklistQueryHandler
+public sealed class GetPublishedChecklistQueryHandler(
+    IChecklistReadOnlyRepository repository,
+    ILogger<GetPublishedChecklistQueryHandler> logger)
 {
-    private readonly IChecklistReadOnlyRepository _repository;
-    private readonly ILogger<GetPublishedChecklistQueryHandler> _logger;
-
-    public GetPublishedChecklistQueryHandler(
-        IChecklistReadOnlyRepository repository,
-        ILogger<GetPublishedChecklistQueryHandler> logger)
-    {
-        _repository = repository;
-        _logger = logger;
-    }
-
-    public async Task<GetPublishedChecklistResult?> HandleAsync(
+    public async Task<Result<GetPublishedChecklistResult>> HandleAsync(
         GetPublishedChecklistQuery query,
         CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Handling GetPublishedChecklistQuery for ChecklistId: {ChecklistId}", query.Id);
+        logger.LogInformation("Fetching published checklist {ChecklistId}", query.Id);
 
-        Checklist? checklist;
-        checklist = await _repository.GetPublishedChecklistAsync(
-            query.Id, cancellationToken);
+        var checklist = await repository.GetByIdWithSectionsAsync(query.Id, cancellationToken);
 
         if (checklist is null)
         {
-            _logger.LogInformation("Checklist with id {ChecklistId} was not found or not published", query.Id);
-            return null;
+            logger.LogInformation("Checklist with id {ChecklistId} was not found", query.Id);
+            return ResultErrors.ChecklistNotFound;
         }
 
-        var result = checklist.ToPublishedChecklistResult();
+        var isOwner = query.OwnerId is not null && checklist.UserId == query.OwnerId;
 
-        _logger.LogInformation("Successfully handled GetPublishedChecklistQuery for ChecklistId: {ChecklistId}", query.Id);
+        if (!isOwner && checklist.Status != ChecklistStatus.Published)
+        {
+            logger.LogInformation("Checklist {ChecklistId} is not published and user is not the owner", query.Id);
+            return ResultErrors.ChecklistNotFound;
+        }
+
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var result = checklist.ToPublishedChecklistResult(today);
+
+        logger.LogInformation("Checklist {ChecklistId} retrieved successfully", query.Id);
 
         return result;
     }

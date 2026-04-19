@@ -5,9 +5,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="UseCases\GetChecklistsByIds\" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.5" />
     <Folder Include="Interfaces\" />
-    <Folder Include="UseCases\" />
   </ItemGroup>
 
   <PropertyGroup>

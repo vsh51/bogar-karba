@@ -4,7 +4,27 @@ namespace Application.Interfaces;
 
 public interface IChecklistRepository
 {
-    IEnumerable<Checklist> GetAll();
+    Task<List<Checklist>> GetAllAsync();
+
+    Task<IEnumerable<Checklist>> GetByUserIdAsync(string userId);
+
+    Task<List<Checklist>> GetByIdsAsync(IEnumerable<Guid> ids);
+
+    Task AddAsync(Checklist checklist);
 
     Task DeleteAsync(Guid id);
+
+    Task UpdateStatusAsync(Guid id, ChecklistStatus newStatus);
+
+    Task<int> GetTotalCountAsync();
+
+    Task<int> GetCountByStatusAsync(ChecklistStatus status);
+
+    Task<Checklist?> GetByIdWithDetailsAsync(Guid id);
+
+    Task AddSectionAsync(Section section);
+
+    Task AddTaskAsync(TaskItem task);
+
+    Task UpdateAsync();
 }

@@ -1,45 +1,47 @@
+using Application.Common;
 using Application.DTOs.Checklist;
 using Application.Interfaces;
+using Application.Mappings;
+using Application.Options;
+using Domain.Entities;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Application.UseCases.SearchChecklists;
 
-public partial class SearchChecklistsQueryHandler(
+public sealed class SearchChecklistsQueryHandler(
     IChecklistRepository repository,
+    IUserRepository userRepository,
+    IOptions<ChecklistOptions> options,
     ILogger<SearchChecklistsQueryHandler> logger)
 {
-    public SearchChecklistsResult Handle(SearchChecklistsQuery query)
+    public async Task<Result<List<ChecklistSummaryDto>>> HandleAsync(SearchChecklistsQuery query)
     {
-        LogSearchQuery(logger, query.SearchTerm ?? "empty");
+        logger.LogInformation("Search query: {SearchTerm}", query.SearchTerm ?? "empty");
 
-        var items = repository.GetAll();
+        var items = await repository.GetAllAsync();
 
-        if (!string.IsNullOrWhiteSpace(query.SearchTerm))
+        IEnumerable<Checklist> filtered = items;
+        var searchTerm = query.SearchTerm?.Trim();
+        if (!string.IsNullOrWhiteSpace(searchTerm) && searchTerm.Length >= options.Value.SearchMinLength)
         {
-            var normalizedSearch = query.SearchTerm.Trim();
-
-            items = items
-                .Where(c => c.Title.Contains(normalizedSearch, StringComparison.OrdinalIgnoreCase) ||
-                            c.Description.Contains(normalizedSearch, StringComparison.OrdinalIgnoreCase));
+            filtered = items.Where(c =>
+                c.Title.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                c.Description.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
         }
 
-        var results = items
-            .Select(c => new ChecklistSummaryDto
-            {
-                Id = c.Id,
-                Title = c.Title,
-                Description = c.Description,
-                UserId = c.UserId
-            })
+        var filteredList = filtered.ToList();
+
+        var userIds = filteredList.Select(c => c.UserId).Distinct();
+        var usernames = await userRepository.GetUsernamesByIdsAsync(userIds);
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+        var results = filteredList
+            .Select(c => c.ToSummaryDto(today, usernames.GetValueOrDefault(c.UserId, c.UserId)))
             .ToList();
-        LogSearchResult(logger, results.Count);
 
-        return new SearchChecklistsResult(results);
+        logger.LogInformation("Found {Count} results", results.Count);
+
+        return results;
     }
-
-    [LoggerMessage(Level = LogLevel.Information, Message = "Search query: {SearchTerm}")]
-    static partial void LogSearchQuery(ILogger logger, string searchTerm);
-
-    [LoggerMessage(Level = LogLevel.Information, Message = "Found {Count} results")]
-    static partial void LogSearchResult(ILogger logger, int count);
 }
