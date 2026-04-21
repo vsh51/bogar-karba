@@ -47,6 +47,16 @@ public class ChecklistRepository(ApplicationDbContext context) : IChecklistRepos
         }
     }
 
+    public async Task UpdateVisibilityAsync(Guid id, bool isPublic)
+    {
+        var checklist = await context.Checklists.FindAsync(id);
+        if (checklist != null)
+        {
+            checklist.IsPublic = isPublic;
+            await context.SaveChangesAsync();
+        }
+    }
+
     public async Task<int> GetTotalCountAsync()
     {
         return await context.Checklists.CountAsync();

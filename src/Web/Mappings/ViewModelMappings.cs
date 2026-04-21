@@ -30,6 +30,7 @@ public static class ViewModelMappings
             Title = dto.Title,
             Description = dto.Description,
             Status = dto.Status,
+            IsPublic = dto.IsPublic,
             Deadline = dto.Deadline,
             IsOutdated = dto.IsOutdated,
             DeadlineRemaining = dto.DeadlineRemaining
