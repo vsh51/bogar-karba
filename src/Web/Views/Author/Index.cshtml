@@ -30,7 +30,7 @@
                             <a href="@Url.Action("Show", "Checklist", new { id = item.Id })" class="text-decoration-none text-dark">@item.Title</a>
                             @if (!item.IsActive)
                             {
-                                <span class="badge bg-secondary ms-2">inactive</span>
+                                <span class="badge bg-secondary ms-2">private</span>
                             }
                             @if (item.Deadline.HasValue)
                             {
@@ -70,23 +70,23 @@
                             @if (!item.IsActive)
                             {
                                 <li>
-                                    <form asp-controller="Author" asp-action="Activate" asp-route-id="@item.Id" method="post">
+                                    <form asp-controller="Author" asp-action="MakePublic" asp-route-id="@item.Id" method="post">
                                         @Html.AntiForgeryToken()
-                                        <button type="submit" class="dropdown-item">Activate checklist</button>
+                                        <button type="submit" class="dropdown-item">Make checklist public</button>
                                     </form>
                                 </li>
                             }
                             else
                             {
                                 <li>
-                                    <form asp-controller="Author" asp-action="Deactivate" asp-route-id="@item.Id" method="post">
+                                    <form asp-controller="Author" asp-action="MakePrivate" asp-route-id="@item.Id" method="post">
                                         @Html.AntiForgeryToken()
-                                        <button type="submit" class="dropdown-item">Deactivate checklist</button>
+                                        <button type="submit" class="dropdown-item">Make checklist private</button>
                                     </form>
                                 </li>
                             }
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#" onclick="window.checklistProgressSync.copyShareLinkToClipboard('@item.Id'); return false;"><i class="bi bi-share"></i> Get shareable link</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="if (window.checklistProgressSync) { window.checklistProgressSync.copyShareLinkToClipboard('@item.Id'); } return false;"><i class="bi bi-share"></i> Get shareable link</a></li>
                         </ul>
                     </div>
                 </div>
@@ -103,4 +103,5 @@
 
 @section Scripts {
     <script src="~/js/checklist-deadline.js" asp-append-version="true"></script>
+    <script src="~/js/checklist-sync.js" asp-append-version="true"></script>
 }

@@ -101,19 +101,19 @@ public sealed class AuthorController : BaseController
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Activate(Guid id)
+    public async Task<IActionResult> MakePublic(Guid id)
     {
-        return await ToggleStatus(id, ChecklistStatus.Published);
+        return await SetVisibility(id, ChecklistStatus.Published);
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Deactivate(Guid id)
+    public async Task<IActionResult> MakePrivate(Guid id)
     {
-        return await ToggleStatus(id, ChecklistStatus.Draft);
+        return await SetVisibility(id, ChecklistStatus.Draft);
     }
 
-    private async Task<IActionResult> ToggleStatus(Guid id, ChecklistStatus newStatus)
+    private async Task<IActionResult> SetVisibility(Guid id, ChecklistStatus newStatus)
     {
         var userId = RequiredUserId;
 
