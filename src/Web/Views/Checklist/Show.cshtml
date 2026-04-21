@@ -105,6 +105,49 @@
         margin-bottom: 1.25rem;
     }
 
+    .checklist-timer {
+        margin-bottom: 1.25rem;
+        padding: 0.8rem 1rem;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        background: #f8f9fa;
+    }
+
+    .checklist-timer-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.55rem;
+        color: #495057;
+    }
+
+    .checklist-timer-label {
+        margin: 0;
+        font-size: 0.95rem;
+        font-weight: 600;
+    }
+
+    .checklist-timer-state {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+
+    .checklist-timer-value {
+        margin-bottom: 0.7rem;
+        font-size: 1.5rem;
+        font-weight: 700;
+        line-height: 1;
+        color: #212529;
+        letter-spacing: 0.04em;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .checklist-timer-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
     .checklist-progress-meta {
         display: flex;
         justify-content: space-between;
@@ -218,6 +261,27 @@
         </div>
     </div>
 
+    <section class="checklist-timer" aria-live="polite">
+        <div class="checklist-timer-header">
+            <p class="checklist-timer-label">Completion Timer</p>
+            <span class="checklist-timer-state" data-timer-state>Stopped</span>
+        </div>
+
+        <div class="checklist-timer-value" data-timer-display>00:00:00</div>
+
+        <div class="checklist-timer-actions">
+            <button type="button" class="btn btn-sm btn-outline-success" data-timer-start>
+                Start
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-timer-stop>
+                Stop
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-danger" data-timer-restart>
+                Restart
+            </button>
+        </div>
+    </section>
+
     <header class="mb-3">
         <h1 class="checklist-title">@Model.Title</h1>
 
@@ -286,4 +350,5 @@
     <script src="~/js/checklist-export.js" asp-append-version="true"></script>
     <script src="~/js/checklist-sync.js" asp-append-version="true"></script>
     <script src="~/js/checklist-deadline.js" asp-append-version="true"></script>
+    <script src="~/js/checklist-timer.js" asp-append-version="true"></script>
 }
