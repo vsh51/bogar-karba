@@ -121,6 +121,12 @@ public sealed class ChecklistController : BaseController
 
         if (!result.Succeeded || result.Value is null)
         {
+            if (result.ErrorMessage == ResultErrors.ChecklistIsPrivate)
+            {
+                _logger.LogInformation("Checklist {ChecklistId} is private and access was denied", id);
+                return View("Private");
+            }
+
             _logger.LogInformation("Checklist {ChecklistId} not found or not available", id);
             return NotFound();
         }

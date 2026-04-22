@@ -167,6 +167,17 @@ public class SearchChecklistsQueryHandlerTests
         {
             return Task.CompletedTask;
         }
+
+        public Task UpdateVisibilityAsync(Guid id, bool isPublic)
+        {
+            var item = _items.FirstOrDefault(c => c.Id == id);
+            if (item != null)
+            {
+                item.IsPublic = isPublic;
+            }
+
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class FakeUserRepository : IUserRepository

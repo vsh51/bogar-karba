@@ -95,7 +95,7 @@
                                 <li>
                                     <form asp-controller="Author" asp-action="MakePublic" asp-route-id="@item.Id" method="post">
                                         @Html.AntiForgeryToken()
-                                        <button type="submit" class="dropdown-item">Mark as public</button>
+                                        <button type="submit" class="dropdown-item">Make public</button>
                                     </form>
                                 </li>
                             }
@@ -104,7 +104,7 @@
                                 <li>
                                     <form asp-controller="Author" asp-action="MakePrivate" asp-route-id="@item.Id" method="post">
                                         @Html.AntiForgeryToken()
-                                        <button type="submit" class="dropdown-item">Mark as private</button>
+                                        <button type="submit" class="dropdown-item">Make private</button>
                                     </form>
                                 </li>
                             }
