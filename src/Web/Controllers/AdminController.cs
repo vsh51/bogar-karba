@@ -1,10 +1,12 @@
 using Application.Common;
+using Application.Enums;
 using Application.UseCases.Auth.LoginAdmin;
 using Application.UseCases.Auth.Logout;
 using Application.UseCases.BanUser;
 using Application.UseCases.DeleteChecklist;
 using Application.UseCases.GetSystemStats;
 using Application.UseCases.SearchChecklists;
+using Application.UseCases.SearchUsers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Web.Filters;
@@ -14,11 +16,13 @@ using Web.Models.Admin;
 namespace Web.Controllers;
 
 [Authorize(Roles = "Admin")]
+[Route("admin")]
 public sealed class AdminController : BaseController
 {
     private readonly LoginAdminCommandHandler _loginHandler;
     private readonly LogoutCommandHandler _logoutHandler;
     private readonly SearchChecklistsQueryHandler _searchHandler;
+    private readonly SearchUsersQueryHandler _userSearchHandler;
     private readonly DeleteChecklistCommandHandler _deleteHandler;
     private readonly BanUserCommandHandler _banUserHandler;
     private readonly GetSystemStatsQueryHandler _systemStatsHandler;
@@ -28,6 +32,7 @@ public sealed class AdminController : BaseController
         LoginAdminCommandHandler loginHandler,
         LogoutCommandHandler logoutHandler,
         SearchChecklistsQueryHandler searchHandler,
+        SearchUsersQueryHandler userSearchHandler,
         DeleteChecklistCommandHandler deleteHandler,
         BanUserCommandHandler banUserHandler,
         GetSystemStatsQueryHandler systemStatsHandler,
@@ -36,14 +41,21 @@ public sealed class AdminController : BaseController
         _loginHandler = loginHandler;
         _logoutHandler = logoutHandler;
         _searchHandler = searchHandler;
+        _userSearchHandler = userSearchHandler;
         _deleteHandler = deleteHandler;
         _banUserHandler = banUserHandler;
         _systemStatsHandler = systemStatsHandler;
         _logger = logger;
     }
 
+    [HttpGet]
     public async Task<IActionResult> Index(string? searchTerm)
     {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
         var adminUserName = User.Identity?.Name ?? "unknown-admin";
         _logger.LogInformation("Admin {AdminUserName} requested dashboard list with search term {SearchTerm}", adminUserName, searchTerm ?? "<empty>");
 
@@ -59,8 +71,30 @@ public sealed class AdminController : BaseController
         return View(viewModels);
     }
 
+    [HttpGet("users")]
+    public async Task<IActionResult> Users(string? searchTerm)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var adminUserName = User.Identity?.Name ?? "unknown-admin";
+        _logger.LogInformation("Admin {Admin} requested user list", adminUserName);
+
+        var result = await _userSearchHandler.HandleAsync(new SearchUsersQuery(searchTerm));
+
+        var viewModels = (result.Succeeded ? result.Value! : new())
+            .Select(u => u.ToAdminUserViewModel())
+            .ToList();
+
+        ViewData["SearchTerm"] = searchTerm;
+        ViewData["CurrentAdminId"] = CurrentUserId; // Передаємо ID поточного адміна
+        return View(viewModels);
+    }
+
     [AllowAnonymous]
-    [HttpGet]
+    [HttpGet("login")]
     public IActionResult Login()
     {
         _logger.LogInformation("Admin login page requested");
@@ -68,7 +102,7 @@ public sealed class AdminController : BaseController
     }
 
     [AllowAnonymous]
-    [HttpPost]
+    [HttpPost("login")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Login(AdminLoginViewModel model)
     {
@@ -93,7 +127,7 @@ public sealed class AdminController : BaseController
         return RedirectToAction("Index");
     }
 
-    [HttpPost]
+    [HttpPost("delete/{id:guid}")]
     [ValidateAntiForgeryToken]
     [ValidateModelState]
     public async Task<IActionResult> Delete(Guid id, string? searchTerm)
@@ -110,34 +144,36 @@ public sealed class AdminController : BaseController
         return RedirectToAction(nameof(Index), new { searchTerm });
     }
 
-    [HttpPost]
+    [HttpPost("ban/{userId}")]
     [ValidateAntiForgeryToken]
     [ValidateModelState]
-    public async Task<IActionResult> BanUser(string userId, string? searchTerm)
+    public async Task<IActionResult> BanUser(string userId, string? searchTerm, bool fromUsers = false)
     {
         var adminUserName = CurrentUserName ?? "unknown-admin";
-        _logger.LogInformation("Admin {AdminUserName} requested account blocking for user {UserId}", adminUserName, userId);
+        _logger.LogInformation("Admin {Admin} requested ban for user {UserId}. FromUsers: {FromUsers}", adminUserName, userId, fromUsers);
+
         var result = await _banUserHandler.HandleAsync(new BanUserCommand(userId));
 
         if (result.Succeeded)
         {
-            _logger.LogInformation("Admin {AdminUserName} successfully blocked user account {UserId}", adminUserName, userId);
+            _logger.LogInformation("Admin {Admin} successfully blocked user {UserId}", adminUserName, userId);
             SetSuccessMessage("The user has been blocked.");
-        }
-        else if (result.ErrorMessage == ResultErrors.UserNotFound)
-        {
-            _logger.LogWarning("Admin {AdminUserName} attempted to block user {UserId}, but account was not found", adminUserName, userId);
-            SetWarningMessage("User not found.");
         }
         else
         {
-            _logger.LogError("Admin {AdminUserName} failed to block user account {UserId}", adminUserName, userId);
-            SetErrorMessage("Failed to block the user.");
+            _logger.LogError("Admin {Admin} failed to block user {UserId}: {Error}", adminUserName, userId, result.ErrorMessage);
+            SetErrorMessage(result.ErrorMessage ?? "Failed to block the user.");
+        }
+
+        if (fromUsers)
+        {
+            return RedirectToAction(nameof(Users), new { searchTerm });
         }
 
         return RedirectToAction(nameof(Index), new { searchTerm });
     }
 
+    [HttpGet("dashboard")]
     public async Task<IActionResult> Dashboard()
     {
         var result = await _systemStatsHandler.HandleAsync(new GetSystemStatsQuery());
@@ -151,7 +187,7 @@ public sealed class AdminController : BaseController
         return View(result.Value.ToDashboardViewModel());
     }
 
-    [HttpPost]
+    [HttpPost("logout")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout()
     {

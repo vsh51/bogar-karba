@@ -1,5 +1,6 @@
 using Application.DTOs;
 using Application.DTOs.Checklist;
+using Application.DTOs.User;
 using Application.UseCases.GetPublishedChecklist;
 using Web.Models.Admin;
 using Web.Models.Author;
@@ -18,6 +19,18 @@ public static class ViewModelMappings
             Description = dto.Description,
             UserId = dto.UserId,
             UserName = dto.UserName,
+            Status = dto.Status
+        };
+    }
+
+    public static AdminUserViewModel ToAdminUserViewModel(this UserSummaryDto dto)
+    {
+        return new AdminUserViewModel
+        {
+            Id = dto.Id,
+            UserName = dto.UserName,
+            Email = dto.Email,
+            FullName = $"{dto.Name} {dto.Surname}",
             Status = dto.Status
         };
     }

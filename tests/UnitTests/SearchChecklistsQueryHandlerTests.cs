@@ -1,3 +1,4 @@
+using Application.DTOs.User;
 using Application.Enums;
 using Application.Interfaces;
 using Application.Options;
@@ -186,5 +187,7 @@ public class SearchChecklistsQueryHandlerTests
         public Task<int> GetTotalCountAsync() => Task.FromResult(0);
 
         public Task<Dictionary<string, string>> GetUsernamesByIdsAsync(IEnumerable<string> userIds) => Task.FromResult(new Dictionary<string, string>());
+
+        public Task<List<UserSummaryDto>> SearchUsersAsync(string? searchTerm) => Task.FromResult(new List<UserSummaryDto>());
     }
 }
