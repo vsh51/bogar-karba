@@ -95,6 +95,7 @@ public sealed class EditChecklistCommandHandler(
             {
                 var task = section.Tasks.First(t => t.Id == taskRequest.Id);
                 task.Content = taskRequest.Content;
+                task.Link = string.IsNullOrWhiteSpace(taskRequest.Link) ? null : taskRequest.Link.Trim();
             }
         }
 

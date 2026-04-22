@@ -34,7 +34,8 @@ public static class ChecklistMappings
                         {
                             Id = task.Id,
                             Content = task.Content,
-                            Position = task.Position
+                            Position = task.Position,
+                            Link = task.Link
                         })
                         .ToList()
                 })

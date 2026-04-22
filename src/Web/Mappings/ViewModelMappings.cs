@@ -58,7 +58,8 @@ public static class ViewModelMappings
                         .Select(item => new ChecklistItemViewModel
                         {
                             Id = item.Id,
-                            Content = item.Content
+                            Content = item.Content,
+                            Link = item.Link
                         })
                         .ToList()
                 })

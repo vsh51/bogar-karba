@@ -53,6 +53,7 @@ public sealed class AddChecklistItemCommandHandler(
             Content = command.Content,
             SectionId = section.Id,
             Position = section.Tasks.Count,
+            Link = string.IsNullOrWhiteSpace(command.Link) ? null : command.Link.Trim(),
         };
 
         section.Tasks.Add(task);

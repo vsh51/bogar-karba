@@ -86,6 +86,28 @@
         margin: 0;
     }
 
+    .checklist-item-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        margin-left: 0.4rem;
+        font-size: 0.85rem;
+        color: #0d6efd;
+        text-decoration: none;
+        border-bottom: 1px dashed #0d6efd;
+        padding-bottom: 1px;
+        word-break: break-all;
+    }
+
+    .checklist-item-link:hover {
+        color: #0a58ca;
+        border-bottom-color: #0a58ca;
+    }
+
+    .checklist-item-link-icon {
+        font-size: 0.8rem;
+    }
+
     .checklist-empty {
         color: #6c757d;
         margin: 0.4rem 0 0;
@@ -261,7 +283,16 @@
 
                                     <li class="checklist-item">
                                         <input id="@itemId" type="checkbox" class="form-check-input checklist-item-input" data-task-id="@item.Id" />
-                                        <label for="@itemId" class="checklist-item-label">@item.Content</label>
+                                        <label for="@itemId" class="checklist-item-label">
+                                            @item.Content
+                                            @if (!string.IsNullOrWhiteSpace(item.Link))
+                                            {
+                                                var linkLabel = Uri.TryCreate(item.Link, UriKind.Absolute, out var uri) ? uri.Host : "link";
+                                                <a href="@item.Link" class="checklist-item-link" target="_blank" rel="noopener noreferrer">
+                                                    <span class="checklist-item-link-icon">&#128279;</span>@linkLabel
+                                                </a>
+                                            }
+                                        </label>
                                     </li>
                                 }
                             </ul>

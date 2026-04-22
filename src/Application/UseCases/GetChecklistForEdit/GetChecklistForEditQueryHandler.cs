@@ -45,7 +45,7 @@ public sealed class GetChecklistForEditQueryHandler(
                     s.Name,
                     s.Tasks
                         .OrderBy(t => t.Position)
-                        .Select(t => new EditTaskResult(t.Id, t.Content))
+                        .Select(t => new EditTaskResult(t.Id, t.Content, t.Link))
                         .ToList()))
                 .ToList());
 
