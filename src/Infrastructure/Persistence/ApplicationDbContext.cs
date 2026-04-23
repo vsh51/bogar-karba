@@ -61,6 +61,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         {
             entity.Property(t => t.Content).IsRequired();
             entity.Property(t => t.Position).IsRequired();
+            entity.Property(t => t.Link).HasMaxLength(2048);
         });
     }
 }

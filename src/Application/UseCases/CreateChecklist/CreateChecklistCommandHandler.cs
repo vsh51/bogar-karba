@@ -54,7 +54,8 @@ public sealed class CreateChecklistCommandHandler(
                 {
                     Id = Guid.NewGuid(),
                     Content = t.Content,
-                    Position = t.Position
+                    Position = t.Position,
+                    Link = string.IsNullOrWhiteSpace(t.Link) ? null : t.Link.Trim()
                 }).ToList()
             }).ToList()
         };

@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260422201951_AddLinkFieldToTaskItem")]
+    partial class AddLinkFieldToTaskItem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,19 +24,6 @@ namespace Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("Domain.Entities.ChecklistAccess", b =>
-                {
-                    b.Property<Guid>("ChecklistId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("text");
-
-                    b.HasKey("ChecklistId", "UserId");
-
-                    b.ToTable("ChecklistAccesses");
-                });
 
             modelBuilder.Entity("Domain.Entities.Checklist", b =>
                 {
@@ -50,9 +40,6 @@ namespace Infrastructure.Migrations
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<bool>("IsPublic")
-                        .HasColumnType("boolean");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -331,17 +318,6 @@ namespace Infrastructure.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
-                });
-
-            modelBuilder.Entity("Domain.Entities.ChecklistAccess", b =>
-                {
-                    b.HasOne("Domain.Entities.Checklist", "Checklist")
-                        .WithMany()
-                        .HasForeignKey("ChecklistId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Checklist");
                 });
 
             modelBuilder.Entity("Domain.Entities.Checklist", b =>

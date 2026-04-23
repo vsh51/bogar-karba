@@ -69,6 +69,48 @@
     .checklist-row:hover .btn-delete {
         visibility: visible;
     }
+
+    .btn-link-toggle {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        color: #adb5bd;
+        font-size: 0.95rem;
+        padding: 0 0.2rem;
+        line-height: 1;
+        visibility: hidden;
+    }
+
+    .checklist-row:hover .btn-link-toggle {
+        visibility: visible;
+    }
+
+    .btn-link-toggle.has-link {
+        color: #0d6efd;
+        visibility: visible;
+    }
+
+    .link-input-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.2rem 0.5rem 0.4rem 2.1rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .link-input-row input {
+        flex: 1;
+        border: 1px solid #dee2e6;
+        border-radius: 0.25rem;
+        padding: 0.2rem 0.4rem;
+        font-size: 0.85rem;
+        outline: none;
+        color: #0d6efd;
+    }
+
+    .link-input-row input:focus {
+        border-color: #86b7fe;
+    }
 </style>
 
 <div class="row justify-content-center mt-5">
@@ -102,6 +144,7 @@
                         <div class="checklist-row">
                             <div class="item-checkbox"></div>
                             <input type="text" class="item-input" placeholder="Item description..." />
+                            <button type="button" class="btn-link-toggle" title="Attach link">&#128279;</button>
                             <button type="button" class="btn-delete">&times;</button>
                         </div>
                     </div>
