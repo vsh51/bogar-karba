@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.Interfaces;
 using Application.Options;
 using Application.UseCases.EditChecklist;
@@ -155,7 +156,7 @@ public class EditChecklistCommandHandlerTests
         var result = await _handler.HandleAsync(command);
 
         Assert.False(result.Succeeded);
-        Assert.Equal("Checklist not found.", result.ErrorMessage);
+        Assert.Equal(ResultErrors.ChecklistNotFound, result.ErrorMessage);
         _repositoryMock.Verify(r => r.UpdateAsync(), Times.Never);
     }
 
@@ -171,7 +172,7 @@ public class EditChecklistCommandHandlerTests
         var result = await _handler.HandleAsync(command);
 
         Assert.False(result.Succeeded);
-        Assert.Equal("You can only edit your own checklists.", result.ErrorMessage);
+        Assert.Equal(ResultErrors.NotChecklistOwner, result.ErrorMessage);
         _repositoryMock.Verify(r => r.UpdateAsync(), Times.Never);
     }
 
@@ -183,7 +184,7 @@ public class EditChecklistCommandHandlerTests
         var result = await _handler.HandleAsync(command);
 
         Assert.False(result.Succeeded);
-        Assert.Equal("Title is required.", result.ErrorMessage);
+        Assert.Equal(ResultErrors.TitleRequired, result.ErrorMessage);
         _repositoryMock.Verify(r => r.GetByIdWithDetailsAsync(It.IsAny<Guid>()), Times.Never);
         _repositoryMock.Verify(r => r.UpdateAsync(), Times.Never);
     }
@@ -206,7 +207,7 @@ public class EditChecklistCommandHandlerTests
         var result = await _handler.HandleAsync(command);
 
         Assert.False(result.Succeeded);
-        Assert.Equal("Adding new sections is not allowed.", result.ErrorMessage);
+        Assert.Equal(ResultErrors.AddingSectionsNotAllowed, result.ErrorMessage);
         _repositoryMock.Verify(r => r.UpdateAsync(), Times.Never);
     }
 
@@ -230,8 +231,63 @@ public class EditChecklistCommandHandlerTests
         var result = await _handler.HandleAsync(command);
 
         Assert.False(result.Succeeded);
-        Assert.Equal("Adding new tasks is not allowed.", result.ErrorMessage);
+        Assert.Equal(ResultErrors.AddingTasksNotAllowed, result.ErrorMessage);
         _repositoryMock.Verify(r => r.UpdateAsync(), Times.Never);
+    }
+
+    [Fact]
+    public async Task HandleAsync_WithLink_SavesLinkOnTask()
+    {
+        var checklist = BuildChecklist();
+        var sec = checklist.Sections[0];
+        var task = sec.Tasks[0];
+
+        _repositoryMock.Setup(r => r.GetByIdWithDetailsAsync(checklist.Id))
+            .ReturnsAsync(checklist);
+
+        var command = new EditChecklistCommand(
+            checklist.Id,
+            OwnerId,
+            checklist.Title,
+            checklist.Description,
+            null,
+            [new EditSectionRequest(sec.Id, sec.Name, [
+                new EditTaskRequest(task.Id, task.Content, "https://example.com"),
+                new EditTaskRequest(sec.Tasks[1].Id, sec.Tasks[1].Content)
+            ])]);
+
+        var result = await _handler.HandleAsync(command);
+
+        Assert.True(result.Succeeded);
+        Assert.Equal("https://example.com", checklist.Sections[0].Tasks.First(t => t.Id == task.Id).Link);
+    }
+
+    [Fact]
+    public async Task HandleAsync_WithWhitespaceLink_SavesNullOnTask()
+    {
+        var checklist = BuildChecklist();
+        var sec = checklist.Sections[0];
+        var task = sec.Tasks[0];
+        task.Link = "https://old-link.com";
+
+        _repositoryMock.Setup(r => r.GetByIdWithDetailsAsync(checklist.Id))
+            .ReturnsAsync(checklist);
+
+        var command = new EditChecklistCommand(
+            checklist.Id,
+            OwnerId,
+            checklist.Title,
+            checklist.Description,
+            null,
+            [new EditSectionRequest(sec.Id, sec.Name, [
+                new EditTaskRequest(task.Id, task.Content, "   "),
+                new EditTaskRequest(sec.Tasks[1].Id, sec.Tasks[1].Content)
+            ])]);
+
+        var result = await _handler.HandleAsync(command);
+
+        Assert.True(result.Succeeded);
+        Assert.Null(checklist.Sections[0].Tasks.First(t => t.Id == task.Id).Link);
     }
 
     [Fact]

@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.Interfaces;
 using Application.Options;
 using Application.UseCases.CreateChecklist;
@@ -57,7 +58,7 @@ public class CreateChecklistCommandHandlerTests
         var result = await _handler.HandleAsync(request, "user-123");
 
         Assert.False(result.Succeeded);
-        Assert.Equal("Title is required.", result.ErrorMessage);
+        Assert.Equal(ResultErrors.TitleRequired, result.ErrorMessage);
         _repositoryMock.Verify(r => r.AddAsync(It.IsAny<Checklist>()), Times.Never);
     }
 

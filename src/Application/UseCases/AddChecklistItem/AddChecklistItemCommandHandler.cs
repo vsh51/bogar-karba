@@ -19,7 +19,7 @@ public sealed class AddChecklistItemCommandHandler(
 
         if (string.IsNullOrWhiteSpace(command.Content))
         {
-            return "Item content is required.";
+            return ResultErrors.ItemContentRequired;
         }
 
         var checklist = await repository.GetByIdWithDetailsAsync(command.ChecklistId);
@@ -44,7 +44,7 @@ public sealed class AddChecklistItemCommandHandler(
 
         if (section is null)
         {
-            return "Section not found.";
+            return ResultErrors.SectionNotFound;
         }
 
         var task = new TaskItem
