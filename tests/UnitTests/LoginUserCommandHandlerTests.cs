@@ -26,36 +26,54 @@ public class LoginUserCommandHandlerTests
     }
 
     [Fact]
-    public async Task HandleAsyncValidActiveUserReturnsSuccess()
+    public async Task HandleAsyncValidActiveUserWithEmailReturnsSuccess()
     {
-        _repositoryMock.Setup(r => r.UserExistsAsync("user@test.com", UserLookupMode.ByEmail)).ReturnsAsync(true);
-        _repositoryMock.Setup(r => r.IsActiveAsync("user@test.com", UserLookupMode.ByEmail)).ReturnsAsync(true);
-        _repositoryMock.Setup(r => r.CheckPasswordAsync("user@test.com", "Pass123", UserLookupMode.ByEmail)).ReturnsAsync(true);
+        var identifier = "user@test.com";
+        _repositoryMock.Setup(r => r.UserExistsAsync(identifier, UserLookupMode.ByEmail)).ReturnsAsync(true);
+        _repositoryMock.Setup(r => r.IsActiveAsync(identifier, UserLookupMode.ByEmail)).ReturnsAsync(true);
+        _repositoryMock.Setup(r => r.CheckPasswordAsync(identifier, "Pass123", UserLookupMode.ByEmail)).ReturnsAsync(true);
 
-        var result = await _sut.HandleAsync(new LoginUserCommand("user@test.com", "Pass123"));
+        var result = await _sut.HandleAsync(new LoginUserCommand(identifier, "Pass123"));
 
         Assert.True(result.Succeeded);
-        _signInServiceMock.Verify(s => s.SignInAsync("user@test.com", UserLookupMode.ByEmail), Times.Once);
+        _signInServiceMock.Verify(s => s.SignInAsync(identifier, UserLookupMode.ByEmail), Times.Once);
+    }
+
+    [Fact]
+    public async Task HandleAsyncValidActiveUserWithUsernameReturnsSuccess()
+    {
+        var identifier = "username123";
+        _repositoryMock.Setup(r => r.UserExistsAsync(identifier, UserLookupMode.ByUserName)).ReturnsAsync(true);
+        _repositoryMock.Setup(r => r.IsActiveAsync(identifier, UserLookupMode.ByUserName)).ReturnsAsync(true);
+        _repositoryMock.Setup(r => r.CheckPasswordAsync(identifier, "Pass123", UserLookupMode.ByUserName)).ReturnsAsync(true);
+
+        var result = await _sut.HandleAsync(new LoginUserCommand(identifier, "Pass123"));
+
+        Assert.True(result.Succeeded);
+        _signInServiceMock.Verify(s => s.SignInAsync(identifier, UserLookupMode.ByUserName), Times.Once);
     }
 
     [Fact]
     public async Task HandleAsyncUserNotFoundReturnsFailure()
     {
-        _repositoryMock.Setup(r => r.UserExistsAsync("noone@test.com", UserLookupMode.ByEmail)).ReturnsAsync(false);
+        var identifier = "noone@test.com";
+        _repositoryMock.Setup(r => r.UserExistsAsync(identifier, UserLookupMode.ByEmail)).ReturnsAsync(false);
 
-        var result = await _sut.HandleAsync(new LoginUserCommand("noone@test.com", "Pass123"));
+        var result = await _sut.HandleAsync(new LoginUserCommand(identifier, "Pass123"));
 
         Assert.False(result.Succeeded);
+        Assert.Equal("Invalid login or password.", result.ErrorMessage);
         _signInServiceMock.Verify(s => s.SignInAsync(It.IsAny<string>(), It.IsAny<UserLookupMode>()), Times.Never);
     }
 
     [Fact]
     public async Task HandleAsyncInactiveUserReturnsFailure()
     {
-        _repositoryMock.Setup(r => r.UserExistsAsync("banned@test.com", UserLookupMode.ByEmail)).ReturnsAsync(true);
-        _repositoryMock.Setup(r => r.IsActiveAsync("banned@test.com", UserLookupMode.ByEmail)).ReturnsAsync(false);
+        var identifier = "banned@test.com";
+        _repositoryMock.Setup(r => r.UserExistsAsync(identifier, UserLookupMode.ByEmail)).ReturnsAsync(true);
+        _repositoryMock.Setup(r => r.IsActiveAsync(identifier, UserLookupMode.ByEmail)).ReturnsAsync(false);
 
-        var result = await _sut.HandleAsync(new LoginUserCommand("banned@test.com", "Pass123"));
+        var result = await _sut.HandleAsync(new LoginUserCommand(identifier, "Pass123"));
 
         Assert.False(result.Succeeded);
         Assert.Equal("Your account is blocked.", result.ErrorMessage);
@@ -65,13 +83,15 @@ public class LoginUserCommandHandlerTests
     [Fact]
     public async Task HandleAsyncWrongPasswordReturnsFailure()
     {
-        _repositoryMock.Setup(r => r.UserExistsAsync("user@test.com", UserLookupMode.ByEmail)).ReturnsAsync(true);
-        _repositoryMock.Setup(r => r.IsActiveAsync("user@test.com", UserLookupMode.ByEmail)).ReturnsAsync(true);
-        _repositoryMock.Setup(r => r.CheckPasswordAsync("user@test.com", "wrong", UserLookupMode.ByEmail)).ReturnsAsync(false);
+        var identifier = "user@test.com";
+        _repositoryMock.Setup(r => r.UserExistsAsync(identifier, UserLookupMode.ByEmail)).ReturnsAsync(true);
+        _repositoryMock.Setup(r => r.IsActiveAsync(identifier, UserLookupMode.ByEmail)).ReturnsAsync(true);
+        _repositoryMock.Setup(r => r.CheckPasswordAsync(identifier, "wrong", UserLookupMode.ByEmail)).ReturnsAsync(false);
 
-        var result = await _sut.HandleAsync(new LoginUserCommand("user@test.com", "wrong"));
+        var result = await _sut.HandleAsync(new LoginUserCommand(identifier, "wrong"));
 
         Assert.False(result.Succeeded);
+        Assert.Equal("Invalid login or password.", result.ErrorMessage);
         _signInServiceMock.Verify(s => s.SignInAsync(It.IsAny<string>(), It.IsAny<UserLookupMode>()), Times.Never);
     }
 }

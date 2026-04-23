@@ -1,0 +1,94 @@
+@model List<AdminUserViewModel>
+@{
+    ViewData["Title"] = "User Management";
+}
+
+<div class="container mt-4" style="max-width: 900px;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-0">User Management</h2>
+            <p class="text-muted">Search and manage system users</p>
+        </div>
+        <a class="btn btn-outline-secondary btn-sm" asp-action="Index">Back to Checklists</a>
+    </div>
+
+    <form method="get" class="mb-4">
+        <div class="input-group border rounded-pill overflow-hidden shadow-sm">
+            <span class="input-group-text bg-white border-0"><i class="bi bi-people"></i></span>
+            <input name="searchTerm" value="@ViewData["SearchTerm"]" class="form-control border-0 shadow-none" placeholder="Search by username..." />
+            <button type="submit" class="btn btn-primary px-4">Search</button>
+        </div>
+    </form>
+
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">User</th>
+                        <th>Full Name</th>
+                        <th>Status</th>
+                        <th class="text-end pe-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center py-4 text-muted">
+                                No users found matching "@ViewData["SearchTerm"]"
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var user in Model)
+                    {
+                        <tr>
+                            <td class="ps-4">
+                                <div class="fw-bold">@user.UserName</div>
+                                <div class="text-muted small">@user.Email</div>
+                            </td>
+                            <td>
+                                @if (string.IsNullOrWhiteSpace(user.FullName))
+                                {
+                                    <span class="text-muted italic small">Not set</span>
+                                }
+                                else
+                                {
+                                    @user.FullName
+                                }
+                            </td>
+                            <td>
+                                @if (user.IsBanned)
+                                {
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Banned</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle">Active</span>
+                                }
+                            </td>
+                            <td class="text-end pe-4">
+                                @if (!user.IsBanned && user.Id != (string)ViewData["CurrentAdminId"]!)
+                                {
+                                    <form asp-action="BanUser" 
+                                          asp-route-userId="@user.Id" 
+                                          asp-route-searchTerm="@ViewData["SearchTerm"]" 
+                                          asp-route-fromUsers="true" 
+                                          method="post" 
+                                          onsubmit="return confirm('Are you sure you want to block this user?');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Block</button>
+                                    </form>
+                                }
+                                else if (user.Id == (string)ViewData["CurrentAdminId"]!)
+                                {
+                                    <span class="badge bg-info-subtle text-info border border-info-subtle">You</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
