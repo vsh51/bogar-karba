@@ -163,6 +163,8 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseMiddleware<RequestLoggingMiddleware>();
+
 app.MapStaticAssets();
 
 app.MapControllerRoute(
