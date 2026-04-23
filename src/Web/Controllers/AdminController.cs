@@ -89,7 +89,7 @@ public sealed class AdminController : BaseController
             .ToList();
 
         ViewData["SearchTerm"] = searchTerm;
-        ViewData["CurrentAdminId"] = CurrentUserId; // Передаємо ID поточного адміна
+        ViewData["CurrentAdminId"] = CurrentUserId;
         return View(viewModels);
     }
 
@@ -112,18 +112,19 @@ public sealed class AdminController : BaseController
             return View(model);
         }
 
-        _logger.LogInformation("Admin login attempt for {UserName}", model.UserName);
+        _logger.LogInformation("Admin login attempt for {Identifier}", model.UserName);
 
         var result = await _loginHandler.HandleAsync(
             new LoginAdminCommand(model.UserName, model.Password));
+
         if (!result.Succeeded)
         {
-            _logger.LogWarning("Admin login failed for {UserName}", model.UserName);
+            _logger.LogWarning("Admin login failed for {Identifier}", model.UserName);
             ModelState.AddModelError(string.Empty, result.ErrorMessage ?? "Login failed.");
             return View(model);
         }
 
-        _logger.LogInformation("Admin logged in: {UserName}", model.UserName);
+        _logger.LogInformation("Admin logged in: {Identifier}", model.UserName);
         return RedirectToAction("Index");
     }
 

@@ -5,28 +5,28 @@
 
 <div class="row justify-content-center mt-5">
     <div class="col-md-5">
-        <div class="card">
-            <div class="card-header bg-light text-center">
-                <h4 class="mb-0">Admin Login</h4>
+        <div class="card shadow-sm">
+            <div class="card-header bg-white text-center py-3">
+                <h4 class="mb-0 fw-bold">Admin Login</h4>
             </div>
-            <div class="card-body">
-                <div asp-validation-summary="All" class="text-danger mb-3"></div>
+            <div class="card-body p-4">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
                 <form asp-action="Login" method="post">
                     <div class="mb-3">
-                        <label asp-for="UserName" class="form-label"></label>
-                        <input asp-for="UserName" class="form-control" placeholder="Enter username" />
-                        <span asp-validation-for="UserName" class="text-danger"></span>
+                        <label asp-for="UserName" class="form-label text-muted small fw-bold"></label>
+                        <input asp-for="UserName" class="form-control" placeholder="Enter email or username" />
+                        <span asp-validation-for="UserName" class="text-danger small"></span>
                     </div>
 
                     <div class="mb-3">
-                        <label asp-for="Password" class="form-label"></label>
+                        <label asp-for="Password" class="form-label text-muted small fw-bold"></label>
                         <input asp-for="Password" class="form-control" placeholder="Enter password" />
-                        <span asp-validation-for="Password" class="text-danger"></span>
+                        <span asp-validation-for="Password" class="text-danger small"></span>
                     </div>
 
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">Sign In</button>
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-primary py-2">Sign In</button>
                     </div>
                 </form>
             </div>
