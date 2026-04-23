@@ -146,6 +146,7 @@ var app = builder.Build();
 app.UseSerilogRequestLogging();
 app.UseExceptionHandler("/Home/Error");
 app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseMiddleware<RequestTimingMiddleware>();
 
 using (var scope = app.Services.CreateScope())
 {
