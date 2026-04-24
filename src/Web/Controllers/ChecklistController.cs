@@ -9,6 +9,7 @@ using Application.UseCases.GetChecklistForEdit;
 using Application.UseCases.GetChecklistsByIds;
 using Application.UseCases.GetPublishedChecklist;
 using Application.UseCases.GroupTasksIntoSection;
+using Application.UseCases.QuickCreateChecklist;
 using Application.UseCases.RemoveChecklistItem;
 using Application.UseCases.ReorderChecklistItem;
 using Microsoft.AspNetCore.Authorization;
@@ -34,6 +35,7 @@ public sealed class ChecklistController : BaseController
     private readonly AddChecklistItemCommandHandler _addItemHandler;
     private readonly RemoveChecklistItemCommandHandler _removeItemHandler;
     private readonly GetChecklistsByIdsQueryHandler _getByIdsHandler;
+    private readonly QuickCreateChecklistCommandHandler _quickCreateHandler;
     private readonly ILogger<ChecklistController> _logger;
 
     public ChecklistController(
@@ -48,6 +50,7 @@ public sealed class ChecklistController : BaseController
         AddChecklistItemCommandHandler addItemHandler,
         RemoveChecklistItemCommandHandler removeItemHandler,
         GetChecklistsByIdsQueryHandler getByIdsHandler,
+        QuickCreateChecklistCommandHandler quickCreateHandler,
         ILogger<ChecklistController> logger)
     {
         _handler = handler;
@@ -61,6 +64,7 @@ public sealed class ChecklistController : BaseController
         _addItemHandler = addItemHandler;
         _removeItemHandler = removeItemHandler;
         _getByIdsHandler = getByIdsHandler;
+        _quickCreateHandler = quickCreateHandler;
         _logger = logger;
     }
 
@@ -107,6 +111,46 @@ public sealed class ChecklistController : BaseController
 
         _logger.LogWarning(
             "Checklist creation failed for user {UserId}: {Error}",
+            userId,
+            result.ErrorMessage ?? "Unknown error");
+
+        return BadRequest(result.ErrorMessage ?? "An error occurred while creating the checklist.");
+    }
+
+    [HttpGet("quick-create")]
+    [Authorize]
+    public IActionResult QuickCreate()
+    {
+        _logger.LogInformation("Quick checklist create page requested by user {UserId}", RequiredUserId);
+        return View();
+    }
+
+    [HttpPost("quick-create")]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> QuickCreate([FromBody] QuickCreateChecklistViewModel model)
+    {
+        var userId = RequiredUserId;
+
+        _logger.LogInformation(
+            "Quick checklist creation requested by user {UserId}: input length {Length}",
+            userId,
+            model.RawText?.Length ?? 0);
+
+        var command = new QuickCreateChecklistCommand(model.RawText ?? string.Empty);
+        var result = await _quickCreateHandler.HandleAsync(command, userId);
+
+        if (result.Succeeded)
+        {
+            _logger.LogInformation(
+                "Checklist {ChecklistId} quick-created successfully for user {UserId}",
+                result.Value,
+                userId);
+            return Json(new { success = true, id = result.Value, redirectUrl = Url.Action("Show", "Checklist", new { id = result.Value }) });
+        }
+
+        _logger.LogWarning(
+            "Quick checklist creation failed for user {UserId}: {Error}",
             userId,
             result.ErrorMessage ?? "Unknown error");
 
