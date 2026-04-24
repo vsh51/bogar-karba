@@ -18,6 +18,7 @@ using Application.UseCases.GetPublishedChecklist;
 using Application.UseCases.GetSystemStats;
 using Application.UseCases.GetUserChecklists;
 using Application.UseCases.GroupTasksIntoSection;
+using Application.UseCases.QuickCreateChecklist;
 using Application.UseCases.RemoveChecklistItem;
 using Application.UseCases.ReorderChecklistItem;
 using Application.UseCases.SearchChecklists;
@@ -134,6 +135,7 @@ builder.Services.AddScoped<AddChecklistItemCommandHandler>();
 builder.Services.AddScoped<RemoveChecklistItemCommandHandler>();
 builder.Services.AddScoped<GetChecklistForEditQueryHandler>();
 builder.Services.AddScoped<GetChecklistsByIdsQueryHandler>();
+builder.Services.AddScoped<QuickCreateChecklistCommandHandler>();
 
 builder.Services.AddControllersWithViews();
 
