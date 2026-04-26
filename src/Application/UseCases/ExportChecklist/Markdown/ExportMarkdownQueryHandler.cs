@@ -60,7 +60,13 @@ public sealed class ExportMarkdownQueryHandler(
             foreach (var task in section.Tasks.OrderBy(t => t.Position))
             {
                 string marker = completedTaskIds.Contains(task.Id) ? "[+]" : "[ ]";
-                sb.Append("- ").Append(marker).Append(' ').AppendLine(task.Content);
+                sb.Append("- ").Append(marker).Append(' ').Append(task.Content);
+                if (!string.IsNullOrWhiteSpace(task.Link))
+                {
+                    sb.Append(" — ").Append(task.Link);
+                }
+
+                sb.AppendLine();
             }
         }
 

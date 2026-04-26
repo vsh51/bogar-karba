@@ -23,7 +23,7 @@ public sealed class CreateChecklistCommandHandler(
         if (string.IsNullOrWhiteSpace(request.Title))
         {
             logger.LogWarning("Checklist creation failed for user {UserId}: title is required", userId);
-            return "Title is required.";
+            return ResultErrors.TitleRequired;
         }
 
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
@@ -54,7 +54,8 @@ public sealed class CreateChecklistCommandHandler(
                 {
                     Id = Guid.NewGuid(),
                     Content = t.Content,
-                    Position = t.Position
+                    Position = t.Position,
+                    Link = string.IsNullOrWhiteSpace(t.Link) ? null : t.Link.Trim()
                 }).ToList()
             }).ToList()
         };

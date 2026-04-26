@@ -12,6 +12,7 @@ public class JsTestsRunner
         {
             Path.GetFullPath(Path.Combine(basePath, "../../../../JsTests/checklist-sync.test.js")),
             Path.GetFullPath(Path.Combine(basePath, "../../../../JsTests/checklist-progress.test.js")),
+            Path.GetFullPath(Path.Combine(basePath, "../../../../JsTests/checklist-timer.test.js")),
         };
 
         foreach (var jsTestPath in jsTestPaths)

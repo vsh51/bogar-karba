@@ -47,4 +47,11 @@ public sealed class ChecklistReadOnlyRepository(
             .ThenInclude(s => s.Tasks.OrderBy(t => t.Position))
             .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
     }
+
+    public async Task<bool> HasAccessAsync(Guid checklistId, string userId, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.ChecklistAccesses
+            .AsNoTracking()
+            .AnyAsync(a => a.ChecklistId == checklistId && a.UserId == userId, cancellationToken);
+    }
 }

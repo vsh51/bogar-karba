@@ -18,6 +18,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<TaskItem> Tasks => Set<TaskItem>();
 
+    public DbSet<ChecklistAccess> ChecklistAccesses => Set<ChecklistAccess>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -32,6 +34,16 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.HasOne<ApplicationUser>()
                 .WithMany(u => u.Checklists)
                 .HasForeignKey(c => c.UserId);
+        });
+
+        builder.Entity<ChecklistAccess>(entity =>
+        {
+            entity.HasKey(a => new { a.ChecklistId, a.UserId });
+
+            entity.HasOne(a => a.Checklist)
+                .WithMany()
+                .HasForeignKey(a => a.ChecklistId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         builder.Entity<ApplicationUser>(entity =>
@@ -49,6 +61,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         {
             entity.Property(t => t.Content).IsRequired();
             entity.Property(t => t.Position).IsRequired();
+            entity.Property(t => t.Link).HasMaxLength(2048);
         });
     }
 }

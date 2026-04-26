@@ -34,7 +34,8 @@ public static class ChecklistMappings
                         {
                             Id = task.Id,
                             Content = task.Content,
-                            Position = task.Position
+                            Position = task.Position,
+                            Link = task.Link
                         })
                         .ToList()
                 })
@@ -57,6 +58,7 @@ public static class ChecklistMappings
             UserId = checklist.UserId,
             UserName = userName ?? string.Empty,
             Status = checklist.Status,
+            IsPublic = checklist.IsPublic,
             Deadline = checklist.Deadline,
             IsOutdated = info?.IsOutdated ?? false,
             DeadlineRemaining = info?.RemainingText

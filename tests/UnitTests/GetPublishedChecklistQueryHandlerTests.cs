@@ -98,14 +98,142 @@ public class GetPublishedChecklistQueryHandlerTests
             Times.Once);
     }
 
-    private static Checklist CreateChecklist(Guid checklistId)
+    [Fact]
+    public async Task HandleAsync_WhenChecklistIsPrivateAndUserIsOwner_ReturnsSuccess()
+    {
+        var checklistId = Guid.NewGuid();
+        var ownerId = "owner-123";
+        var cancellationToken = new CancellationTokenSource().Token;
+        var query = new GetPublishedChecklistQuery(checklistId, ownerId);
+        var checklist = CreateChecklist(checklistId, ownerId, isPublic: false);
+
+        var repositoryMock = new Mock<IChecklistReadOnlyRepository>();
+        repositoryMock
+            .Setup(r => r.GetByIdWithSectionsAsync(checklistId, cancellationToken))
+            .ReturnsAsync(checklist);
+
+        var loggerMock = new Mock<ILogger<GetPublishedChecklistQueryHandler>>();
+        var sut = new GetPublishedChecklistQueryHandler(repositoryMock.Object, loggerMock.Object);
+
+        var result = await sut.HandleAsync(query, cancellationToken);
+
+        Assert.True(result.Succeeded);
+        Assert.NotNull(result.Value);
+        Assert.Equal(checklistId, result.Value.Id);
+    }
+
+    [Fact]
+    public async Task HandleAsync_WhenChecklistIsPrivateAndInactiveAndUserIsOwner_ReturnsSuccess()
+    {
+        var checklistId = Guid.NewGuid();
+        var ownerId = "owner-123";
+        var cancellationToken = new CancellationTokenSource().Token;
+        var query = new GetPublishedChecklistQuery(checklistId, ownerId);
+        var checklist = CreateChecklist(checklistId, ownerId, isPublic: false, status: ChecklistStatus.Draft);
+
+        var repositoryMock = new Mock<IChecklistReadOnlyRepository>();
+        repositoryMock
+            .Setup(r => r.GetByIdWithSectionsAsync(checklistId, cancellationToken))
+            .ReturnsAsync(checklist);
+
+        var loggerMock = new Mock<ILogger<GetPublishedChecklistQueryHandler>>();
+        var sut = new GetPublishedChecklistQueryHandler(repositoryMock.Object, loggerMock.Object);
+
+        var result = await sut.HandleAsync(query, cancellationToken);
+
+        Assert.True(result.Succeeded);
+        Assert.NotNull(result.Value);
+    }
+
+    [Fact]
+    public async Task HandleAsync_WhenChecklistIsPrivateAndUserHasNoAccess_ReturnsChecklistIsPrivateError()
+    {
+        var checklistId = Guid.NewGuid();
+        var cancellationToken = new CancellationTokenSource().Token;
+        var query = new GetPublishedChecklistQuery(checklistId, "other-user");
+        var checklist = CreateChecklist(checklistId, "owner-123", isPublic: false);
+
+        var repositoryMock = new Mock<IChecklistReadOnlyRepository>();
+        repositoryMock
+            .Setup(r => r.GetByIdWithSectionsAsync(checklistId, cancellationToken))
+            .ReturnsAsync(checklist);
+        repositoryMock
+            .Setup(r => r.HasAccessAsync(checklistId, "other-user", cancellationToken))
+            .ReturnsAsync(false);
+
+        var loggerMock = new Mock<ILogger<GetPublishedChecklistQueryHandler>>();
+        var sut = new GetPublishedChecklistQueryHandler(repositoryMock.Object, loggerMock.Object);
+
+        var result = await sut.HandleAsync(query, cancellationToken);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(Application.Common.ResultErrors.ChecklistIsPrivate, result.ErrorMessage);
+        repositoryMock.Verify(r => r.HasAccessAsync(checklistId, "other-user", cancellationToken), Times.Once);
+    }
+
+    [Fact]
+    public async Task HandleAsync_WhenChecklistIsPrivateAndUserHasExplicitAccess_ReturnsSuccess()
+    {
+        var checklistId = Guid.NewGuid();
+        var cancellationToken = new CancellationTokenSource().Token;
+        var query = new GetPublishedChecklistQuery(checklistId, "granted-user");
+        var checklist = CreateChecklist(checklistId, "owner-123", isPublic: false);
+
+        var repositoryMock = new Mock<IChecklistReadOnlyRepository>();
+        repositoryMock
+            .Setup(r => r.GetByIdWithSectionsAsync(checklistId, cancellationToken))
+            .ReturnsAsync(checklist);
+        repositoryMock
+            .Setup(r => r.HasAccessAsync(checklistId, "granted-user", cancellationToken))
+            .ReturnsAsync(true);
+
+        var loggerMock = new Mock<ILogger<GetPublishedChecklistQueryHandler>>();
+        var sut = new GetPublishedChecklistQueryHandler(repositoryMock.Object, loggerMock.Object);
+
+        var result = await sut.HandleAsync(query, cancellationToken);
+
+        Assert.True(result.Succeeded);
+        Assert.NotNull(result.Value);
+        repositoryMock.Verify(r => r.HasAccessAsync(checklistId, "granted-user", cancellationToken), Times.Once);
+    }
+
+    [Fact]
+    public async Task HandleAsync_WhenChecklistIsPrivateAndUserIsAnonymous_ReturnsChecklistIsPrivateError()
+    {
+        var checklistId = Guid.NewGuid();
+        var cancellationToken = new CancellationTokenSource().Token;
+        var query = new GetPublishedChecklistQuery(checklistId);
+        var checklist = CreateChecklist(checklistId, "owner-123", isPublic: false);
+
+        var repositoryMock = new Mock<IChecklistReadOnlyRepository>();
+        repositoryMock
+            .Setup(r => r.GetByIdWithSectionsAsync(checklistId, cancellationToken))
+            .ReturnsAsync(checklist);
+
+        var loggerMock = new Mock<ILogger<GetPublishedChecklistQueryHandler>>();
+        var sut = new GetPublishedChecklistQueryHandler(repositoryMock.Object, loggerMock.Object);
+
+        var result = await sut.HandleAsync(query, cancellationToken);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(Application.Common.ResultErrors.ChecklistIsPrivate, result.ErrorMessage);
+        repositoryMock.Verify(r => r.HasAccessAsync(It.IsAny<Guid>(), It.IsAny<string>(), cancellationToken), Times.Never);
+    }
+
+    private static Checklist CreateChecklist(
+        Guid checklistId,
+        string userId = "",
+        bool isPublic = true,
+        ChecklistStatus status = ChecklistStatus.Published)
     {
         return new Checklist
         {
             Id = checklistId,
+            UserId = userId,
             Title = "Checklist title",
             Description = "Checklist description",
-            Status = ChecklistStatus.Published,
+            Status = status,
+            IsPublic = isPublic,
             Sections =
             [
                 new Section

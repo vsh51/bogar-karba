@@ -11,4 +11,6 @@ public interface IChecklistReadOnlyRepository
     Task<Checklist?> GetByIdAsync(Guid id);
 
     Task<Checklist?> GetByIdWithSectionsAsync(Guid id, CancellationToken cancellationToken = default);
+
+    Task<bool> HasAccessAsync(Guid checklistId, string userId, CancellationToken cancellationToken = default);
 }

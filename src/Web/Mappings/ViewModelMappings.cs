@@ -1,5 +1,6 @@
 using Application.DTOs;
 using Application.DTOs.Checklist;
+using Application.DTOs.User;
 using Application.UseCases.GetPublishedChecklist;
 using Web.Models.Admin;
 using Web.Models.Author;
@@ -22,6 +23,18 @@ public static class ViewModelMappings
         };
     }
 
+    public static AdminUserViewModel ToAdminUserViewModel(this UserSummaryDto dto)
+    {
+        return new AdminUserViewModel
+        {
+            Id = dto.Id,
+            UserName = dto.UserName,
+            Email = dto.Email,
+            FullName = $"{dto.Name} {dto.Surname}",
+            Status = dto.Status
+        };
+    }
+
     public static AuthorChecklistViewModel ToAuthorViewModel(this ChecklistSummaryDto dto)
     {
         return new AuthorChecklistViewModel
@@ -30,6 +43,7 @@ public static class ViewModelMappings
             Title = dto.Title,
             Description = dto.Description,
             Status = dto.Status,
+            IsPublic = dto.IsPublic,
             Deadline = dto.Deadline,
             IsOutdated = dto.IsOutdated,
             DeadlineRemaining = dto.DeadlineRemaining
@@ -58,7 +72,8 @@ public static class ViewModelMappings
                         .Select(item => new ChecklistItemViewModel
                         {
                             Id = item.Id,
-                            Content = item.Content
+                            Content = item.Content,
+                            Link = item.Link
                         })
                         .ToList()
                 })
