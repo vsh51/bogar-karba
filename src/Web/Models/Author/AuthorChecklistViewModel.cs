@@ -12,6 +12,8 @@ public sealed class AuthorChecklistViewModel
 
     public ChecklistStatus Status { get; init; }
 
+    public bool IsPublic { get; init; }
+
     public DateOnly? Deadline { get; init; }
 
     public bool IsOutdated { get; init; }

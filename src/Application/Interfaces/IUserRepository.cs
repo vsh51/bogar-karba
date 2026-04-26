@@ -1,3 +1,4 @@
+using Application.DTOs.User;
 using Application.Enums;
 using Domain.Entities;
 
@@ -21,4 +22,6 @@ public interface IUserRepository
     Task<int> GetTotalCountAsync();
 
     Task<Dictionary<string, string>> GetUsernamesByIdsAsync(IEnumerable<string> userIds);
+
+    Task<List<UserSummaryDto>> SearchUsersAsync(string? searchTerm);
 }

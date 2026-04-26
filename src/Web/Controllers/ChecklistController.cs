@@ -92,7 +92,7 @@ public sealed class ChecklistController : BaseController
             model.Sections.Select(s => new CreateSectionRequest(
                 s.Name,
                 s.Position,
-                s.Tasks.Select(t => new CreateTaskRequest(t.Content, t.Position)).ToList())).ToList());
+                s.Tasks.Select(t => new CreateTaskRequest(t.Content, t.Position, t.Link)).ToList())).ToList());
 
         var result = await _createHandler.HandleAsync(request, userId);
 
@@ -121,6 +121,12 @@ public sealed class ChecklistController : BaseController
 
         if (!result.Succeeded || result.Value is null)
         {
+            if (result.ErrorMessage == ResultErrors.ChecklistIsPrivate)
+            {
+                _logger.LogInformation("Checklist {ChecklistId} is private and access was denied", id);
+                return View("Private");
+            }
+
             _logger.LogInformation("Checklist {ChecklistId} not found or not available", id);
             return NotFound();
         }
@@ -216,7 +222,8 @@ public sealed class ChecklistController : BaseController
                         .Select(t => new EditTaskViewModel
                         {
                             Id = t.Id,
-                            Content = t.Content
+                            Content = t.Content,
+                            Link = t.Link
                         })
                         .ToList()
                 })
@@ -242,7 +249,7 @@ public sealed class ChecklistController : BaseController
             model.Sections.Select(s => new EditSectionRequest(
                 s.Id,
                 s.Name,
-                s.Tasks.Select(t => new EditTaskRequest(t.Id, t.Content)).ToList())).ToList());
+                s.Tasks.Select(t => new EditTaskRequest(t.Id, t.Content, t.Link)).ToList())).ToList());
 
         var result = await _editHandler.HandleAsync(command);
 
@@ -318,7 +325,7 @@ public sealed class ChecklistController : BaseController
             id,
             model.SectionId);
 
-        var command = new AddChecklistItemCommand(id, userId, model.SectionId, model.Content);
+        var command = new AddChecklistItemCommand(id, userId, model.SectionId, model.Content, model.Link);
         var result = await _addItemHandler.HandleAsync(command);
 
         if (result.Succeeded)

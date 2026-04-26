@@ -21,6 +21,8 @@ using Application.UseCases.GroupTasksIntoSection;
 using Application.UseCases.RemoveChecklistItem;
 using Application.UseCases.ReorderChecklistItem;
 using Application.UseCases.SearchChecklists;
+using Application.UseCases.SearchUsers;
+using Application.UseCases.SetChecklistVisibility;
 using Application.UseCases.ToggleChecklistStatus;
 using Infrastructure.Caching;
 using Infrastructure.Identity;
@@ -118,6 +120,7 @@ builder.Services.AddScoped<LoginAdminCommandHandler>();
 builder.Services.AddScoped<LogoutCommandHandler>();
 builder.Services.AddScoped<RegisterUserCommandHandler>();
 builder.Services.AddScoped<SearchChecklistsQueryHandler>();
+builder.Services.AddScoped<SearchUsersQueryHandler>();
 builder.Services.AddScoped<DeleteChecklistCommandHandler>();
 builder.Services.AddScoped<CloneChecklistCommandHandler>();
 builder.Services.AddScoped<BanUserCommandHandler>();
@@ -128,6 +131,7 @@ builder.Services.AddScoped<EditChecklistCommandHandler>();
 builder.Services.AddScoped<GetSystemStatsQueryHandler>();
 builder.Services.AddScoped<ExportMarkdownQueryHandler>();
 builder.Services.AddScoped<ToggleChecklistStatusCommandHandler>();
+builder.Services.AddScoped<SetChecklistVisibilityCommandHandler>();
 builder.Services.AddScoped<ReorderChecklistItemCommandHandler>();
 builder.Services.AddScoped<GroupTasksIntoSectionCommandHandler>();
 builder.Services.AddScoped<AddChecklistItemCommandHandler>();
@@ -142,6 +146,7 @@ var app = builder.Build();
 app.UseSerilogRequestLogging();
 app.UseExceptionHandler("/Home/Error");
 app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseMiddleware<RequestTimingMiddleware>();
 
 using (var scope = app.Services.CreateScope())
 {
@@ -162,6 +167,8 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseMiddleware<RequestLoggingMiddleware>();
 
 app.MapStaticAssets();
 

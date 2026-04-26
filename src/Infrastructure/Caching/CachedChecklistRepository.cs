@@ -32,6 +32,12 @@ public sealed class CachedChecklistRepository(
         Evict(id);
     }
 
+    public async Task UpdateVisibilityAsync(Guid id, bool isPublic)
+    {
+        await inner.UpdateVisibilityAsync(id, isPublic);
+        Evict(id);
+    }
+
     public Task<int> GetTotalCountAsync() => inner.GetTotalCountAsync();
 
     public Task<int> GetCountByStatusAsync(ChecklistStatus status) =>

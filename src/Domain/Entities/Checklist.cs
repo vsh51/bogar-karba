@@ -23,5 +23,7 @@ public class Checklist
 
     public string UserId { get; set; } = string.Empty;
 
+    public bool IsPublic { get; set; } = true;
+
     public List<Section> Sections { get; set; } = new();
 }

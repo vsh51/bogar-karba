@@ -1,3 +1,4 @@
+using Application.DTOs.User;
 using Application.Enums;
 using Application.Interfaces;
 using Domain.Entities;
@@ -82,6 +83,29 @@ public sealed class UserRepository(UserManager<ApplicationUser> userManager) : I
         return await userManager.Users
             .Where(u => ids.Contains(u.Id))
             .ToDictionaryAsync(u => u.Id, u => u.UserName ?? u.Id);
+    }
+
+    public async Task<List<UserSummaryDto>> SearchUsersAsync(string? searchTerm)
+    {
+        var query = userManager.Users.AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var term = $"%{searchTerm.Trim()}%";
+            query = query.Where(u => EF.Functions.ILike(u.UserName!, term));
+        }
+
+        return await query
+            .Select(u => new UserSummaryDto
+            {
+                Id = u.Id,
+                UserName = u.UserName ?? string.Empty,
+                Email = u.Email ?? string.Empty,
+                Name = u.Name ?? string.Empty,
+                Surname = u.Surname ?? string.Empty,
+                Status = u.AccountStatus
+            })
+            .ToListAsync();
     }
 
     private async Task<ApplicationUser?> FindUserAsync(string identifier, UserLookupMode lookupMode)

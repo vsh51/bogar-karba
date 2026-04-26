@@ -1,0 +1,41 @@
+@{
+    ViewData["Title"] = "Private Checklist";
+}
+
+<style>
+    .private-checklist-page {
+        max-width: 520px;
+        margin: 5rem auto;
+        padding: 0 1rem;
+        text-align: center;
+    }
+
+    .private-checklist-icon {
+        font-size: 3rem;
+        color: #6c757d;
+        margin-bottom: 1.25rem;
+    }
+
+    .private-checklist-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+    }
+
+    .private-checklist-description {
+        color: #6c757d;
+        line-height: 1.6;
+        margin-bottom: 2rem;
+    }
+</style>
+
+<div class="private-checklist-page">
+    <div class="private-checklist-icon">
+        <i class="bi bi-lock-fill" aria-hidden="true"></i>
+    </div>
+    <h1 class="private-checklist-title">This checklist is private</h1>
+    <p class="private-checklist-description">
+        To access this checklist, you need an account and permission from its author.
+    </p>
+    <a href="/" class="btn btn-outline-secondary">Go to homepage</a>
+</div>

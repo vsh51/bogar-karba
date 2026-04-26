@@ -32,6 +32,10 @@
                             {
                                 <span class="badge bg-secondary ms-2">inactive</span>
                             }
+                            @if (!item.IsPublic)
+                            {
+                                <span class="badge bg-dark-subtle text-dark-emphasis ms-2">private</span>
+                            }
                             @if (item.Deadline.HasValue)
                             {
                                 var deadlineIso = item.Deadline.Value.ToString("yyyy-MM-dd");
@@ -86,7 +90,26 @@
                                 </li>
                             }
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#" onclick="window.checklistProgressSync.copyShareLinkToClipboard('@item.Id'); return false;"><i class="bi bi-share"></i> Get shareable link</a></li>
+                            @if (!item.IsPublic)
+                            {
+                                <li>
+                                    <form asp-controller="Author" asp-action="MakePublic" asp-route-id="@item.Id" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="dropdown-item">Make public</button>
+                                    </form>
+                                </li>
+                            }
+                            else
+                            {
+                                <li>
+                                    <form asp-controller="Author" asp-action="MakePrivate" asp-route-id="@item.Id" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="dropdown-item">Make private</button>
+                                    </form>
+                                </li>
+                            }
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" onclick="if (window.checklistProgressSync) { window.checklistProgressSync.copyShareLinkToClipboard('@item.Id'); } return false;"><i class="bi bi-share"></i> Get shareable link</a></li>
                         </ul>
                     </div>
                 </div>
@@ -103,4 +126,5 @@
 
 @section Scripts {
     <script src="~/js/checklist-deadline.js" asp-append-version="true"></script>
+    <script src="~/js/checklist-sync.js" asp-append-version="true"></script>
 }

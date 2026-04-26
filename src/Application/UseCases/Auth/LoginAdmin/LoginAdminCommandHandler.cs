@@ -12,29 +12,45 @@ public sealed class LoginAdminCommandHandler(
 {
     public async Task<Result<bool>> HandleAsync(LoginAdminCommand command)
     {
-        logger.LogInformation("Admin login attempt for user '{UserName}'", command.UserName);
+        var mode = command.LoginIdentifier.Contains('@')
+            ? UserLookupMode.ByEmail
+            : UserLookupMode.ByUserName;
 
-        if (!await repository.UserExistsAsync(command.UserName, UserLookupMode.ByUserName))
+        logger.LogInformation(
+            "Admin login attempt for '{Identifier}' using mode {Mode}",
+            command.LoginIdentifier,
+            mode);
+
+        if (!await repository.UserExistsAsync(command.LoginIdentifier, mode))
         {
-            logger.LogWarning("Admin login failed: user '{UserName}' not found", command.UserName);
-            return "Invalid username or password.";
+            logger.LogWarning(
+                "Admin login failed: user '{Identifier}' not found",
+                command.LoginIdentifier);
+            return "Invalid login or password.";
         }
 
-        var roles = await repository.GetRolesAsync(command.UserName, UserLookupMode.ByUserName);
+        var roles = await repository.GetRolesAsync(command.LoginIdentifier, mode);
         if (!roles.Contains("Admin"))
         {
-            logger.LogWarning("Login denied for user '{UserName}': not an admin", command.UserName);
-            return "Invalid username or password.";
+            logger.LogWarning(
+                "Login denied for user '{Identifier}': not an admin",
+                command.LoginIdentifier);
+            return "Invalid login or password.";
         }
 
-        if (!await repository.CheckPasswordAsync(command.UserName, command.Password, UserLookupMode.ByUserName))
+        if (!await repository.CheckPasswordAsync(command.LoginIdentifier, command.Password, mode))
         {
-            logger.LogWarning("Admin login failed: invalid password for user '{UserName}'", command.UserName);
-            return "Invalid username or password.";
+            logger.LogWarning(
+                "Admin login failed: invalid password for user '{Identifier}'",
+                command.LoginIdentifier);
+            return "Invalid login or password.";
         }
 
-        await signInService.SignInAsync(command.UserName, UserLookupMode.ByUserName);
-        logger.LogInformation("Admin '{UserName}' logged in successfully", command.UserName);
+        await signInService.SignInAsync(command.LoginIdentifier, mode);
+        logger.LogInformation(
+            "Admin '{Identifier}' logged in successfully",
+            command.LoginIdentifier);
+
         return true;
     }
 }

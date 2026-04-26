@@ -81,18 +81,19 @@ public sealed class AccountController : BaseController
             return View(model);
         }
 
-        _logger.LogInformation("User login attempt for {Email}", model.Email);
+        _logger.LogInformation("User login attempt for {Identifier}", model.Email);
 
         var result = await _loginHandler.HandleAsync(
             new LoginUserCommand(model.Email, model.Password));
+
         if (!result.Succeeded)
         {
-            _logger.LogWarning("Login failed for {Email}", model.Email);
-            ModelState.AddModelError(string.Empty, result.ErrorMessage ?? "Invalid email or password.");
+            _logger.LogWarning("Login failed for {Identifier}", model.Email);
+            ModelState.AddModelError(string.Empty, result.ErrorMessage ?? "Invalid login or password.");
             return View(model);
         }
 
-        _logger.LogInformation("User logged in: {Email}", model.Email);
+        _logger.LogInformation("User logged in: {Identifier}", model.Email);
         return RedirectToAction("Index", "Home");
     }
 

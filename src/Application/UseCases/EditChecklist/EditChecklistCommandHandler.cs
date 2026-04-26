@@ -17,7 +17,7 @@ public sealed class EditChecklistCommandHandler(
 
         if (string.IsNullOrWhiteSpace(command.Title))
         {
-            return "Title is required.";
+            return ResultErrors.TitleRequired;
         }
 
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
@@ -33,7 +33,7 @@ public sealed class EditChecklistCommandHandler(
         if (checklist is null)
         {
             logger.LogWarning("Checklist {Id} not found", command.Id);
-            return "Checklist not found.";
+            return ResultErrors.ChecklistNotFound;
         }
 
         if (checklist.UserId != command.OwnerId)
@@ -43,7 +43,7 @@ public sealed class EditChecklistCommandHandler(
                 command.OwnerId,
                 command.Id,
                 checklist.UserId);
-            return "You can only edit your own checklists.";
+            return ResultErrors.NotChecklistOwner;
         }
 
         var existingSectionIds = checklist.Sections.Select(s => s.Id).ToHashSet();
@@ -51,7 +51,7 @@ public sealed class EditChecklistCommandHandler(
         {
             if (!existingSectionIds.Contains(sectionRequest.Id))
             {
-                return "Adding new sections is not allowed.";
+                return ResultErrors.AddingSectionsNotAllowed;
             }
 
             var existingTaskIds = checklist.Sections
@@ -60,7 +60,7 @@ public sealed class EditChecklistCommandHandler(
 
             if (sectionRequest.Tasks.Any(t => !existingTaskIds.Contains(t.Id)))
             {
-                return "Adding new tasks is not allowed.";
+                return ResultErrors.AddingTasksNotAllowed;
             }
         }
 
@@ -95,6 +95,7 @@ public sealed class EditChecklistCommandHandler(
             {
                 var task = section.Tasks.First(t => t.Id == taskRequest.Id);
                 task.Content = taskRequest.Content;
+                task.Link = string.IsNullOrWhiteSpace(taskRequest.Link) ? null : taskRequest.Link.Trim();
             }
         }
 

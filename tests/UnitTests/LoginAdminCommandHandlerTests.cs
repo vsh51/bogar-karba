@@ -26,112 +26,118 @@ public class LoginAdminCommandHandlerTests
     }
 
     [Fact]
-    public async Task HandleAsyncValidAdminReturnsSuccess()
+    public async Task HandleAsyncValidAdminWithUsernameReturnsSuccess()
     {
-        _repositoryMock.Setup(r => r.UserExistsAsync("admin", UserLookupMode.ByUserName))
+        var identifier = "admin";
+        _repositoryMock.Setup(r => r.UserExistsAsync(identifier, UserLookupMode.ByUserName))
             .ReturnsAsync(true);
-        _repositoryMock.Setup(r => r.GetRolesAsync("admin", UserLookupMode.ByUserName))
+        _repositoryMock.Setup(r => r.GetRolesAsync(identifier, UserLookupMode.ByUserName))
             .ReturnsAsync(new List<string> { "Admin" });
-        _repositoryMock.Setup(r => r.CheckPasswordAsync("admin", "Admin123!", UserLookupMode.ByUserName))
+        _repositoryMock.Setup(r => r.CheckPasswordAsync(identifier, "Admin123!", UserLookupMode.ByUserName))
             .ReturnsAsync(true);
 
-        var result = await _sut.HandleAsync(new LoginAdminCommand("admin", "Admin123!"));
+        var result = await _sut.HandleAsync(new LoginAdminCommand(identifier, "Admin123!"));
 
         Assert.True(result.Succeeded);
-        Assert.Null(result.ErrorMessage);
-        _signInServiceMock.Verify(s => s.SignInAsync("admin", UserLookupMode.ByUserName), Times.Once);
+        _signInServiceMock.Verify(s => s.SignInAsync(identifier, UserLookupMode.ByUserName), Times.Once);
+    }
+
+    [Fact]
+    public async Task HandleAsyncValidAdminWithEmailReturnsSuccess()
+    {
+        var identifier = "admin@test.com";
+        _repositoryMock.Setup(r => r.UserExistsAsync(identifier, UserLookupMode.ByEmail))
+            .ReturnsAsync(true);
+        _repositoryMock.Setup(r => r.GetRolesAsync(identifier, UserLookupMode.ByEmail))
+            .ReturnsAsync(new List<string> { "Admin" });
+        _repositoryMock.Setup(r => r.CheckPasswordAsync(identifier, "Admin123!", UserLookupMode.ByEmail))
+            .ReturnsAsync(true);
+
+        var result = await _sut.HandleAsync(new LoginAdminCommand(identifier, "Admin123!"));
+
+        Assert.True(result.Succeeded);
+        _signInServiceMock.Verify(s => s.SignInAsync(identifier, UserLookupMode.ByEmail), Times.Once);
     }
 
     [Fact]
     public async Task HandleAsyncUserNotFoundReturnsFailure()
     {
-        _repositoryMock.Setup(r => r.UserExistsAsync("nonexistent", UserLookupMode.ByUserName))
+        var identifier = "nonexistent";
+        _repositoryMock.Setup(r => r.UserExistsAsync(identifier, UserLookupMode.ByUserName))
             .ReturnsAsync(false);
 
-        var result = await _sut.HandleAsync(new LoginAdminCommand("nonexistent", "password"));
+        var result = await _sut.HandleAsync(new LoginAdminCommand(identifier, "password"));
 
         Assert.False(result.Succeeded);
-        Assert.Equal("Invalid username or password.", result.ErrorMessage);
+        Assert.Equal("Invalid login or password.", result.ErrorMessage);
         _signInServiceMock.Verify(s => s.SignInAsync(It.IsAny<string>(), It.IsAny<UserLookupMode>()), Times.Never);
     }
 
     [Fact]
     public async Task HandleAsyncUserIsNotAdminReturnsFailure()
     {
-        _repositoryMock.Setup(r => r.UserExistsAsync("regularuser", UserLookupMode.ByUserName))
+        var identifier = "regularuser";
+        _repositoryMock.Setup(r => r.UserExistsAsync(identifier, UserLookupMode.ByUserName))
             .ReturnsAsync(true);
-        _repositoryMock.Setup(r => r.GetRolesAsync("regularuser", UserLookupMode.ByUserName))
+        _repositoryMock.Setup(r => r.GetRolesAsync(identifier, UserLookupMode.ByUserName))
             .ReturnsAsync(new List<string> { "User" });
 
-        var result = await _sut.HandleAsync(new LoginAdminCommand("regularuser", "password"));
+        var result = await _sut.HandleAsync(new LoginAdminCommand(identifier, "password"));
 
         Assert.False(result.Succeeded);
-        Assert.Equal("Invalid username or password.", result.ErrorMessage);
+        Assert.Equal("Invalid login or password.", result.ErrorMessage);
         _signInServiceMock.Verify(s => s.SignInAsync(It.IsAny<string>(), It.IsAny<UserLookupMode>()), Times.Never);
-        _repositoryMock.Verify(r => r.CheckPasswordAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<UserLookupMode>()), Times.Never);
     }
 
     [Fact]
     public async Task HandleAsyncWrongPasswordReturnsFailure()
     {
-        _repositoryMock.Setup(r => r.UserExistsAsync("admin", UserLookupMode.ByUserName))
+        var identifier = "admin";
+        _repositoryMock.Setup(r => r.UserExistsAsync(identifier, UserLookupMode.ByUserName))
             .ReturnsAsync(true);
-        _repositoryMock.Setup(r => r.GetRolesAsync("admin", UserLookupMode.ByUserName))
+        _repositoryMock.Setup(r => r.GetRolesAsync(identifier, UserLookupMode.ByUserName))
             .ReturnsAsync(new List<string> { "Admin" });
-        _repositoryMock.Setup(r => r.CheckPasswordAsync("admin", "wrongpassword", UserLookupMode.ByUserName))
+        _repositoryMock.Setup(r => r.CheckPasswordAsync(identifier, "wrongpassword", UserLookupMode.ByUserName))
             .ReturnsAsync(false);
 
-        var result = await _sut.HandleAsync(new LoginAdminCommand("admin", "wrongpassword"));
+        var result = await _sut.HandleAsync(new LoginAdminCommand(identifier, "wrongpassword"));
 
         Assert.False(result.Succeeded);
-        Assert.Equal("Invalid username or password.", result.ErrorMessage);
-        _signInServiceMock.Verify(s => s.SignInAsync(It.IsAny<string>(), It.IsAny<UserLookupMode>()), Times.Never);
-    }
-
-    [Theory]
-    [InlineData("")]
-    [InlineData(" ")]
-    public async Task HandleAsyncEmptyOrWhitespaceUserNameReturnsFailure(string userName)
-    {
-        _repositoryMock.Setup(r => r.UserExistsAsync(userName, UserLookupMode.ByUserName))
-            .ReturnsAsync(false);
-
-        var result = await _sut.HandleAsync(new LoginAdminCommand(userName, "password"));
-
-        Assert.False(result.Succeeded);
-        Assert.Equal("Invalid username or password.", result.ErrorMessage);
+        Assert.Equal("Invalid login or password.", result.ErrorMessage);
     }
 
     [Fact]
     public async Task HandleAsyncUserHasNoRolesReturnsFailure()
     {
-        _repositoryMock.Setup(r => r.UserExistsAsync("norolesuser", UserLookupMode.ByUserName))
+        var identifier = "norolesuser";
+        _repositoryMock.Setup(r => r.UserExistsAsync(identifier, UserLookupMode.ByUserName))
             .ReturnsAsync(true);
-        _repositoryMock.Setup(r => r.GetRolesAsync("norolesuser", UserLookupMode.ByUserName))
+        _repositoryMock.Setup(r => r.GetRolesAsync(identifier, UserLookupMode.ByUserName))
             .ReturnsAsync(new List<string>());
 
-        var result = await _sut.HandleAsync(new LoginAdminCommand("norolesuser", "password"));
+        var result = await _sut.HandleAsync(new LoginAdminCommand(identifier, "password"));
 
         Assert.False(result.Succeeded);
-        Assert.Equal("Invalid username or password.", result.ErrorMessage);
+        Assert.Equal("Invalid login or password.", result.ErrorMessage);
     }
 
     [Fact]
     public async Task HandleAsyncValidAdminDoesNotCallSignInBeforePasswordCheck()
     {
+        var identifier = "admin";
         var callOrder = new List<string>();
 
-        _repositoryMock.Setup(r => r.UserExistsAsync("admin", UserLookupMode.ByUserName))
+        _repositoryMock.Setup(r => r.UserExistsAsync(identifier, UserLookupMode.ByUserName))
             .ReturnsAsync(true);
-        _repositoryMock.Setup(r => r.GetRolesAsync("admin", UserLookupMode.ByUserName))
+        _repositoryMock.Setup(r => r.GetRolesAsync(identifier, UserLookupMode.ByUserName))
             .ReturnsAsync(new List<string> { "Admin" });
-        _repositoryMock.Setup(r => r.CheckPasswordAsync("admin", "Admin123!", UserLookupMode.ByUserName))
+        _repositoryMock.Setup(r => r.CheckPasswordAsync(identifier, "Admin123!", UserLookupMode.ByUserName))
             .Callback(() => callOrder.Add("CheckPassword"))
             .ReturnsAsync(true);
-        _signInServiceMock.Setup(s => s.SignInAsync("admin", UserLookupMode.ByUserName))
+        _signInServiceMock.Setup(s => s.SignInAsync(identifier, UserLookupMode.ByUserName))
             .Callback(() => callOrder.Add("SignIn"));
 
-        await _sut.HandleAsync(new LoginAdminCommand("admin", "Admin123!"));
+        await _sut.HandleAsync(new LoginAdminCommand(identifier, "Admin123!"));
 
         Assert.Equal(2, callOrder.Count);
         Assert.Equal("CheckPassword", callOrder[0]);

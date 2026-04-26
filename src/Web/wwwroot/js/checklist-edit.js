@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return response.status === 204 ? null : await response.json();
     };
 
-    const renderTaskRow = (taskId, content) => {
+    const renderTaskRow = (taskId, content, link) => {
         const row = document.createElement('div');
         row.className = 'checklist-row task-row';
         row.dataset.taskId = taskId;
@@ -55,8 +55,12 @@ document.addEventListener('DOMContentLoaded', () => {
             <span class="drag-handle" title="Drag to reorder">&#8942;&#8942;</span>
             <input type="checkbox" class="select-task" title="Select for grouping" />
             <input type="text" class="item-input" value="" placeholder="Item description..." />
+            <button type="button" class="btn-link-toggle" title="Attach link">&#128279;</button>
             <button type="button" class="btn-delete btn-delete-task">&times;</button>`;
         row.querySelector('.item-input').value = content;
+        if (link) {
+            row.querySelector('.btn-link-toggle').classList.add('has-link');
+        }
         return row;
     };
 
@@ -79,6 +83,36 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedCountLabel.textContent = `${count} selected`;
         groupBtn.disabled = count === 0;
     };
+
+    // --- Link toggle ---
+    sectionsContainer.addEventListener('click', (e) => {
+        if (!e.target.classList.contains('btn-link-toggle')) return;
+        const row = e.target.closest('.task-row');
+        const next = row.nextElementSibling;
+
+        if (next && next.classList.contains('link-input-row')) {
+            const val = next.querySelector('input').value.trim();
+            if (!val) {
+                next.remove();
+                e.target.classList.remove('has-link');
+            }
+            return;
+        }
+
+        const linkRow = document.createElement('div');
+        linkRow.className = 'link-input-row';
+        const linkInput = document.createElement('input');
+        linkInput.type = 'url';
+        linkInput.className = 'link-url-input';
+        linkInput.placeholder = 'https://...';
+        linkRow.appendChild(linkInput);
+        row.after(linkRow);
+        linkInput.focus();
+
+        linkInput.addEventListener('input', () => {
+            e.target.classList.toggle('has-link', !!linkInput.value.trim());
+        });
+    });
 
     // --- Inline Add Item ---
     const submitAddItem = async (sectionContainer) => {
@@ -125,6 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Drag and drop reorder ---
     let dragged = null;
+    let draggedLinkRow = null;
 
     sectionsContainer.addEventListener('dragstart', (e) => {
         const row = e.target.closest('.task-row');
@@ -132,6 +167,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         dragged = row;
+        const next = row.nextElementSibling;
+        draggedLinkRow = (next && next.classList.contains('link-input-row')) ? next : null;
         row.classList.add('dragging');
         e.dataTransfer.effectAllowed = 'move';
         e.dataTransfer.setData('text/plain', row.dataset.taskId);
@@ -145,6 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
             el.classList.remove('drop-above', 'drop-below');
         });
         dragged = null;
+        draggedLinkRow = null;
     });
 
     sectionsContainer.addEventListener('dragover', (e) => {
@@ -193,8 +231,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const targetIndex = rows.indexOf(targetRow);
             newPosition = before ? targetIndex : targetIndex + 1;
             tasksContainer.insertBefore(dragged, before ? targetRow : targetRow.nextSibling);
+            if (draggedLinkRow) dragged.after(draggedLinkRow);
         } else {
             tasksContainer.appendChild(dragged);
+            if (draggedLinkRow) dragged.after(draggedLinkRow);
             newPosition = tasksContainer.querySelectorAll('.task-row').length - 1;
         }
 
@@ -258,6 +298,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const taskId = row.dataset.taskId;
             try {
                 await postJson(checklistUrl(`/items/${taskId}/remove`));
+                const nextEl = row.nextElementSibling;
+                if (nextEl && nextEl.classList.contains('link-input-row')) {
+                    nextEl.remove();
+                }
                 row.remove();
                 showToast('Item removed.', 'success');
             } catch (err) {
@@ -276,10 +320,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const sections = Array.from(sectionsContainer.querySelectorAll('.section-container')).map(sc => ({
             id: sc.dataset.sectionId,
             name: sc.querySelector('.section-input').value.trim() || 'Untitled Section',
-            tasks: Array.from(sc.querySelectorAll('.task-row')).map(tr => ({
-                id: tr.dataset.taskId,
-                content: tr.querySelector('.item-input').value.trim()
-            }))
+            tasks: Array.from(sc.querySelectorAll('.task-row')).map(tr => {
+                let link = null;
+                const nextEl = tr.nextElementSibling;
+                if (nextEl && nextEl.classList.contains('link-input-row')) {
+                    link = nextEl.querySelector('input').value.trim() || null;
+                }
+                return {
+                    id: tr.dataset.taskId,
+                    content: tr.querySelector('.item-input').value.trim(),
+                    link: link
+                };
+            })
         }));
 
         const requestData = {
