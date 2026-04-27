@@ -1,4 +1,5 @@
 @model Web.Models.Checklist.ChecklistViewModel
+@using System.Text.Json
 
 @{
     ViewData["Title"] = Model.Title;
@@ -226,7 +227,10 @@
     }
 </style>
 
-<section class="checklist-page" data-checklist-id="@Model.Id">
+<section class="checklist-page"
+         data-checklist-id="@Model.Id"
+         data-server-progress-url="@(Model.IsOwner && !Model.IsPublic ? Url.Action("SaveProgress", "Checklist", new { id = Model.Id }) : string.Empty)"
+         data-initial-completed-task-ids='@JsonSerializer.Serialize(Model.InitialCompletedTaskIds)'>
     <div class="checklist-toolbar">
         <div class="dropdown">
             <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
