@@ -58,6 +58,8 @@ public static class ViewModelMappings
             Title = result.Title,
             Description = result.Description,
             Deadline = result.Deadline,
+            IsPublic = result.IsPublic,
+            IsOwner = result.IsOwner,
             IsOutdated = result.IsOutdated,
             DeadlineRemaining = result.DeadlineRemaining,
             Sections = result.Sections
