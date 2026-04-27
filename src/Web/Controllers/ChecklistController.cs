@@ -6,11 +6,13 @@ using Application.UseCases.EditChecklist;
 using Application.UseCases.ExportChecklist;
 using Application.UseCases.ExportChecklist.Markdown;
 using Application.UseCases.GetChecklistForEdit;
+using Application.UseCases.GetChecklistProgress;
 using Application.UseCases.GetChecklistsByIds;
 using Application.UseCases.GetPublishedChecklist;
 using Application.UseCases.GroupTasksIntoSection;
 using Application.UseCases.RemoveChecklistItem;
 using Application.UseCases.ReorderChecklistItem;
+using Application.UseCases.SaveChecklistProgress;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Web.Filters;
@@ -34,6 +36,8 @@ public sealed class ChecklistController : BaseController
     private readonly AddChecklistItemCommandHandler _addItemHandler;
     private readonly RemoveChecklistItemCommandHandler _removeItemHandler;
     private readonly GetChecklistsByIdsQueryHandler _getByIdsHandler;
+    private readonly GetChecklistProgressQueryHandler _getChecklistProgressHandler;
+    private readonly SaveChecklistProgressCommandHandler _saveChecklistProgressHandler;
     private readonly ILogger<ChecklistController> _logger;
 
     public ChecklistController(
@@ -48,6 +52,8 @@ public sealed class ChecklistController : BaseController
         AddChecklistItemCommandHandler addItemHandler,
         RemoveChecklistItemCommandHandler removeItemHandler,
         GetChecklistsByIdsQueryHandler getByIdsHandler,
+        GetChecklistProgressQueryHandler getChecklistProgressHandler,
+        SaveChecklistProgressCommandHandler saveChecklistProgressCommandHandler,
         ILogger<ChecklistController> logger)
     {
         _handler = handler;
@@ -61,6 +67,8 @@ public sealed class ChecklistController : BaseController
         _addItemHandler = addItemHandler;
         _removeItemHandler = removeItemHandler;
         _getByIdsHandler = getByIdsHandler;
+        _getChecklistProgressHandler = getChecklistProgressHandler;
+        _saveChecklistProgressHandler = saveChecklistProgressCommandHandler;
         _logger = logger;
     }
 
@@ -133,7 +141,58 @@ public sealed class ChecklistController : BaseController
 
         _logger.LogInformation("Checklist {ChecklistId} retrieved and displayed successfully", id);
 
-        return View("Show", result.Value.ToChecklistViewModel());
+        var viewModel = result.Value.ToChecklistViewModel();
+
+        if (viewModel.IsOwner && !viewModel.IsPublic && CurrentUserId is not null)
+        {
+            var progressResult = await _getChecklistProgressHandler.HandleAsync(
+                new GetChecklistProgressQuery(id, CurrentUserId),
+                cancellationToken);
+
+            if (progressResult.Succeeded)
+            {
+                viewModel.InitialCompletedTaskIds = (progressResult.Value ?? Array.Empty<Guid>())
+                    .Select(taskId => taskId.ToString())
+                    .ToList();
+            }
+        }
+
+        return View("Show", viewModel);
+    }
+
+    [HttpPost("{id:guid}/progress")]
+    [Authorize]
+    public async Task<IActionResult> SaveProgress(
+        Guid id,
+        [FromBody] SaveChecklistProgressRequest request,
+        CancellationToken cancellationToken)
+    {
+        var completedTaskIds = (request.CompletedTaskIds ?? Array.Empty<string>())
+            .Where(s => Guid.TryParse(s, out _))
+            .Select(Guid.Parse)
+            .Distinct()
+            .ToList();
+
+        var result = await _saveChecklistProgressHandler.HandleAsync(
+            new SaveChecklistProgressCommand(id, RequiredUserId, completedTaskIds),
+            cancellationToken);
+
+        if (!result.Succeeded)
+        {
+            if (result.ErrorMessage == ResultErrors.NotChecklistOwner)
+            {
+                return Forbid();
+            }
+
+            if (result.ErrorMessage == ResultErrors.ChecklistNotFound)
+            {
+                return NotFound();
+            }
+
+            return BadRequest();
+        }
+
+        return Json(new { success = true });
     }
 
     [HttpPost("{id:guid}/export/markdown")]

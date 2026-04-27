@@ -9,7 +9,8 @@ public static class ChecklistMappings
 {
     public static GetPublishedChecklistResult ToPublishedChecklistResult(
         this Checklist checklist,
-        DateOnly today)
+        DateOnly today,
+        bool isOwner = false)
     {
         var info = DeadlineFormatter.Describe(checklist.Deadline, today);
 
@@ -19,6 +20,8 @@ public static class ChecklistMappings
             Title = checklist.Title,
             Description = checklist.Description,
             Deadline = checklist.Deadline,
+            IsPublic = checklist.IsPublic,
+            IsOwner = isOwner,
             IsOutdated = info?.IsOutdated ?? false,
             DeadlineRemaining = info?.RemainingText,
             Sections = checklist.Sections
