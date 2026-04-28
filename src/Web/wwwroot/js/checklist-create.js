@@ -87,6 +87,34 @@ document.addEventListener('DOMContentLoaded', () => {
         content.appendChild(createRow('section'));
     });
 
+    const addBoredBtn = document.getElementById('add-bored-btn');
+    addBoredBtn.addEventListener('click', async () => {
+        addBoredBtn.disabled = true;
+        const response = await fetch('/checklist/bored-activity');
+        addBoredBtn.disabled = false;
+
+        if (!response.ok) return;
+
+        const data = await response.json();
+        const row = createRow('item');
+        row.querySelector('.item-input').value = data.activity;
+
+        if (data.link) {
+            const linkRow = document.createElement('div');
+            linkRow.className = 'link-input-row';
+            const linkInput = document.createElement('input');
+            linkInput.type = 'url';
+            linkInput.className = 'link-url-input';
+            linkInput.value = data.link;
+            linkRow.appendChild(linkInput);
+            row.querySelector('.btn-link-toggle').classList.add('has-link');
+            content.appendChild(row);
+            content.appendChild(linkRow);
+        } else {
+            content.appendChild(row);
+        }
+    });
+
     createBtn.addEventListener('click', async () => {
         const title = editor.querySelector('.editable-title').value.trim();
         const description = editor.querySelector('.editable-desc').value.trim();
