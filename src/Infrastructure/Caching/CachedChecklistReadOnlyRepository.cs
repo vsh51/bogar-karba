@@ -55,4 +55,7 @@ public sealed class CachedChecklistReadOnlyRepository(
 
     public Task<bool> HasAccessAsync(Guid checklistId, string userId, CancellationToken cancellationToken = default) =>
         inner.HasAccessAsync(checklistId, userId, cancellationToken);
+
+    public Task<List<string>> GetAccessUserIdsAsync(Guid checklistId, CancellationToken cancellationToken = default) =>
+        inner.GetAccessUserIdsAsync(checklistId, cancellationToken);
 }

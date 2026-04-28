@@ -224,6 +224,79 @@
     .checklist-deadline.is-outdated .checklist-deadline-remaining {
         color: #842029;
     }
+
+    .access-management {
+        margin-top: 2.5rem;
+        padding: 1.25rem;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        background: #f8f9fa;
+    }
+
+    .access-management-title {
+        margin: 0 0 0.25rem;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #212529;
+    }
+
+    .access-management-subtitle {
+        margin: 0 0 1rem;
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+
+    .access-grant-row {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .access-grant-row input {
+        flex: 1;
+    }
+
+    .access-user-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.35rem 0.5rem;
+        border-radius: 0.25rem;
+        background: #fff;
+        border: 1px solid #dee2e6;
+        margin-bottom: 0.4rem;
+    }
+
+    .access-username {
+        font-size: 0.9rem;
+        color: #212529;
+    }
+
+    .access-revoke-btn {
+        background: none;
+        border: none;
+        color: #6c757d;
+        font-size: 1.1rem;
+        line-height: 1;
+        cursor: pointer;
+        padding: 0 0.25rem;
+    }
+
+    .access-revoke-btn:hover {
+        color: #dc3545;
+    }
+
+    .access-empty {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin: 0;
+    }
+
+    .access-error {
+        font-size: 0.875rem;
+        color: #842029;
+        margin-top: 0.4rem;
+    }
 </style>
 
 <section class="checklist-page" data-checklist-id="@Model.Id">
@@ -374,6 +447,26 @@
     {
         <p class="checklist-empty">This checklist does not contain any sections yet.</p>
     }
+
+    @if (Model.IsOwner && !Model.IsPublic)
+    {
+        <section id="access-management-panel" class="access-management" data-checklist-id="@Model.Id">
+            <h2 class="access-management-title">Access Management</h2>
+            <p class="access-management-subtitle">Grant other users access to this private checklist by their username.</p>
+
+            @Html.AntiForgeryToken()
+
+            <div class="access-grant-row">
+                <input id="access-username-input" type="text" class="form-control form-control-sm"
+                       placeholder="Username" autocomplete="off" />
+                <button id="access-grant-btn" type="button" class="btn btn-sm btn-primary">Grant</button>
+            </div>
+
+            <p id="access-error" class="access-error" hidden></p>
+
+            <div id="access-user-list"></div>
+        </section>
+    }
 </section>
 
 @section Scripts {
@@ -382,4 +475,8 @@
     <script src="~/js/checklist-sync.js" asp-append-version="true"></script>
     <script src="~/js/checklist-deadline.js" asp-append-version="true"></script>
     <script src="~/js/checklist-timer.js" asp-append-version="true"></script>
+    @if (Model.IsOwner && !Model.IsPublic)
+    {
+        <script src="~/js/checklist-access.js" asp-append-version="true"></script>
+    }
 }

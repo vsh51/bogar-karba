@@ -179,6 +179,10 @@ public class SearchChecklistsQueryHandlerTests
 
             return Task.CompletedTask;
         }
+
+        public Task GrantAccessAsync(ChecklistAccess access) => Task.CompletedTask;
+
+        public Task RevokeAccessAsync(Guid checklistId, string userId) => Task.CompletedTask;
     }
 
     private sealed class FakeUserRepository : IUserRepository
@@ -200,5 +204,7 @@ public class SearchChecklistsQueryHandlerTests
         public Task<Dictionary<string, string>> GetUsernamesByIdsAsync(IEnumerable<string> userIds) => Task.FromResult(new Dictionary<string, string>());
 
         public Task<List<UserSummaryDto>> SearchUsersAsync(string? searchTerm) => Task.FromResult(new List<UserSummaryDto>());
+
+        public Task<string?> GetUserIdByUsernameAsync(string username) => Task.FromResult<string?>(null);
     }
 }

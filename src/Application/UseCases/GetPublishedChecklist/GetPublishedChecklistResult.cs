@@ -17,4 +17,8 @@ public sealed class GetPublishedChecklistResult
     public bool IsOutdated { get; init; }
 
     public string? DeadlineRemaining { get; init; }
+
+    public bool IsOwner { get; init; }
+
+    public bool IsPublic { get; init; }
 }

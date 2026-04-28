@@ -5,12 +5,15 @@ using Application.UseCases.DeleteChecklist;
 using Application.UseCases.EditChecklist;
 using Application.UseCases.ExportChecklist;
 using Application.UseCases.ExportChecklist.Markdown;
+using Application.UseCases.GetChecklistAccessList;
 using Application.UseCases.GetChecklistForEdit;
 using Application.UseCases.GetChecklistsByIds;
 using Application.UseCases.GetPublishedChecklist;
+using Application.UseCases.GrantChecklistAccess;
 using Application.UseCases.GroupTasksIntoSection;
 using Application.UseCases.RemoveChecklistItem;
 using Application.UseCases.ReorderChecklistItem;
+using Application.UseCases.RevokeChecklistAccess;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Web.Filters;
@@ -34,6 +37,9 @@ public sealed class ChecklistController : BaseController
     private readonly AddChecklistItemCommandHandler _addItemHandler;
     private readonly RemoveChecklistItemCommandHandler _removeItemHandler;
     private readonly GetChecklistsByIdsQueryHandler _getByIdsHandler;
+    private readonly GetChecklistAccessListQueryHandler _getAccessListHandler;
+    private readonly GrantChecklistAccessCommandHandler _grantAccessHandler;
+    private readonly RevokeChecklistAccessCommandHandler _revokeAccessHandler;
     private readonly ILogger<ChecklistController> _logger;
 
     public ChecklistController(
@@ -48,6 +54,9 @@ public sealed class ChecklistController : BaseController
         AddChecklistItemCommandHandler addItemHandler,
         RemoveChecklistItemCommandHandler removeItemHandler,
         GetChecklistsByIdsQueryHandler getByIdsHandler,
+        GetChecklistAccessListQueryHandler getAccessListHandler,
+        GrantChecklistAccessCommandHandler grantAccessHandler,
+        RevokeChecklistAccessCommandHandler revokeAccessHandler,
         ILogger<ChecklistController> logger)
     {
         _handler = handler;
@@ -61,6 +70,9 @@ public sealed class ChecklistController : BaseController
         _addItemHandler = addItemHandler;
         _removeItemHandler = removeItemHandler;
         _getByIdsHandler = getByIdsHandler;
+        _getAccessListHandler = getAccessListHandler;
+        _grantAccessHandler = grantAccessHandler;
+        _revokeAccessHandler = revokeAccessHandler;
         _logger = logger;
     }
 
@@ -385,5 +397,69 @@ public sealed class ChecklistController : BaseController
         }
 
         return Json(result.Value);
+    }
+
+    [HttpGet("{id:guid}/access")]
+    [Authorize]
+    public async Task<IActionResult> GetAccessList(Guid id, CancellationToken cancellationToken)
+    {
+        var userId = RequiredUserId;
+        var result = await _getAccessListHandler.HandleAsync(
+            new GetChecklistAccessListQuery(id, userId), cancellationToken);
+
+        if (!result.Succeeded)
+        {
+            return result.ErrorMessage == ResultErrors.NotChecklistOwner ? Forbid() : NotFound();
+        }
+
+        return Json(result.Value);
+    }
+
+    [HttpPost("{id:guid}/access/grant")]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> GrantAccess(Guid id, [FromBody] GrantAccessViewModel model)
+    {
+        var userId = RequiredUserId;
+
+        _logger.LogInformation(
+            "Grant access to checklist {ChecklistId} for username '{Username}' requested by user {UserId}",
+            id,
+            model.Username,
+            userId);
+
+        var result = await _grantAccessHandler.HandleAsync(
+            new GrantChecklistAccessCommand(id, userId, model.Username));
+
+        if (!result.Succeeded)
+        {
+            return BadRequest(result.ErrorMessage);
+        }
+
+        return Ok();
+    }
+
+    [HttpPost("{id:guid}/access/{targetUserId}/revoke")]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RevokeAccess(Guid id, string targetUserId)
+    {
+        var userId = RequiredUserId;
+
+        _logger.LogInformation(
+            "Revoke access to checklist {ChecklistId} for user {TargetUserId} requested by user {UserId}",
+            id,
+            targetUserId,
+            userId);
+
+        var result = await _revokeAccessHandler.HandleAsync(
+            new RevokeChecklistAccessCommand(id, userId, targetUserId));
+
+        if (!result.Succeeded)
+        {
+            return BadRequest(result.ErrorMessage);
+        }
+
+        return Ok();
     }
 }

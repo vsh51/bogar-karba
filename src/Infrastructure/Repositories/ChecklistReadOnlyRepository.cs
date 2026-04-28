@@ -54,4 +54,13 @@ public sealed class ChecklistReadOnlyRepository(
             .AsNoTracking()
             .AnyAsync(a => a.ChecklistId == checklistId && a.UserId == userId, cancellationToken);
     }
+
+    public async Task<List<string>> GetAccessUserIdsAsync(Guid checklistId, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.ChecklistAccesses
+            .AsNoTracking()
+            .Where(a => a.ChecklistId == checklistId)
+            .Select(a => a.UserId)
+            .ToListAsync(cancellationToken);
+    }
 }
