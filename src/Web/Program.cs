@@ -12,6 +12,7 @@ using Application.UseCases.CreateChecklist;
 using Application.UseCases.DeleteChecklist;
 using Application.UseCases.EditChecklist;
 using Application.UseCases.ExportChecklist.Markdown;
+using Application.UseCases.GetBoredActivity;
 using Application.UseCases.GetChecklistAccessList;
 using Application.UseCases.GetChecklistForEdit;
 using Application.UseCases.GetChecklistsByIds;
@@ -28,6 +29,7 @@ using Application.UseCases.SearchUsers;
 using Application.UseCases.SetChecklistVisibility;
 using Application.UseCases.ToggleChecklistStatus;
 using Infrastructure.Caching;
+using Infrastructure.ExternalServices;
 using Infrastructure.Identity;
 using Infrastructure.Persistence;
 using Infrastructure.Repositories;
@@ -99,6 +101,12 @@ builder.Services.Configure<CacheOptions>(
     builder.Configuration.GetSection(CacheOptions.SectionName));
 
 builder.Services.AddMemoryCache();
+
+builder.Services.AddHttpClient<IBoredApiClient, BoredApiClient>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["BoredApi:BaseUrl"]!);
+});
+builder.Services.AddScoped<GetBoredActivityQueryHandler>();
 
 builder.Services.AddScoped<ChecklistRepository>();
 builder.Services.AddScoped<IChecklistRepository>(sp =>

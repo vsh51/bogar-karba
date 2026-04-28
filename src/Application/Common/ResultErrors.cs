@@ -15,4 +15,5 @@ public static class ResultErrors
     public const string DeadlineTooFar = "Deadline is too far in the future.";
     public const string UserAlreadyHasAccess = "This user already has access to the checklist.";
     public const string CannotGrantAccessToOwner = "Cannot grant access to the checklist owner.";
+    public const string BoredApiUnavailable = "Could not fetch activity. Please try again.";
 }

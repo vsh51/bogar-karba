@@ -5,6 +5,7 @@ using Application.UseCases.DeleteChecklist;
 using Application.UseCases.EditChecklist;
 using Application.UseCases.ExportChecklist;
 using Application.UseCases.ExportChecklist.Markdown;
+using Application.UseCases.GetBoredActivity;
 using Application.UseCases.GetChecklistAccessList;
 using Application.UseCases.GetChecklistForEdit;
 using Application.UseCases.GetChecklistsByIds;
@@ -36,6 +37,7 @@ public sealed class ChecklistController : BaseController
     private readonly GroupTasksIntoSectionCommandHandler _groupTasksHandler;
     private readonly AddChecklistItemCommandHandler _addItemHandler;
     private readonly RemoveChecklistItemCommandHandler _removeItemHandler;
+    private readonly GetBoredActivityQueryHandler _boredActivityHandler;
     private readonly GetChecklistsByIdsQueryHandler _getByIdsHandler;
     private readonly GetChecklistAccessListQueryHandler _getAccessListHandler;
     private readonly GrantChecklistAccessCommandHandler _grantAccessHandler;
@@ -53,6 +55,7 @@ public sealed class ChecklistController : BaseController
         GroupTasksIntoSectionCommandHandler groupTasksHandler,
         AddChecklistItemCommandHandler addItemHandler,
         RemoveChecklistItemCommandHandler removeItemHandler,
+        GetBoredActivityQueryHandler boredActivityHandler,
         GetChecklistsByIdsQueryHandler getByIdsHandler,
         GetChecklistAccessListQueryHandler getAccessListHandler,
         GrantChecklistAccessCommandHandler grantAccessHandler,
@@ -69,6 +72,7 @@ public sealed class ChecklistController : BaseController
         _groupTasksHandler = groupTasksHandler;
         _addItemHandler = addItemHandler;
         _removeItemHandler = removeItemHandler;
+        _boredActivityHandler = boredActivityHandler;
         _getByIdsHandler = getByIdsHandler;
         _getAccessListHandler = getAccessListHandler;
         _grantAccessHandler = grantAccessHandler;
@@ -397,6 +401,19 @@ public sealed class ChecklistController : BaseController
         }
 
         return Json(result.Value);
+    }
+
+    [HttpGet("bored-activity")]
+    public async Task<IActionResult> GetBoredActivity(CancellationToken cancellationToken)
+    {
+        var result = await _boredActivityHandler.HandleAsync(cancellationToken);
+
+        if (!result.Succeeded)
+        {
+            return StatusCode(503, result.ErrorMessage);
+        }
+
+        return Json(new { activity = result.Value!.Activity, link = result.Value.Link });
     }
 
     [HttpGet("{id:guid}/access")]
