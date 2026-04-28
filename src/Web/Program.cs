@@ -12,14 +12,17 @@ using Application.UseCases.CreateChecklist;
 using Application.UseCases.DeleteChecklist;
 using Application.UseCases.EditChecklist;
 using Application.UseCases.ExportChecklist.Markdown;
+using Application.UseCases.GetChecklistAccessList;
 using Application.UseCases.GetChecklistForEdit;
 using Application.UseCases.GetChecklistsByIds;
 using Application.UseCases.GetPublishedChecklist;
 using Application.UseCases.GetSystemStats;
 using Application.UseCases.GetUserChecklists;
+using Application.UseCases.GrantChecklistAccess;
 using Application.UseCases.GroupTasksIntoSection;
 using Application.UseCases.RemoveChecklistItem;
 using Application.UseCases.ReorderChecklistItem;
+using Application.UseCases.RevokeChecklistAccess;
 using Application.UseCases.SearchChecklists;
 using Application.UseCases.SearchUsers;
 using Application.UseCases.SetChecklistVisibility;
@@ -138,6 +141,9 @@ builder.Services.AddScoped<AddChecklistItemCommandHandler>();
 builder.Services.AddScoped<RemoveChecklistItemCommandHandler>();
 builder.Services.AddScoped<GetChecklistForEditQueryHandler>();
 builder.Services.AddScoped<GetChecklistsByIdsQueryHandler>();
+builder.Services.AddScoped<GetChecklistAccessListQueryHandler>();
+builder.Services.AddScoped<GrantChecklistAccessCommandHandler>();
+builder.Services.AddScoped<RevokeChecklistAccessCommandHandler>();
 
 builder.Services.AddControllersWithViews();
 

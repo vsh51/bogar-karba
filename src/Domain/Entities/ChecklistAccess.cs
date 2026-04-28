@@ -6,5 +6,5 @@ public class ChecklistAccess
 
     public string UserId { get; set; } = string.Empty;
 
-    public Checklist Checklist { get; set; } = null!;
+    public Checklist? Checklist { get; set; }
 }

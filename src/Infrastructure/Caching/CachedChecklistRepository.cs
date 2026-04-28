@@ -52,6 +52,11 @@ public sealed class CachedChecklistRepository(
 
     public Task UpdateAsync() => inner.UpdateAsync();
 
+    public Task GrantAccessAsync(ChecklistAccess access) => inner.GrantAccessAsync(access);
+
+    public Task RevokeAccessAsync(Guid checklistId, string userId) =>
+        inner.RevokeAccessAsync(checklistId, userId);
+
     private void Evict(Guid id)
     {
         var key = CacheKeys.PublishedChecklist(id);

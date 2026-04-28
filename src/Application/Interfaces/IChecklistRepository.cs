@@ -29,4 +29,8 @@ public interface IChecklistRepository
     Task AddTaskAsync(TaskItem task);
 
     Task UpdateAsync();
+
+    Task GrantAccessAsync(ChecklistAccess access);
+
+    Task RevokeAccessAsync(Guid checklistId, string userId);
 }

@@ -60,6 +60,8 @@ public static class ViewModelMappings
             Deadline = result.Deadline,
             IsOutdated = result.IsOutdated,
             DeadlineRemaining = result.DeadlineRemaining,
+            IsOwner = result.IsOwner,
+            IsPublic = result.IsPublic,
             Sections = result.Sections
                 .OrderBy(s => s.Position)
                 .Select(section => new ChecklistSectionViewModel

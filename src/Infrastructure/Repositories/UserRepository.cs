@@ -108,6 +108,12 @@ public sealed class UserRepository(UserManager<ApplicationUser> userManager) : I
             .ToListAsync();
     }
 
+    public async Task<string?> GetUserIdByUsernameAsync(string username)
+    {
+        var user = await userManager.FindByNameAsync(username);
+        return user?.Id;
+    }
+
     private async Task<ApplicationUser?> FindUserAsync(string identifier, UserLookupMode lookupMode)
     {
         return lookupMode switch
