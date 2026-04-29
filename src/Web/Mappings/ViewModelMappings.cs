@@ -46,7 +46,9 @@ public static class ViewModelMappings
             IsPublic = dto.IsPublic,
             Deadline = dto.Deadline,
             IsOutdated = dto.IsOutdated,
-            DeadlineRemaining = dto.DeadlineRemaining
+            DeadlineRemaining = dto.DeadlineRemaining,
+            IsOwner = dto.IsOwner,
+            Collaborators = dto.Collaborators
         };
     }
 

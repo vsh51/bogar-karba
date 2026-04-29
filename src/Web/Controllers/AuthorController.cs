@@ -21,6 +21,8 @@ public sealed class AuthorController : BaseController
     private readonly CloneChecklistCommandHandler _cloneHandler;
     private readonly ToggleChecklistStatusCommandHandler _toggleStatusHandler;
     private readonly SetChecklistVisibilityCommandHandler _setVisibilityHandler;
+    private readonly Application.UseCases.ShareChecklist.ShareChecklistCommandHandler _shareHandler;
+    private readonly Application.UseCases.RevokeChecklistAccess.RevokeChecklistAccessCommandHandler _revokeAccessHandler;
     private readonly ILogger<AuthorController> _logger;
 
     public AuthorController(
@@ -29,6 +31,8 @@ public sealed class AuthorController : BaseController
         CloneChecklistCommandHandler cloneHandler,
         ToggleChecklistStatusCommandHandler toggleStatusHandler,
         SetChecklistVisibilityCommandHandler setVisibilityHandler,
+        Application.UseCases.ShareChecklist.ShareChecklistCommandHandler shareHandler,
+        Application.UseCases.RevokeChecklistAccess.RevokeChecklistAccessCommandHandler revokeAccessHandler,
         ILogger<AuthorController> logger)
     {
         _handler = handler;
@@ -36,6 +40,8 @@ public sealed class AuthorController : BaseController
         _cloneHandler = cloneHandler;
         _toggleStatusHandler = toggleStatusHandler;
         _setVisibilityHandler = setVisibilityHandler;
+        _shareHandler = shareHandler;
+        _revokeAccessHandler = revokeAccessHandler;
         _logger = logger;
     }
 
@@ -129,6 +135,68 @@ public sealed class AuthorController : BaseController
     public async Task<IActionResult> MakePrivate(Guid id)
     {
         return await SetVisibility(id, false);
+    }
+
+    [HttpPost("/author/share/{id:guid}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Share(Guid id, [FromForm] ShareChecklistViewModel model)
+    {
+        var userId = RequiredUserId;
+
+        if (!ModelState.IsValid)
+        {
+            SetErrorMessage("Invalid share request.");
+            return RedirectToAction(nameof(Index));
+        }
+
+        _logger.LogInformation("User {UserId} requested share for checklist {ChecklistId} with user {TargetUsername}", userId, id, model.TargetUsername);
+
+        var command = new Application.UseCases.ShareChecklist.ShareChecklistCommand(id, userId, model.TargetUsername);
+        var result = await _shareHandler.HandleAsync(command);
+
+        if (!result.Succeeded)
+        {
+            _logger.LogWarning("Failed to share checklist {ChecklistId} for user {UserId}: {Error}", id, userId, result.ErrorMessage);
+            SetErrorMessage(result.ErrorMessage ?? "Failed to share checklist.");
+        }
+        else
+        {
+            _logger.LogInformation("Checklist {ChecklistId} successfully shared with {TargetUsername} by user {UserId}", id, model.TargetUsername, userId);
+            SetSuccessMessage($"Checklist shared successfully with {model.TargetUsername}.");
+        }
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost("/author/revoke/{id:guid}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RevokeAccess(Guid id, [FromForm] string targetUserId)
+    {
+        var userId = RequiredUserId;
+
+        if (string.IsNullOrWhiteSpace(targetUserId))
+        {
+            SetErrorMessage("Invalid revoke request.");
+            return RedirectToAction(nameof(Index));
+        }
+
+        _logger.LogInformation("User {UserId} requested revoke access for checklist {ChecklistId} from user {TargetUserId}", userId, id, targetUserId);
+
+        var command = new Application.UseCases.RevokeChecklistAccess.RevokeChecklistAccessCommand(id, userId, targetUserId);
+        var result = await _revokeAccessHandler.HandleAsync(command);
+
+        if (!result.Succeeded)
+        {
+            _logger.LogWarning("Failed to revoke access for checklist {ChecklistId} by user {UserId}: {Error}", id, userId, result.ErrorMessage);
+            SetErrorMessage(result.ErrorMessage ?? "Failed to revoke access.");
+        }
+        else
+        {
+            _logger.LogInformation("Checklist {ChecklistId} access successfully revoked for {TargetUserId} by user {UserId}", id, targetUserId, userId);
+            SetSuccessMessage("Access revoked successfully.");
+        }
+
+        return RedirectToAction(nameof(Index));
     }
 
     private async Task<IActionResult> ToggleStatus(Guid id, ChecklistStatus newStatus)

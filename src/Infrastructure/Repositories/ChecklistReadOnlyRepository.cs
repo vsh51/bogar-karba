@@ -26,10 +26,12 @@ public sealed class ChecklistReadOnlyRepository(
 
     public async Task<IEnumerable<Checklist>> GetByUserIdAsync(string userId)
     {
-        return await dbContext.Checklists
-            .AsNoTracking()
-            .Where(c => c.UserId == userId)
-            .ToListAsync();
+        var owned = dbContext.Checklists.Where(c => c.UserId == userId);
+        var shared = dbContext.ChecklistAccesses
+            .Where(a => a.UserId == userId && !a.IsOwner)
+            .Select(a => a.Checklist);
+
+        return await owned.Union(shared).AsNoTracking().ToListAsync();
     }
 
     public async Task<Checklist?> GetByIdAsync(Guid id)
@@ -53,5 +55,23 @@ public sealed class ChecklistReadOnlyRepository(
         return await dbContext.ChecklistAccesses
             .AsNoTracking()
             .AnyAsync(a => a.ChecklistId == checklistId && a.UserId == userId, cancellationToken);
+    }
+
+    public async Task<List<Application.DTOs.Checklist.ChecklistAccessDto>> GetCollaboratorsAsync(Guid checklistId, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.ChecklistAccesses
+            .AsNoTracking()
+            .Where(a => a.ChecklistId == checklistId && !a.IsOwner)
+            .Join(
+                dbContext.Users,
+                a => a.UserId,
+                u => u.Id,
+                (a, u) => new Application.DTOs.Checklist.ChecklistAccessDto
+                {
+                    UserId = a.UserId,
+                    Username = u.UserName ?? string.Empty,
+                    IsOwner = a.IsOwner
+                })
+            .ToListAsync(cancellationToken);
     }
 }

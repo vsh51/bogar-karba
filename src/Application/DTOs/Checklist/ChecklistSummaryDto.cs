@@ -21,4 +21,8 @@ public sealed class ChecklistSummaryDto
     public bool IsOutdated { get; init; }
 
     public string? DeadlineRemaining { get; init; }
+
+    public bool IsOwner { get; init; }
+
+    public List<ChecklistAccessDto> Collaborators { get; init; } = new();
 }

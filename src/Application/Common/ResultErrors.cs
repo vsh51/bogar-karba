@@ -13,4 +13,8 @@ public static class ResultErrors
     public const string AddingTasksNotAllowed = "Adding new tasks is not allowed.";
     public const string DeadlineInPast = "Deadline cannot be earlier than today.";
     public const string DeadlineTooFar = "Deadline is too far in the future.";
+    public const string TargetUserNotFound = "User with this username not found.";
+    public const string CannotShareWithYourself = "You cannot share a checklist with yourself.";
+    public const string AlreadyHasAccess = "This user already has access to the checklist.";
+    public const string ChecklistNotPrivate = "Only private checklists can be shared this way.";
 }

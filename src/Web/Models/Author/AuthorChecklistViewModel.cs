@@ -21,4 +21,8 @@ public sealed class AuthorChecklistViewModel
     public string? DeadlineRemaining { get; init; }
 
     public bool IsActive => Status == ChecklistStatus.Published;
+
+    public bool IsOwner { get; init; }
+
+    public List<Application.DTOs.Checklist.ChecklistAccessDto> Collaborators { get; init; } = new();
 }

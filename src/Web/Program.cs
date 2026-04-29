@@ -138,6 +138,8 @@ builder.Services.AddScoped<AddChecklistItemCommandHandler>();
 builder.Services.AddScoped<RemoveChecklistItemCommandHandler>();
 builder.Services.AddScoped<GetChecklistForEditQueryHandler>();
 builder.Services.AddScoped<GetChecklistsByIdsQueryHandler>();
+builder.Services.AddScoped<Application.UseCases.ShareChecklist.ShareChecklistCommandHandler>();
+builder.Services.AddScoped<Application.UseCases.RevokeChecklistAccess.RevokeChecklistAccessCommandHandler>();
 
 builder.Services.AddControllersWithViews();
 

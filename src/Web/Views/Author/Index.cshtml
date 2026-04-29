@@ -36,6 +36,10 @@
                             {
                                 <span class="badge bg-dark-subtle text-dark-emphasis ms-2">private</span>
                             }
+                            @if (!item.IsOwner)
+                            {
+                                <span class="badge bg-info-subtle text-info-emphasis ms-2">shared with me</span>
+                            }
                             @if (item.Deadline.HasValue)
                             {
                                 var deadlineIso = item.Deadline.Value.ToString("yyyy-MM-dd");
@@ -50,68 +54,103 @@
                         <div class="text-muted mt-1">
                             @item.Description
                         </div>
+
+                        @if (item.IsOwner && !item.IsPublic)
+                        {
+                            <div class="mt-2">
+                                <div class="d-flex flex-wrap gap-2 align-items-center">
+                                    <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#share-form-@item.Id">
+                                        <i class="bi bi-person-plus"></i> Share
+                                    </button>
+                                    
+                                    @foreach (var collaborator in item.Collaborators)
+                                    {
+                                        <div class="badge bg-light text-dark border d-flex align-items-center p-1 ps-2">
+                                            <span class="me-2">@collaborator.Username</span>
+                                            <form asp-action="RevokeAccess" asp-controller="Author" asp-route-id="@item.Id" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="targetUserId" value="@collaborator.UserId" />
+                                                <button type="submit" class="btn-close ms-1" style="font-size: 0.5rem;" aria-label="Revoke"></button>
+                                            </form>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="collapse mt-2" id="share-form-@item.Id">
+                                    <form asp-action="Share" asp-controller="Author" asp-route-id="@item.Id" method="post" class="card card-body py-2">
+                                        @Html.AntiForgeryToken()
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" name="TargetUsername" class="form-control" placeholder="Enter username..." required>
+                                            <button class="btn btn-primary" type="submit">Share</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        }
                     </div>
 
-                    <div class="dropdown">
-                        <button class="btn btn-link text-dark text-decoration-none fw-bold fs-4 p-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            ...
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="@Url.Action("Edit", "Checklist", new { id = item.Id })">Edit checklist</a></li>
-                            <li>
-                                <form asp-action="Clone" asp-controller="Author" asp-route-id="@item.Id" method="post">
-                                    @Html.AntiForgeryToken()
-                                    <button type="submit" class="dropdown-item">Clone checklist</button>
-                                </form>
-                            </li>
-                            <li>
-                                <form asp-controller="Checklist" asp-action="Delete" asp-route-id="@item.Id" method="post" onsubmit="return confirm('Are you sure you want to delete this checklist?');">
-                                    @Html.AntiForgeryToken()
-                                    <button type="submit" class="dropdown-item text-danger">Delete checklist</button>
-                                </form>
-                            </li>
-                            <li><hr class="dropdown-divider"></li>
-                            @if (!item.IsActive)
-                            {
+                    @if (item.IsOwner)
+                    {
+                        <div class="dropdown">
+                            <button class="btn btn-link text-dark text-decoration-none fw-bold fs-4 p-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                ...
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="@Url.Action("Edit", "Checklist", new { id = item.Id })">Edit checklist</a></li>
                                 <li>
-                                    <form asp-controller="Author" asp-action="Activate" asp-route-id="@item.Id" method="post">
+                                    <form asp-action="Clone" asp-controller="Author" asp-route-id="@item.Id" method="post">
                                         @Html.AntiForgeryToken()
-                                        <button type="submit" class="dropdown-item">Activate checklist</button>
+                                        <button type="submit" class="dropdown-item">Clone checklist</button>
                                     </form>
                                 </li>
-                            }
-                            else
-                            {
                                 <li>
-                                    <form asp-controller="Author" asp-action="Deactivate" asp-route-id="@item.Id" method="post">
+                                    <form asp-controller="Checklist" asp-action="Delete" asp-route-id="@item.Id" method="post" onsubmit="return confirm('Are you sure you want to delete this checklist?');">
                                         @Html.AntiForgeryToken()
-                                        <button type="submit" class="dropdown-item">Deactivate checklist</button>
+                                        <button type="submit" class="dropdown-item text-danger">Delete checklist</button>
                                     </form>
                                 </li>
-                            }
-                            <li><hr class="dropdown-divider"></li>
-                            @if (!item.IsPublic)
-                            {
-                                <li>
-                                    <form asp-controller="Author" asp-action="MakePublic" asp-route-id="@item.Id" method="post">
-                                        @Html.AntiForgeryToken()
-                                        <button type="submit" class="dropdown-item">Make public</button>
-                                    </form>
-                                </li>
-                            }
-                            else
-                            {
-                                <li>
-                                    <form asp-controller="Author" asp-action="MakePrivate" asp-route-id="@item.Id" method="post">
-                                        @Html.AntiForgeryToken()
-                                        <button type="submit" class="dropdown-item">Make private</button>
-                                    </form>
-                                </li>
-                            }
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#" onclick="if (window.checklistProgressSync) { window.checklistProgressSync.copyShareLinkToClipboard('@item.Id'); } return false;"><i class="bi bi-share"></i> Get shareable link</a></li>
-                        </ul>
-                    </div>
+                                <li><hr class="dropdown-divider"></li>
+                                @if (!item.IsActive)
+                                {
+                                    <li>
+                                        <form asp-controller="Author" asp-action="Activate" asp-route-id="@item.Id" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="dropdown-item">Activate checklist</button>
+                                        </form>
+                                    </li>
+                                }
+                                else
+                                {
+                                    <li>
+                                        <form asp-controller="Author" asp-action="Deactivate" asp-route-id="@item.Id" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="dropdown-item">Deactivate checklist</button>
+                                        </form>
+                                    </li>
+                                }
+                                <li><hr class="dropdown-divider"></li>
+                                @if (!item.IsPublic)
+                                {
+                                    <li>
+                                        <form asp-controller="Author" asp-action="MakePublic" asp-route-id="@item.Id" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="dropdown-item">Make public</button>
+                                        </form>
+                                    </li>
+                                }
+                                else
+                                {
+                                    <li>
+                                        <form asp-controller="Author" asp-action="MakePrivate" asp-route-id="@item.Id" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="dropdown-item">Make private</button>
+                                        </form>
+                                    </li>
+                                }
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#" onclick="if (window.checklistProgressSync) { window.checklistProgressSync.copyShareLinkToClipboard('@item.Id'); } return false;"><i class="bi bi-share"></i> Get shareable link</a></li>
+                            </ul>
+                        </div>
+                    }
                 </div>
             }
         }

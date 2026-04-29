@@ -89,4 +89,20 @@ public class ChecklistRepository(ApplicationDbContext context) : IChecklistRepos
     {
         await context.SaveChangesAsync();
     }
+
+    public async Task AddAccessAsync(ChecklistAccess access)
+    {
+        await context.ChecklistAccesses.AddAsync(access);
+        await context.SaveChangesAsync();
+    }
+
+    public async Task RemoveAccessAsync(Guid checklistId, string userId)
+    {
+        var record = await context.ChecklistAccesses.FindAsync(checklistId, userId);
+        if (record != null)
+        {
+            context.ChecklistAccesses.Remove(record);
+            await context.SaveChangesAsync();
+        }
+    }
 }

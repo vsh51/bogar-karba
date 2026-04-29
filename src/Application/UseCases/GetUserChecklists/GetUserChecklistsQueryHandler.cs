@@ -17,9 +17,34 @@ public sealed class GetUserChecklistsQueryHandler(
         var items = await repository.GetByUserIdAsync(query.UserId);
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
 
-        var results = items
-            .Select(c => c.ToSummaryDto(today))
-            .ToList();
+        var results = new List<ChecklistSummaryDto>();
+        foreach (var item in items)
+        {
+            var summary = item.ToSummaryDto(today);
+            var isOwner = item.UserId == query.UserId;
+
+            var collaborators = new List<ChecklistAccessDto>();
+            if (isOwner)
+            {
+                collaborators = await repository.GetCollaboratorsAsync(item.Id);
+            }
+
+            results.Add(new ChecklistSummaryDto
+            {
+                Id = summary.Id,
+                Title = summary.Title,
+                Description = summary.Description,
+                UserId = summary.UserId,
+                UserName = summary.UserName,
+                Status = summary.Status,
+                IsPublic = summary.IsPublic,
+                Deadline = summary.Deadline,
+                IsOutdated = summary.IsOutdated,
+                DeadlineRemaining = summary.DeadlineRemaining,
+                IsOwner = isOwner,
+                Collaborators = collaborators
+            });
+        }
 
         logger.LogInformation("Found {Count} checklists", results.Count);
 
