@@ -16,5 +16,7 @@ public sealed class ChecklistViewModel
 
     public bool IsPublic { get; init; }
 
+    public bool IsEmbeddable { get; init; }
+
     public IReadOnlyList<ChecklistSectionViewModel> Sections { get; init; } = Array.Empty<ChecklistSectionViewModel>();
 }

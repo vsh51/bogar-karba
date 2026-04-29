@@ -19,4 +19,6 @@ public sealed class GetPublishedChecklistResult
     public string? DeadlineRemaining { get; init; }
 
     public bool IsPublic { get; init; }
+
+    public bool IsEmbeddable { get; init; }
 }
