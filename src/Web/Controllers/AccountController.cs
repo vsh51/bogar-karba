@@ -2,6 +2,7 @@ using Application.UseCases.Auth.LoginUser;
 using Application.UseCases.Auth.Logout;
 using Application.UseCases.Auth.RegisterUser;
 using Microsoft.AspNetCore.Mvc;
+using Web.Filters;
 using Web.Models.Account;
 
 namespace Web.Controllers;
@@ -34,6 +35,7 @@ public sealed class AccountController : BaseController
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [RateLimit("Register")]
     public async Task<IActionResult> Register(RegisterViewModel model)
     {
         if (!ModelState.IsValid)
@@ -73,6 +75,7 @@ public sealed class AccountController : BaseController
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [RateLimit("Login")]
     public async Task<IActionResult> Login(LoginViewModel model)
     {
         if (!ModelState.IsValid)
