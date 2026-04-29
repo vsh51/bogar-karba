@@ -18,6 +18,8 @@ public interface IChecklistRepository
 
     Task UpdateVisibilityAsync(Guid id, bool isPublic);
 
+    Task UpdateEmbeddableAsync(Guid id, bool isEmbeddable);
+
     Task<int> GetTotalCountAsync();
 
     Task<int> GetCountByStatusAsync(ChecklistStatus status);

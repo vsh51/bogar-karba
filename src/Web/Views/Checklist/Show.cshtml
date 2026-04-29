@@ -238,7 +238,7 @@
                         Copy as Markdown
                     </button>
                 </li>
-                @if (Model.IsPublic)
+                @if (Model.IsPublic && Model.IsEmbeddable)
                 {
                     <li>
                         <button id="export-iframe-btn" class="dropdown-item" type="button">
@@ -274,7 +274,7 @@
         <input type="file" id="import-progress-file" accept=".json" style="display: none;" />
     </div>
 
-    @if (Model.IsPublic)
+    @if (Model.IsPublic && Model.IsEmbeddable)
     {
         var embedUrl = Url.Action("Embed", "Checklist", new { id = Model.Id }, Context.Request.Scheme);
         <div class="modal fade" id="embedIframeModal" tabindex="-1" aria-labelledby="embedIframeModalLabel" aria-hidden="true">

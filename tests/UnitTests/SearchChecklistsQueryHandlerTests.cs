@@ -179,6 +179,17 @@ public class SearchChecklistsQueryHandlerTests
 
             return Task.CompletedTask;
         }
+
+        public Task UpdateEmbeddableAsync(Guid id, bool isEmbeddable)
+        {
+            var item = _items.FirstOrDefault(c => c.Id == id);
+            if (item != null)
+            {
+                item.IsEmbeddable = isEmbeddable;
+            }
+
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class FakeUserRepository : IUserRepository

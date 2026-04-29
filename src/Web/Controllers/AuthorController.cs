@@ -1,6 +1,7 @@
 using Application.UseCases.CloneChecklist;
 using Application.UseCases.DeleteChecklist;
 using Application.UseCases.GetUserChecklists;
+using Application.UseCases.SetChecklistEmbeddable;
 using Application.UseCases.SetChecklistVisibility;
 using Application.UseCases.ToggleChecklistStatus;
 using Domain.Entities;
@@ -21,6 +22,7 @@ public sealed class AuthorController : BaseController
     private readonly CloneChecklistCommandHandler _cloneHandler;
     private readonly ToggleChecklistStatusCommandHandler _toggleStatusHandler;
     private readonly SetChecklistVisibilityCommandHandler _setVisibilityHandler;
+    private readonly SetChecklistEmbeddableCommandHandler _setEmbeddableHandler;
     private readonly ILogger<AuthorController> _logger;
 
     public AuthorController(
@@ -29,6 +31,7 @@ public sealed class AuthorController : BaseController
         CloneChecklistCommandHandler cloneHandler,
         ToggleChecklistStatusCommandHandler toggleStatusHandler,
         SetChecklistVisibilityCommandHandler setVisibilityHandler,
+        SetChecklistEmbeddableCommandHandler setEmbeddableHandler,
         ILogger<AuthorController> logger)
     {
         _handler = handler;
@@ -36,6 +39,7 @@ public sealed class AuthorController : BaseController
         _cloneHandler = cloneHandler;
         _toggleStatusHandler = toggleStatusHandler;
         _setVisibilityHandler = setVisibilityHandler;
+        _setEmbeddableHandler = setEmbeddableHandler;
         _logger = logger;
     }
 
@@ -131,6 +135,20 @@ public sealed class AuthorController : BaseController
         return await SetVisibility(id, false);
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EnableEmbed(Guid id)
+    {
+        return await SetEmbeddable(id, true);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DisableEmbed(Guid id)
+    {
+        return await SetEmbeddable(id, false);
+    }
+
     private async Task<IActionResult> ToggleStatus(Guid id, ChecklistStatus newStatus)
     {
         var userId = RequiredUserId;
@@ -158,6 +176,22 @@ public sealed class AuthorController : BaseController
         {
             _logger.LogWarning("Failed to change visibility of checklist {ChecklistId} for user {UserId}: {Error}", id, userId, result.ErrorMessage);
             SetErrorMessage(result.ErrorMessage ?? "Failed to change checklist visibility.");
+        }
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    private async Task<IActionResult> SetEmbeddable(Guid id, bool isEmbeddable)
+    {
+        var userId = RequiredUserId;
+
+        var result = await _setEmbeddableHandler.HandleAsync(
+            new SetChecklistEmbeddableCommand(id, isEmbeddable, userId));
+
+        if (!result.Succeeded)
+        {
+            _logger.LogWarning("Failed to change embed setting of checklist {ChecklistId} for user {UserId}: {Error}", id, userId, result.ErrorMessage);
+            SetErrorMessage(result.ErrorMessage ?? "Failed to change checklist embed setting.");
         }
 
         return RedirectToAction(nameof(Index));

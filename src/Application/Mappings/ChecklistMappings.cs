@@ -22,6 +22,7 @@ public static class ChecklistMappings
             IsOutdated = info?.IsOutdated ?? false,
             DeadlineRemaining = info?.RemainingText,
             IsPublic = checklist.IsPublic,
+            IsEmbeddable = checklist.IsEmbeddable,
             Sections = checklist.Sections
                 .OrderBy(s => s.Position)
                 .Select(section => new ChecklistSectionDto
@@ -60,6 +61,7 @@ public static class ChecklistMappings
             UserName = userName ?? string.Empty,
             Status = checklist.Status,
             IsPublic = checklist.IsPublic,
+            IsEmbeddable = checklist.IsEmbeddable,
             Deadline = checklist.Deadline,
             IsOutdated = info?.IsOutdated ?? false,
             DeadlineRemaining = info?.RemainingText

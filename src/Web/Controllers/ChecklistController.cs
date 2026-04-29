@@ -143,9 +143,9 @@ public sealed class ChecklistController : BaseController
         var result = await _handler.HandleAsync(
             new GetPublishedChecklistQuery(id), cancellationToken);
 
-        if (!result.Succeeded || result.Value is null || !result.Value.IsPublic)
+        if (!result.Succeeded || result.Value is null || !result.Value.IsPublic || !result.Value.IsEmbeddable)
         {
-            _logger.LogInformation("Embed denied for checklist {ChecklistId}: not public or not found", id);
+            _logger.LogInformation("Embed denied for checklist {ChecklistId}: not public, not embeddable, or not found", id);
             return NotFound();
         }
 
