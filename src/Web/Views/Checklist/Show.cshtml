@@ -238,6 +238,14 @@
                         Copy as Markdown
                     </button>
                 </li>
+                @if (Model.IsPublic)
+                {
+                    <li>
+                        <button id="export-iframe-btn" class="dropdown-item" type="button">
+                            Export as Iframe
+                        </button>
+                    </li>
+                }
                 <li><hr class="dropdown-divider"></li>
                 <li>
                     <button id="export-progress-btn" class="dropdown-item" type="button">
@@ -265,6 +273,29 @@
         </div>
         <input type="file" id="import-progress-file" accept=".json" style="display: none;" />
     </div>
+
+    @if (Model.IsPublic)
+    {
+        var embedUrl = Url.Action("Embed", "Checklist", new { id = Model.Id }, Context.Request.Scheme);
+        <div class="modal fade" id="embedIframeModal" tabindex="-1" aria-labelledby="embedIframeModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="embedIframeModalLabel">Embed Checklist</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-muted small mb-2">Copy and paste this snippet into any HTML page to embed this checklist.</p>
+                        <textarea id="embed-iframe-snippet" class="form-control" rows="4" readonly>&lt;iframe src="@embedUrl" width="100%" height="600" frameborder="0" loading="lazy"&gt;&lt;/iframe&gt;</textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="embed-iframe-copy-btn">Copy snippet</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
 
     <div class="checklist-progress" aria-live="polite">
         <div class="checklist-progress-meta">
@@ -379,6 +410,7 @@
 @section Scripts {
     <script src="~/js/checklist-progress.js" asp-append-version="true"></script>
     <script src="~/js/checklist-export.js" asp-append-version="true"></script>
+    <script src="~/js/checklist-embed.js" asp-append-version="true"></script>
     <script src="~/js/checklist-sync.js" asp-append-version="true"></script>
     <script src="~/js/checklist-deadline.js" asp-append-version="true"></script>
     <script src="~/js/checklist-timer.js" asp-append-version="true"></script>

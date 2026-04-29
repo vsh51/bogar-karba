@@ -21,6 +21,7 @@ public static class ChecklistMappings
             Deadline = checklist.Deadline,
             IsOutdated = info?.IsOutdated ?? false,
             DeadlineRemaining = info?.RemainingText,
+            IsPublic = checklist.IsPublic,
             Sections = checklist.Sections
                 .OrderBy(s => s.Position)
                 .Select(section => new ChecklistSectionDto

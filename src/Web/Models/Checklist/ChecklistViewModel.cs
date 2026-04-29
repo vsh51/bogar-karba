@@ -14,5 +14,7 @@ public sealed class ChecklistViewModel
 
     public string? DeadlineRemaining { get; init; }
 
+    public bool IsPublic { get; init; }
+
     public IReadOnlyList<ChecklistSectionViewModel> Sections { get; init; } = Array.Empty<ChecklistSectionViewModel>();
 }

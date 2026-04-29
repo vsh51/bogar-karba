@@ -220,6 +220,32 @@ public class GetPublishedChecklistQueryHandlerTests
         repositoryMock.Verify(r => r.HasAccessAsync(It.IsAny<Guid>(), It.IsAny<string>(), cancellationToken), Times.Never);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task HandleAsync_PropagatesIsPublicFlagFromChecklist(bool isPublic)
+    {
+        var checklistId = Guid.NewGuid();
+        var ownerId = "owner-123";
+        var cancellationToken = new CancellationTokenSource().Token;
+        var query = new GetPublishedChecklistQuery(checklistId, ownerId);
+        var checklist = CreateChecklist(checklistId, ownerId, isPublic: isPublic);
+
+        var repositoryMock = new Mock<IChecklistReadOnlyRepository>();
+        repositoryMock
+            .Setup(r => r.GetByIdWithSectionsAsync(checklistId, cancellationToken))
+            .ReturnsAsync(checklist);
+
+        var loggerMock = new Mock<ILogger<GetPublishedChecklistQueryHandler>>();
+        var sut = new GetPublishedChecklistQueryHandler(repositoryMock.Object, loggerMock.Object);
+
+        var result = await sut.HandleAsync(query, cancellationToken);
+
+        Assert.True(result.Succeeded);
+        Assert.NotNull(result.Value);
+        Assert.Equal(isPublic, result.Value.IsPublic);
+    }
+
     private static Checklist CreateChecklist(
         Guid checklistId,
         string userId = "",
