@@ -56,20 +56,6 @@
                         </div>
                     </div>
 
-                    <div class="dropdown">
-                        <button class="btn btn-link text-dark text-decoration-none fw-bold fs-4 p-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            ...
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="@Url.Action("Show", "Checklist", new { id = item.Id })">View checklist</a></li>
-                            <li>
-                                <form asp-action="Clone" asp-controller="Author" asp-route-id="@item.Id" method="post">
-                                    @Html.AntiForgeryToken()
-                                    <button type="submit" class="dropdown-item">Clone to my collection</button>
-                                </form>
-                            </li>
-                        </ul>
-                    </div>
                 </div>
             }
         }
