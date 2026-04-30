@@ -97,7 +97,7 @@
                             @if (!item.IsPublic)
                             {
                                 <li>
-                                    <form asp-controller="Author" asp-action="MakePublic" asp-route-id="@item.Id" method="post" onsubmit="return confirm('Робити чеклист публічним видалить усіх співавторів та користувачів із доступом. Продовжити?');">
+                                    <form asp-controller="Author" asp-action="MakePublic" asp-route-id="@item.Id" method="post" onsubmit="return confirm('Making a checklist public will remove all co-authors and users with access. Continue?');">
                                         @Html.AntiForgeryToken()
                                         <button type="submit" class="dropdown-item">Make public</button>
                                     </form>
