@@ -53,6 +53,14 @@ public sealed class CachedChecklistReadOnlyRepository(
         CancellationToken cancellationToken = default) =>
         inner.GetByIdWithSectionsAsync(id, cancellationToken);
 
-    public Task<bool> HasAccessAsync(Guid checklistId, string userId, CancellationToken cancellationToken = default) =>
+    public Task<bool> HasAccessAsync(
+        Guid checklistId,
+        string userId,
+        CancellationToken cancellationToken = default) =>
         inner.HasAccessAsync(checklistId, userId, cancellationToken);
+
+    public Task<IEnumerable<SharedChecklist>> GetSharedWithUserAsync(
+        string userId,
+        CancellationToken cancellationToken = default) =>
+        inner.GetSharedWithUserAsync(userId, cancellationToken);
 }
