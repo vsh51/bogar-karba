@@ -31,6 +31,12 @@ public sealed class SetChecklistVisibilityCommandHandler(
             return ResultErrors.NotChecklistOwner;
         }
 
+        if (command.IsPublic)
+        {
+            await repository.RevokeAllAccessesAsync(command.Id);
+            await repository.RevokeAllCoAuthorsAsync(command.Id);
+        }
+
         await repository.UpdateVisibilityAsync(command.Id, command.IsPublic);
         logger.LogInformation("Checklist {Id} visibility changed to {Visibility}", command.Id, command.IsPublic ? "public" : "private");
         return true;

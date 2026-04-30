@@ -33,4 +33,12 @@ public interface IChecklistRepository
     Task GrantAccessAsync(ChecklistAccess access);
 
     Task RevokeAccessAsync(Guid checklistId, string userId);
+
+    Task RevokeAllAccessesAsync(Guid checklistId);
+
+    Task GrantCoAuthorAsync(ChecklistCoAuthor coAuthor);
+
+    Task RevokeCoAuthorAsync(Guid checklistId, string userId);
+
+    Task RevokeAllCoAuthorsAsync(Guid checklistId);
 }

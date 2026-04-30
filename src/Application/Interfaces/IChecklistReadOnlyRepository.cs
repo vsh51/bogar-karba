@@ -15,4 +15,10 @@ public interface IChecklistReadOnlyRepository
     Task<bool> HasAccessAsync(Guid checklistId, string userId, CancellationToken cancellationToken = default);
 
     Task<List<string>> GetAccessUserIdsAsync(Guid checklistId, CancellationToken cancellationToken = default);
+
+    Task<bool> IsCoAuthorAsync(Guid checklistId, string userId, CancellationToken cancellationToken = default);
+
+    Task<List<string>> GetCoAuthorIdsAsync(Guid checklistId, CancellationToken cancellationToken = default);
+
+    Task<bool> HasWritingPermissionAsync(Guid checklistId, string userId, CancellationToken cancellationToken = default);
 }

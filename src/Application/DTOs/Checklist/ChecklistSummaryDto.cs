@@ -21,4 +21,6 @@ public sealed class ChecklistSummaryDto
     public bool IsOutdated { get; init; }
 
     public string? DeadlineRemaining { get; init; }
+
+    public bool IsCoAuthored { get; init; }
 }

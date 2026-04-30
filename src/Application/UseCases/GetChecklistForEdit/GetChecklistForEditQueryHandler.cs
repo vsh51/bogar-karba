@@ -25,12 +25,15 @@ public sealed class GetChecklistForEditQueryHandler(
 
         if (checklist.UserId != query.OwnerId)
         {
-            logger.LogWarning(
-                "User {UserId} attempted to edit checklist {ChecklistId} owned by {ActualOwner}",
-                query.OwnerId,
-                checklist.Id,
-                checklist.UserId);
-            return ResultErrors.NotChecklistOwner;
+            var hasWritingPermission = await repository.HasWritingPermissionAsync(query.ChecklistId, query.OwnerId);
+            if (!hasWritingPermission)
+            {
+                logger.LogWarning(
+                    "User {UserId} attempted to edit checklist {ChecklistId} without ownership or writing permission",
+                    query.OwnerId,
+                    checklist.Id);
+                return ResultErrors.NotChecklistOwner;
+            }
         }
 
         var result = new GetChecklistForEditResult(

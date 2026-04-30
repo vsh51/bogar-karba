@@ -20,5 +20,7 @@ public sealed class AuthorChecklistViewModel
 
     public string? DeadlineRemaining { get; init; }
 
+    public bool IsCoAuthored { get; init; }
+
     public bool IsActive => Status == ChecklistStatus.Published;
 }

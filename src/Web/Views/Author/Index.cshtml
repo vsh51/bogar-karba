@@ -36,6 +36,10 @@
                             {
                                 <span class="badge bg-dark-subtle text-dark-emphasis ms-2">private</span>
                             }
+                            @if (item.IsCoAuthored)
+                            {
+                                <span class="badge bg-info-subtle text-info-emphasis ms-2">coauthored</span>
+                            }
                             @if (item.Deadline.HasValue)
                             {
                                 var deadlineIso = item.Deadline.Value.ToString("yyyy-MM-dd");
@@ -93,7 +97,7 @@
                             @if (!item.IsPublic)
                             {
                                 <li>
-                                    <form asp-controller="Author" asp-action="MakePublic" asp-route-id="@item.Id" method="post">
+                                    <form asp-controller="Author" asp-action="MakePublic" asp-route-id="@item.Id" method="post" onsubmit="return confirm('Робити чеклист публічним видалить усіх співавторів та користувачів із доступом. Продовжити?');">
                                         @Html.AntiForgeryToken()
                                         <button type="submit" class="dropdown-item">Make public</button>
                                     </form>

@@ -183,6 +183,14 @@ public class SearchChecklistsQueryHandlerTests
         public Task GrantAccessAsync(ChecklistAccess access) => Task.CompletedTask;
 
         public Task RevokeAccessAsync(Guid checklistId, string userId) => Task.CompletedTask;
+
+        public Task RevokeAllAccessesAsync(Guid checklistId) => Task.CompletedTask;
+
+        public Task GrantCoAuthorAsync(ChecklistCoAuthor coAuthor) => Task.CompletedTask;
+
+        public Task RevokeCoAuthorAsync(Guid checklistId, string userId) => Task.CompletedTask;
+
+        public Task RevokeAllCoAuthorsAsync(Guid checklistId) => Task.CompletedTask;
     }
 
     private sealed class FakeUserRepository : IUserRepository

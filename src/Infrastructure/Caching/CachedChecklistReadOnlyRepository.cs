@@ -58,4 +58,13 @@ public sealed class CachedChecklistReadOnlyRepository(
 
     public Task<List<string>> GetAccessUserIdsAsync(Guid checklistId, CancellationToken cancellationToken = default) =>
         inner.GetAccessUserIdsAsync(checklistId, cancellationToken);
+
+    public Task<bool> IsCoAuthorAsync(Guid checklistId, string userId, CancellationToken cancellationToken = default) =>
+        inner.IsCoAuthorAsync(checklistId, userId, cancellationToken);
+
+    public Task<List<string>> GetCoAuthorIdsAsync(Guid checklistId, CancellationToken cancellationToken = default) =>
+        inner.GetCoAuthorIdsAsync(checklistId, cancellationToken);
+
+    public Task<bool> HasWritingPermissionAsync(Guid checklistId, string userId, CancellationToken cancellationToken = default) =>
+        inner.HasWritingPermissionAsync(checklistId, userId, cancellationToken);
 }

@@ -20,6 +20,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<ChecklistAccess> ChecklistAccesses => Set<ChecklistAccess>();
 
+    public DbSet<ChecklistCoAuthor> ChecklistCoAuthors => Set<ChecklistCoAuthor>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -37,6 +39,16 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         });
 
         builder.Entity<ChecklistAccess>(entity =>
+        {
+            entity.HasKey(a => new { a.ChecklistId, a.UserId });
+
+            entity.HasOne(a => a.Checklist)
+                .WithMany()
+                .HasForeignKey(a => a.ChecklistId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<ChecklistCoAuthor>(entity =>
         {
             entity.HasKey(a => new { a.ChecklistId, a.UserId });
 

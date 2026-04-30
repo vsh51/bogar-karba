@@ -49,7 +49,8 @@ public static class ChecklistMappings
     public static ChecklistSummaryDto ToSummaryDto(
         this Checklist checklist,
         DateOnly today,
-        string? userName = null)
+        string? userName = null,
+        string? currentUserId = null)
     {
         var info = DeadlineFormatter.Describe(checklist.Deadline, today);
 
@@ -64,7 +65,8 @@ public static class ChecklistMappings
             IsPublic = checklist.IsPublic,
             Deadline = checklist.Deadline,
             IsOutdated = info?.IsOutdated ?? false,
-            DeadlineRemaining = info?.RemainingText
+            DeadlineRemaining = info?.RemainingText,
+            IsCoAuthored = currentUserId != null && checklist.UserId != currentUserId
         };
     }
 }

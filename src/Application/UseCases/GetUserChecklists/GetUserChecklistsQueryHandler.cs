@@ -18,7 +18,7 @@ public sealed class GetUserChecklistsQueryHandler(
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
 
         var results = items
-            .Select(c => c.ToSummaryDto(today))
+            .Select(c => c.ToSummaryDto(today, currentUserId: query.UserId))
             .ToList();
 
         logger.LogInformation("Found {Count} checklists", results.Count);

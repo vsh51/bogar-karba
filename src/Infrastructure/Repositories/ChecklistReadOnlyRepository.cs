@@ -28,7 +28,7 @@ public sealed class ChecklistReadOnlyRepository(
     {
         return await dbContext.Checklists
             .AsNoTracking()
-            .Where(c => c.UserId == userId)
+            .Where(c => c.UserId == userId || dbContext.ChecklistCoAuthors.Any(ca => ca.ChecklistId == c.Id && ca.UserId == userId))
             .ToListAsync();
     }
 
@@ -62,5 +62,28 @@ public sealed class ChecklistReadOnlyRepository(
             .Where(a => a.ChecklistId == checklistId)
             .Select(a => a.UserId)
             .ToListAsync(cancellationToken);
+    }
+
+    public async Task<bool> IsCoAuthorAsync(Guid checklistId, string userId, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.ChecklistCoAuthors
+            .AsNoTracking()
+            .AnyAsync(ca => ca.ChecklistId == checklistId && ca.UserId == userId, cancellationToken);
+    }
+
+    public async Task<List<string>> GetCoAuthorIdsAsync(Guid checklistId, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.ChecklistCoAuthors
+            .AsNoTracking()
+            .Where(ca => ca.ChecklistId == checklistId)
+            .Select(ca => ca.UserId)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<bool> HasWritingPermissionAsync(Guid checklistId, string userId, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.ChecklistCoAuthors
+            .AsNoTracking()
+            .AnyAsync(ca => ca.ChecklistId == checklistId && ca.UserId == userId && ca.WritingPermission, cancellationToken);
     }
 }

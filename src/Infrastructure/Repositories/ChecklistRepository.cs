@@ -106,4 +106,47 @@ public class ChecklistRepository(ApplicationDbContext context) : IChecklistRepos
             await context.SaveChangesAsync();
         }
     }
+
+    public async Task RevokeAllAccessesAsync(Guid checklistId)
+    {
+        var accesses = await context.ChecklistAccesses
+            .Where(a => a.ChecklistId == checklistId)
+            .ToListAsync();
+
+        if (accesses.Count != 0)
+        {
+            context.ChecklistAccesses.RemoveRange(accesses);
+            await context.SaveChangesAsync();
+        }
+    }
+
+    public async Task GrantCoAuthorAsync(ChecklistCoAuthor coAuthor)
+    {
+        await context.ChecklistCoAuthors.AddAsync(coAuthor);
+        await context.SaveChangesAsync();
+    }
+
+    public async Task RevokeCoAuthorAsync(Guid checklistId, string userId)
+    {
+        var coAuthor = await context.ChecklistCoAuthors
+            .FindAsync(checklistId, userId);
+        if (coAuthor is not null)
+        {
+            context.ChecklistCoAuthors.Remove(coAuthor);
+            await context.SaveChangesAsync();
+        }
+    }
+
+    public async Task RevokeAllCoAuthorsAsync(Guid checklistId)
+    {
+        var coAuthors = await context.ChecklistCoAuthors
+            .Where(ca => ca.ChecklistId == checklistId)
+            .ToListAsync();
+
+        if (coAuthors.Count != 0)
+        {
+            context.ChecklistCoAuthors.RemoveRange(coAuthors);
+            await context.SaveChangesAsync();
+        }
+    }
 }

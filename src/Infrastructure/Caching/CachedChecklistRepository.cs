@@ -57,6 +57,18 @@ public sealed class CachedChecklistRepository(
     public Task RevokeAccessAsync(Guid checklistId, string userId) =>
         inner.RevokeAccessAsync(checklistId, userId);
 
+    public Task RevokeAllAccessesAsync(Guid checklistId) =>
+        inner.RevokeAllAccessesAsync(checklistId);
+
+    public Task GrantCoAuthorAsync(ChecklistCoAuthor coAuthor) =>
+        inner.GrantCoAuthorAsync(coAuthor);
+
+    public Task RevokeCoAuthorAsync(Guid checklistId, string userId) =>
+        inner.RevokeCoAuthorAsync(checklistId, userId);
+
+    public Task RevokeAllCoAuthorsAsync(Guid checklistId) =>
+        inner.RevokeAllCoAuthorsAsync(checklistId);
+
     private void Evict(Guid id)
     {
         var key = CacheKeys.PublishedChecklist(id);
