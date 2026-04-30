@@ -41,6 +41,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Serilog;
 using Web.Middleware;
+using Web.Options;
 
 // Load environment variables from .env file
 DotNetEnv.Env.TraversePath().Load();
@@ -101,6 +102,9 @@ builder.Services.Configure<ChecklistOptions>(
 
 builder.Services.Configure<CacheOptions>(
     builder.Configuration.GetSection(CacheOptions.SectionName));
+
+builder.Services.Configure<RateLimitOptions>(
+    builder.Configuration.GetSection(RateLimitOptions.SectionName));
 
 builder.Services.AddMemoryCache();
 

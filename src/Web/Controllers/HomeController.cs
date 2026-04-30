@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Web.Filters;
 using Web.Models;
 
 namespace Web.Controllers;
@@ -13,6 +14,7 @@ public sealed class HomeController : BaseController
         _logger = logger;
     }
 
+    [RateLimit("Home")]
     public IActionResult Index()
     {
         _logger.LogInformation("Home page requested");
@@ -31,5 +33,11 @@ public sealed class HomeController : BaseController
         var requestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier;
         _logger.LogWarning("Error page requested for request {RequestId}", requestId);
         return View(new ErrorViewModel { RequestId = requestId });
+    }
+
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+    public IActionResult RateLimitExceeded()
+    {
+        return View();
     }
 }
