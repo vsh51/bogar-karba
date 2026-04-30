@@ -44,6 +44,7 @@ public static class ViewModelMappings
             Description = dto.Description,
             Status = dto.Status,
             IsPublic = dto.IsPublic,
+            IsEmbeddable = dto.IsEmbeddable,
             Deadline = dto.Deadline,
             IsOutdated = dto.IsOutdated,
             DeadlineRemaining = dto.DeadlineRemaining
@@ -62,6 +63,7 @@ public static class ViewModelMappings
             IsOwner = result.IsOwner,
             IsOutdated = result.IsOutdated,
             DeadlineRemaining = result.DeadlineRemaining,
+            IsEmbeddable = result.IsEmbeddable,
             Sections = result.Sections
                 .OrderBy(s => s.Position)
                 .Select(section => new ChecklistSectionViewModel

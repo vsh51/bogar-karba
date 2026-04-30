@@ -1,0 +1,162 @@
+@model Web.Models.Checklist.ChecklistViewModel
+@{
+    Layout = null;
+    ViewData["Title"] = Model.Title;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@Model.Title</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            background: #ffffff;
+        }
+
+        .checklist-embed {
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 1rem 0.75rem 1.5rem;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            color: #212529;
+        }
+
+        .checklist-embed-title {
+            margin: 0 0 0.5rem;
+            font-size: 1.4rem;
+            font-weight: 700;
+            line-height: 1.25;
+        }
+
+        .checklist-embed-description {
+            margin: 0 0 1rem;
+            color: #6c757d;
+            line-height: 1.45;
+            white-space: pre-wrap;
+        }
+
+        .checklist-embed-section {
+            margin-top: 1rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .checklist-embed-section-title {
+            margin: 0 0 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .checklist-embed-items {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .checklist-embed-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            margin: 0.35rem 0;
+            line-height: 1.35;
+        }
+
+        .checklist-embed-item-input {
+            margin-top: 0.2rem;
+            width: 1rem;
+            height: 1rem;
+            flex: 0 0 auto;
+        }
+
+        .checklist-embed-item-link {
+            margin-left: 0.4rem;
+            font-size: 0.85rem;
+            color: #0d6efd;
+            text-decoration: none;
+            border-bottom: 1px dashed #0d6efd;
+            word-break: break-all;
+        }
+
+        .checklist-embed-empty {
+            color: #6c757d;
+            margin: 0.4rem 0 0;
+        }
+
+        .checklist-embed-footer {
+            margin-top: 1.25rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid #dee2e6;
+            font-size: 0.75rem;
+            text-align: right;
+            color: #6c757d;
+        }
+
+        .checklist-embed-footer a {
+            color: #6c757d;
+            text-decoration: none;
+        }
+
+        .checklist-embed-footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <section class="checklist-embed" data-checklist-id="@Model.Id">
+        <h1 class="checklist-embed-title">@Model.Title</h1>
+
+        @if (!string.IsNullOrWhiteSpace(Model.Description))
+        {
+            <p class="checklist-embed-description">@Model.Description</p>
+        }
+
+        @if (Model.Sections.Any())
+        {
+            @foreach (var sec in Model.Sections.OrderBy(s => s.Position))
+            {
+                <article class="checklist-embed-section">
+                    <h2 class="checklist-embed-section-title">@sec.Name</h2>
+
+                    @if (sec.Items.Any())
+                    {
+                        <ul class="checklist-embed-items">
+                            @foreach (var item in sec.Items)
+                            {
+                                var itemId = $"embed-item-{item.Id}";
+                                <li class="checklist-embed-item">
+                                    <input id="@itemId" type="checkbox" class="form-check-input checklist-embed-item-input" />
+                                    <label for="@itemId">
+                                        @item.Content
+                                        @if (!string.IsNullOrWhiteSpace(item.Link))
+                                        {
+                                            var linkLabel = Uri.TryCreate(item.Link, UriKind.Absolute, out var uri) ? uri.Host : "link";
+                                            <a href="@item.Link" class="checklist-embed-item-link" target="_blank" rel="noopener noreferrer">@linkLabel</a>
+                                        }
+                                    </label>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p class="checklist-embed-empty">No items in this section.</p>
+                    }
+                </article>
+            }
+        }
+        else
+        {
+            <p class="checklist-embed-empty">This checklist does not contain any sections yet.</p>
+        }
+
+        <div class="checklist-embed-footer">
+            <a href="@Url.Action("Show", "Checklist", new { id = Model.Id }, Context.Request.Scheme)" target="_blank" rel="noopener noreferrer">View on Bogar Karba</a>
+        </div>
+    </section>
+</body>
+</html>

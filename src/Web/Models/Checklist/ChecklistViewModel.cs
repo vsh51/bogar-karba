@@ -18,6 +18,8 @@ public sealed class ChecklistViewModel
 
     public string? DeadlineRemaining { get; init; }
 
+    public bool IsEmbeddable { get; init; }
+
     public IReadOnlyList<string> InitialCompletedTaskIds { get; set; } = Array.Empty<string>();
 
     public IReadOnlyList<ChecklistSectionViewModel> Sections { get; init; } = Array.Empty<ChecklistSectionViewModel>();

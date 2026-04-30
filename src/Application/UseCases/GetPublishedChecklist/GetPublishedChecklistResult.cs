@@ -21,4 +21,6 @@ public sealed class GetPublishedChecklistResult
     public bool IsOutdated { get; init; }
 
     public string? DeadlineRemaining { get; init; }
+
+    public bool IsEmbeddable { get; init; }
 }

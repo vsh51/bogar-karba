@@ -38,6 +38,12 @@ public sealed class CachedChecklistRepository(
         Evict(id);
     }
 
+    public async Task UpdateEmbeddableAsync(Guid id, bool isEmbeddable)
+    {
+        await inner.UpdateEmbeddableAsync(id, isEmbeddable);
+        Evict(id);
+    }
+
     public Task<int> GetTotalCountAsync() => inner.GetTotalCountAsync();
 
     public Task<int> GetCountByStatusAsync(ChecklistStatus status) =>

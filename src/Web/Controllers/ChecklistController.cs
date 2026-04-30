@@ -233,6 +233,24 @@ public sealed class ChecklistController : BaseController
         return Json(new { success = true });
     }
 
+    [HttpGet("{id:guid}/embed")]
+    [AllowAnonymous]
+    public async Task<IActionResult> Embed(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _handler.HandleAsync(
+            new GetPublishedChecklistQuery(id), cancellationToken);
+
+        if (!result.Succeeded || result.Value is null || !result.Value.IsPublic || !result.Value.IsEmbeddable)
+        {
+            _logger.LogInformation("Embed denied for checklist {ChecklistId}: not public, not embeddable, or not found", id);
+            return NotFound();
+        }
+
+        _logger.LogInformation("Checklist {ChecklistId} embedded view served", id);
+
+        return View("Embed", result.Value.ToChecklistViewModel());
+    }
+
     [HttpPost("{id:guid}/export/markdown")]
     public async Task<IActionResult> ExportMarkdown(
         Guid id,
