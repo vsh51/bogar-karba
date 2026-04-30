@@ -8,6 +8,7 @@ using Application.UseCases.ExportChecklist.Markdown;
 using Application.UseCases.GetChecklistForEdit;
 using Application.UseCases.GetChecklistsByIds;
 using Application.UseCases.GetPublishedChecklist;
+using Application.UseCases.GetSharedChecklists;
 using Application.UseCases.GroupTasksIntoSection;
 using Application.UseCases.RemoveChecklistItem;
 using Application.UseCases.ReorderChecklistItem;
@@ -34,6 +35,7 @@ public sealed class ChecklistController : BaseController
     private readonly AddChecklistItemCommandHandler _addItemHandler;
     private readonly RemoveChecklistItemCommandHandler _removeItemHandler;
     private readonly GetChecklistsByIdsQueryHandler _getByIdsHandler;
+    private readonly GetSharedChecklistsQueryHandler _sharedHandler;
     private readonly ILogger<ChecklistController> _logger;
 
     public ChecklistController(
@@ -48,6 +50,7 @@ public sealed class ChecklistController : BaseController
         AddChecklistItemCommandHandler addItemHandler,
         RemoveChecklistItemCommandHandler removeItemHandler,
         GetChecklistsByIdsQueryHandler getByIdsHandler,
+        GetSharedChecklistsQueryHandler sharedHandler,
         ILogger<ChecklistController> logger)
     {
         _handler = handler;
@@ -61,7 +64,26 @@ public sealed class ChecklistController : BaseController
         _addItemHandler = addItemHandler;
         _removeItemHandler = removeItemHandler;
         _getByIdsHandler = getByIdsHandler;
+        _sharedHandler = sharedHandler;
         _logger = logger;
+    }
+
+    [HttpGet("shared")]
+    [Authorize]
+    public async Task<IActionResult> Shared()
+    {
+        var userId = RequiredUserId;
+        _logger.LogInformation("Shared checklists page requested by user {UserId}", userId);
+
+        var result = await _sharedHandler.HandleAsync(new GetSharedChecklistsQuery(userId));
+
+        if (!result.Succeeded)
+        {
+            _logger.LogError("Failed to fetch shared checklists for user {UserId}: {Error}", userId, result.ErrorMessage);
+            return BadRequest(result.ErrorMessage);
+        }
+
+        return View(result.Value);
     }
 
     [HttpGet("create")]
