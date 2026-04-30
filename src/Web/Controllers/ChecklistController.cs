@@ -11,6 +11,7 @@ using Application.UseCases.GetChecklistForEdit;
 using Application.UseCases.GetChecklistProgress;
 using Application.UseCases.GetChecklistsByIds;
 using Application.UseCases.GetPublishedChecklist;
+using Application.UseCases.GetSharedChecklists;
 using Application.UseCases.GrantChecklistAccess;
 using Application.UseCases.GroupTasksIntoSection;
 using Application.UseCases.RemoveChecklistItem;
@@ -46,6 +47,7 @@ public sealed class ChecklistController : BaseController
     private readonly RevokeChecklistAccessCommandHandler _revokeAccessHandler;
     private readonly GetChecklistProgressQueryHandler _getChecklistProgressHandler;
     private readonly SaveChecklistProgressCommandHandler _saveChecklistProgressHandler;
+    private readonly GetSharedChecklistsQueryHandler _sharedHandler;
     private readonly ILogger<ChecklistController> _logger;
 
     public ChecklistController(
@@ -66,6 +68,7 @@ public sealed class ChecklistController : BaseController
         RevokeChecklistAccessCommandHandler revokeAccessHandler,
         GetChecklistProgressQueryHandler getChecklistProgressHandler,
         SaveChecklistProgressCommandHandler saveChecklistProgressCommandHandler,
+        GetSharedChecklistsQueryHandler sharedHandler,
         ILogger<ChecklistController> logger)
     {
         _handler = handler;
@@ -85,7 +88,26 @@ public sealed class ChecklistController : BaseController
         _revokeAccessHandler = revokeAccessHandler;
         _getChecklistProgressHandler = getChecklistProgressHandler;
         _saveChecklistProgressHandler = saveChecklistProgressCommandHandler;
+        _sharedHandler = sharedHandler;
         _logger = logger;
+    }
+
+    [HttpGet("shared")]
+    [Authorize]
+    public async Task<IActionResult> Shared()
+    {
+        var userId = RequiredUserId;
+        _logger.LogInformation("Shared checklists page requested by user {UserId}", userId);
+
+        var result = await _sharedHandler.HandleAsync(new GetSharedChecklistsQuery(userId));
+
+        if (!result.Succeeded)
+        {
+            _logger.LogError("Failed to fetch shared checklists for user {UserId}: {Error}", userId, result.ErrorMessage);
+            return BadRequest(result.ErrorMessage);
+        }
+
+        return View(result.Value);
     }
 
     [HttpGet("create")]

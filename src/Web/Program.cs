@@ -18,6 +18,7 @@ using Application.UseCases.GetChecklistForEdit;
 using Application.UseCases.GetChecklistProgress;
 using Application.UseCases.GetChecklistsByIds;
 using Application.UseCases.GetPublishedChecklist;
+using Application.UseCases.GetSharedChecklists;
 using Application.UseCases.GetSystemStats;
 using Application.UseCases.GetUserChecklists;
 using Application.UseCases.GrantChecklistAccess;
@@ -161,6 +162,7 @@ builder.Services.AddScoped<GrantChecklistAccessCommandHandler>();
 builder.Services.AddScoped<RevokeChecklistAccessCommandHandler>();
 builder.Services.AddScoped<GetChecklistProgressQueryHandler>();
 builder.Services.AddScoped<SaveChecklistProgressCommandHandler>();
+builder.Services.AddScoped<GetSharedChecklistsQueryHandler>();
 
 builder.Services.AddControllersWithViews();
 

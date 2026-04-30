@@ -1,0 +1,81 @@
+@using Domain.Entities
+@model IEnumerable<Application.DTOs.Checklist.ChecklistSummaryDto>
+
+@{
+    ViewData["Title"] = "Shared Checklists";
+}
+
+<div class="shared-checklists-page container mt-4" style="max-width: 800px;">
+    <div class="mb-3">
+        <a href="@Url.Action("Index", "Home")" class="text-dark text-decoration-none fs-4">
+            <i class="bi bi-chevron-left"></i> <
+        </a>
+    </div>
+
+    <h2 class="fw-normal mb-4">Shared with you :</h2>
+
+    <div class="list-group list-group-flush">
+        @if (!Model.Any())
+        {
+            <div class="alert alert-light text-center border shadow-sm">
+                <p class="mb-0 text-muted">No private checklists have been shared with you yet.</p>
+            </div>
+        }
+        else
+        {
+            @foreach (var item in Model)
+            {
+                <div class="list-group-item d-flex justify-content-between align-items-start border-0 px-0 mb-4">
+                    <div class="ms-2 me-auto">
+                        <div class="fw-bold">
+                            <a href="@Url.Action("Show", "Checklist", new { id = item.Id })" class="text-decoration-none text-dark">@item.Title</a>
+                            
+                            @if (item.Status != ChecklistStatus.Published)
+                            {
+                                <span class="badge bg-secondary ms-2">@item.Status.ToString().ToLower()</span>
+                            }
+                            
+                            <span class="badge bg-dark-subtle text-dark-emphasis ms-2">private</span>
+
+                            @if (item.Deadline.HasValue)
+                            {
+                                var deadlineIso = item.Deadline.Value.ToString("yyyy-MM-dd");
+                                var badgeClass = item.IsOutdated ? "bg-danger-subtle text-danger-emphasis" : "bg-light text-muted";
+                                <span class="badge @badgeClass ms-2 fw-normal">
+                                    <i class="bi bi-calendar-event" aria-hidden="true"></i>
+                                    <time datetime="@deadlineIso" data-deadline="@deadlineIso">@item.Deadline.Value.ToString("yyyy-MM-dd")</time>
+                                    · @item.DeadlineRemaining
+                                </span>
+                            }
+                        </div>
+                        <div class="text-muted mt-1">
+                            @item.Description
+                        </div>
+                        <div class="small text-muted mt-1">
+                            <i class="bi bi-person"></i> Owner: @item.UserName
+                        </div>
+                    </div>
+
+                    <div class="dropdown">
+                        <button class="btn btn-link text-dark text-decoration-none fw-bold fs-4 p-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            ...
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="@Url.Action("Show", "Checklist", new { id = item.Id })">View checklist</a></li>
+                            <li>
+                                <form asp-action="Clone" asp-controller="Author" asp-route-id="@item.Id" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="dropdown-item">Clone to my collection</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/checklist-deadline.js" asp-append-version="true"></script>
+}
