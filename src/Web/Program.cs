@@ -23,6 +23,7 @@ using Application.UseCases.GetSystemStats;
 using Application.UseCases.GetUserChecklists;
 using Application.UseCases.GrantChecklistAccess;
 using Application.UseCases.GroupTasksIntoSection;
+using Application.UseCases.QuickCreateChecklist;
 using Application.UseCases.RemoveChecklistItem;
 using Application.UseCases.ReorderChecklistItem;
 using Application.UseCases.RevokeChecklistAccess;
@@ -165,6 +166,7 @@ builder.Services.AddScoped<RevokeChecklistAccessCommandHandler>();
 builder.Services.AddScoped<GetChecklistProgressQueryHandler>();
 builder.Services.AddScoped<SaveChecklistProgressCommandHandler>();
 builder.Services.AddScoped<GetSharedChecklistsQueryHandler>();
+builder.Services.AddScoped<QuickCreateChecklistCommandHandler>();
 
 builder.Services.AddControllersWithViews();
 
