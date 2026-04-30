@@ -58,10 +58,10 @@ public static class ViewModelMappings
             Title = result.Title,
             Description = result.Description,
             Deadline = result.Deadline,
+            IsPublic = result.IsPublic,
+            IsOwner = result.IsOwner,
             IsOutdated = result.IsOutdated,
             DeadlineRemaining = result.DeadlineRemaining,
-            IsOwner = result.IsOwner,
-            IsPublic = result.IsPublic,
             Sections = result.Sections
                 .OrderBy(s => s.Position)
                 .Select(section => new ChecklistSectionViewModel

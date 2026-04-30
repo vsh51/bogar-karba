@@ -20,10 +20,10 @@ public static class ChecklistMappings
             Title = checklist.Title,
             Description = checklist.Description,
             Deadline = checklist.Deadline,
+            IsPublic = checklist.IsPublic,
+            IsOwner = isOwner,
             IsOutdated = info?.IsOutdated ?? false,
             DeadlineRemaining = info?.RemainingText,
-            IsOwner = isOwner,
-            IsPublic = checklist.IsPublic,
             Sections = checklist.Sections
                 .OrderBy(s => s.Position)
                 .Select(section => new ChecklistSectionDto

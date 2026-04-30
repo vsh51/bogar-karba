@@ -15,6 +15,7 @@ using Application.UseCases.ExportChecklist.Markdown;
 using Application.UseCases.GetBoredActivity;
 using Application.UseCases.GetChecklistAccessList;
 using Application.UseCases.GetChecklistForEdit;
+using Application.UseCases.GetChecklistProgress;
 using Application.UseCases.GetChecklistsByIds;
 using Application.UseCases.GetPublishedChecklist;
 using Application.UseCases.GetSystemStats;
@@ -24,6 +25,7 @@ using Application.UseCases.GroupTasksIntoSection;
 using Application.UseCases.RemoveChecklistItem;
 using Application.UseCases.ReorderChecklistItem;
 using Application.UseCases.RevokeChecklistAccess;
+using Application.UseCases.SaveChecklistProgress;
 using Application.UseCases.SearchChecklists;
 using Application.UseCases.SearchUsers;
 using Application.UseCases.SetChecklistVisibility;
@@ -124,6 +126,7 @@ builder.Services.AddScoped<IChecklistReadOnlyRepository>(sp =>
         sp.GetRequiredService<ILogger<CachedChecklistReadOnlyRepository>>()));
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IChecklistProgressRepository, ChecklistProgressRepository>();
 builder.Services.AddScoped<ISignInService, SignInService>();
 
 builder.Services.AddScoped<LoginUserCommandHandler>();
@@ -152,6 +155,8 @@ builder.Services.AddScoped<GetChecklistsByIdsQueryHandler>();
 builder.Services.AddScoped<GetChecklistAccessListQueryHandler>();
 builder.Services.AddScoped<GrantChecklistAccessCommandHandler>();
 builder.Services.AddScoped<RevokeChecklistAccessCommandHandler>();
+builder.Services.AddScoped<GetChecklistProgressQueryHandler>();
+builder.Services.AddScoped<SaveChecklistProgressCommandHandler>();
 
 builder.Services.AddControllersWithViews();
 
