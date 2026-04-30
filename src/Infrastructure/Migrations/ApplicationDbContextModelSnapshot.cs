@@ -72,9 +72,6 @@ namespace Infrastructure.Migrations
                     b.Property<string>("UserId")
                         .HasColumnType("text");
 
-                    b.Property<bool>("IsOwner")
-                        .HasColumnType("boolean");
-
                     b.HasKey("ChecklistId", "UserId");
 
                     b.ToTable("ChecklistAccesses");
