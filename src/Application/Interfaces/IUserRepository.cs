@@ -24,4 +24,6 @@ public interface IUserRepository
     Task<Dictionary<string, string>> GetUsernamesByIdsAsync(IEnumerable<string> userIds);
 
     Task<List<UserSummaryDto>> SearchUsersAsync(string? searchTerm);
+
+    Task<string?> GetUserIdByUsernameAsync(string username);
 }

@@ -25,5 +25,7 @@ public class Checklist
 
     public bool IsPublic { get; set; } = true;
 
+    public bool IsEmbeddable { get; set; } = true;
+
     public List<Section> Sections { get; set; } = new();
 }

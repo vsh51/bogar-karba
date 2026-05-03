@@ -57,6 +57,16 @@ public class ChecklistRepository(ApplicationDbContext context) : IChecklistRepos
         }
     }
 
+    public async Task UpdateEmbeddableAsync(Guid id, bool isEmbeddable)
+    {
+        var checklist = await context.Checklists.FindAsync(id);
+        if (checklist != null)
+        {
+            checklist.IsEmbeddable = isEmbeddable;
+            await context.SaveChangesAsync();
+        }
+    }
+
     public async Task<int> GetTotalCountAsync()
     {
         return await context.Checklists.CountAsync();
@@ -88,5 +98,22 @@ public class ChecklistRepository(ApplicationDbContext context) : IChecklistRepos
     public async Task UpdateAsync()
     {
         await context.SaveChangesAsync();
+    }
+
+    public async Task GrantAccessAsync(ChecklistAccess access)
+    {
+        await context.ChecklistAccesses.AddAsync(access);
+        await context.SaveChangesAsync();
+    }
+
+    public async Task RevokeAccessAsync(Guid checklistId, string userId)
+    {
+        var access = await context.ChecklistAccesses
+            .FindAsync(checklistId, userId);
+        if (access is not null)
+        {
+            context.ChecklistAccesses.Remove(access);
+            await context.SaveChangesAsync();
+        }
     }
 }

@@ -36,6 +36,9 @@
                                 <a class="nav-link text-dark" asp-controller="Author" asp-action="Index">My Checklists</a>
                             </li>
                             <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Checklist" asp-action="Shared">Shared with me</a>
+                            </li>
+                            <li class="nav-item">
                                 <span class="nav-link text-dark">@User.Identity.Name</span>
                             </li>
                             <li class="nav-item">
@@ -64,21 +67,21 @@
             {
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
                     @successMsg
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-alert="alert" aria-label="Close"></button>
                 </div>
             }
             @if (TempData["WarningMessage"] is string warningMsg)
             {
                 <div class="alert alert-warning alert-dismissible fade show" role="alert">
                     @warningMsg
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-alert="alert" aria-label="Close"></button>
                 </div>
             }
             @if (TempData["ErrorMessage"] is string errorMsg)
             {
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
                     @errorMsg
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-alert="alert" aria-label="Close"></button>
                 </div>
             }
 

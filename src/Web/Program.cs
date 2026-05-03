@@ -12,19 +12,29 @@ using Application.UseCases.CreateChecklist;
 using Application.UseCases.DeleteChecklist;
 using Application.UseCases.EditChecklist;
 using Application.UseCases.ExportChecklist.Markdown;
+using Application.UseCases.GetBoredActivity;
+using Application.UseCases.GetChecklistAccessList;
 using Application.UseCases.GetChecklistForEdit;
+using Application.UseCases.GetChecklistProgress;
 using Application.UseCases.GetChecklistsByIds;
 using Application.UseCases.GetPublishedChecklist;
+using Application.UseCases.GetSharedChecklists;
 using Application.UseCases.GetSystemStats;
 using Application.UseCases.GetUserChecklists;
+using Application.UseCases.GrantChecklistAccess;
 using Application.UseCases.GroupTasksIntoSection;
+using Application.UseCases.QuickCreateChecklist;
 using Application.UseCases.RemoveChecklistItem;
 using Application.UseCases.ReorderChecklistItem;
+using Application.UseCases.RevokeChecklistAccess;
+using Application.UseCases.SaveChecklistProgress;
 using Application.UseCases.SearchChecklists;
 using Application.UseCases.SearchUsers;
+using Application.UseCases.SetChecklistEmbeddable;
 using Application.UseCases.SetChecklistVisibility;
 using Application.UseCases.ToggleChecklistStatus;
 using Infrastructure.Caching;
+using Infrastructure.ExternalServices;
 using Infrastructure.Identity;
 using Infrastructure.Persistence;
 using Infrastructure.Repositories;
@@ -34,6 +44,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Serilog;
 using Web.Middleware;
+using Web.Options;
 
 // Load environment variables from .env file
 DotNetEnv.Env.TraversePath().Load();
@@ -95,7 +106,16 @@ builder.Services.Configure<ChecklistOptions>(
 builder.Services.Configure<CacheOptions>(
     builder.Configuration.GetSection(CacheOptions.SectionName));
 
+builder.Services.Configure<RateLimitOptions>(
+    builder.Configuration.GetSection(RateLimitOptions.SectionName));
+
 builder.Services.AddMemoryCache();
+
+builder.Services.AddHttpClient<IBoredApiClient, BoredApiClient>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["BoredApi:BaseUrl"]!);
+});
+builder.Services.AddScoped<GetBoredActivityQueryHandler>();
 
 builder.Services.AddScoped<ChecklistRepository>();
 builder.Services.AddScoped<IChecklistRepository>(sp =>
@@ -113,6 +133,7 @@ builder.Services.AddScoped<IChecklistReadOnlyRepository>(sp =>
         sp.GetRequiredService<ILogger<CachedChecklistReadOnlyRepository>>()));
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IChecklistProgressRepository, ChecklistProgressRepository>();
 builder.Services.AddScoped<ISignInService, SignInService>();
 
 builder.Services.AddScoped<LoginUserCommandHandler>();
@@ -132,12 +153,20 @@ builder.Services.AddScoped<GetSystemStatsQueryHandler>();
 builder.Services.AddScoped<ExportMarkdownQueryHandler>();
 builder.Services.AddScoped<ToggleChecklistStatusCommandHandler>();
 builder.Services.AddScoped<SetChecklistVisibilityCommandHandler>();
+builder.Services.AddScoped<SetChecklistEmbeddableCommandHandler>();
 builder.Services.AddScoped<ReorderChecklistItemCommandHandler>();
 builder.Services.AddScoped<GroupTasksIntoSectionCommandHandler>();
 builder.Services.AddScoped<AddChecklistItemCommandHandler>();
 builder.Services.AddScoped<RemoveChecklistItemCommandHandler>();
 builder.Services.AddScoped<GetChecklistForEditQueryHandler>();
 builder.Services.AddScoped<GetChecklistsByIdsQueryHandler>();
+builder.Services.AddScoped<GetChecklistAccessListQueryHandler>();
+builder.Services.AddScoped<GrantChecklistAccessCommandHandler>();
+builder.Services.AddScoped<RevokeChecklistAccessCommandHandler>();
+builder.Services.AddScoped<GetChecklistProgressQueryHandler>();
+builder.Services.AddScoped<SaveChecklistProgressCommandHandler>();
+builder.Services.AddScoped<GetSharedChecklistsQueryHandler>();
+builder.Services.AddScoped<QuickCreateChecklistCommandHandler>();
 
 builder.Services.AddControllersWithViews();
 

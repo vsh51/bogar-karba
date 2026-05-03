@@ -29,7 +29,7 @@ public sealed class GetPublishedChecklistQueryHandler(
         if (isOwner)
         {
             var today = DateOnly.FromDateTime(DateTime.UtcNow);
-            var ownerResult = checklist.ToPublishedChecklistResult(today);
+            var ownerResult = checklist.ToPublishedChecklistResult(today, isOwner: true);
             logger.LogInformation("Checklist {ChecklistId} retrieved successfully by owner", query.Id);
             return ownerResult;
         }

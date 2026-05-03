@@ -54,4 +54,34 @@ public sealed class ChecklistReadOnlyRepository(
             .AsNoTracking()
             .AnyAsync(a => a.ChecklistId == checklistId && a.UserId == userId, cancellationToken);
     }
+
+    public async Task<List<string>> GetAccessUserIdsAsync(Guid checklistId, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.ChecklistAccesses
+            .AsNoTracking()
+            .Where(a => a.ChecklistId == checklistId)
+            .Select(a => a.UserId)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IEnumerable<SharedChecklist>> GetSharedWithUserAsync(
+        string userId,
+        CancellationToken cancellationToken = default)
+    {
+        logger.LogInformation("Retrieving private checklists shared with user {UserId}", userId);
+
+        var accessedIds = dbContext.ChecklistAccesses
+            .Where(a => a.UserId == userId)
+            .Select(a => a.ChecklistId);
+
+        return await dbContext.Checklists
+            .AsNoTracking()
+            .Where(c => accessedIds.Contains(c.Id) && !c.IsPublic && c.Status == ChecklistStatus.Published)
+            .Join(
+                dbContext.Users,
+                checklist => checklist.UserId,
+                user => user.Id,
+                (checklist, user) => new SharedChecklist(checklist, $"{user.Name} {user.Surname}"))
+            .ToListAsync(cancellationToken);
+    }
 }

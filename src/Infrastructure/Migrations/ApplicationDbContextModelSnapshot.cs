@@ -22,19 +22,6 @@ namespace Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Domain.Entities.ChecklistAccess", b =>
-                {
-                    b.Property<Guid>("ChecklistId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("text");
-
-                    b.HasKey("ChecklistId", "UserId");
-
-                    b.ToTable("ChecklistAccesses");
-                });
-
             modelBuilder.Entity("Domain.Entities.Checklist", b =>
                 {
                     b.Property<Guid>("Id")
@@ -50,6 +37,9 @@ namespace Infrastructure.Migrations
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<bool>("IsEmbeddable")
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("IsPublic")
                         .HasColumnType("boolean");
@@ -72,6 +62,39 @@ namespace Infrastructure.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Checklists");
+                });
+
+            modelBuilder.Entity("Domain.Entities.ChecklistAccess", b =>
+                {
+                    b.Property<Guid>("ChecklistId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.HasKey("ChecklistId", "UserId");
+
+                    b.ToTable("ChecklistAccesses");
+                });
+
+            modelBuilder.Entity("Domain.Entities.ChecklistProgress", b =>
+                {
+                    b.Property<Guid>("ChecklistId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CompletedTaskIdsJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("ChecklistId", "UserId");
+
+                    b.ToTable("ChecklistProgresses");
                 });
 
             modelBuilder.Entity("Domain.Entities.Section", b =>
@@ -333,6 +356,15 @@ namespace Infrastructure.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Domain.Entities.Checklist", b =>
+                {
+                    b.HasOne("Infrastructure.Identity.ApplicationUser", null)
+                        .WithMany("Checklists")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Domain.Entities.ChecklistAccess", b =>
                 {
                     b.HasOne("Domain.Entities.Checklist", "Checklist")
@@ -344,11 +376,11 @@ namespace Infrastructure.Migrations
                     b.Navigation("Checklist");
                 });
 
-            modelBuilder.Entity("Domain.Entities.Checklist", b =>
+            modelBuilder.Entity("Domain.Entities.ChecklistProgress", b =>
                 {
-                    b.HasOne("Infrastructure.Identity.ApplicationUser", null)
-                        .WithMany("Checklists")
-                        .HasForeignKey("UserId")
+                    b.HasOne("Domain.Entities.Checklist", null)
+                        .WithMany()
+                        .HasForeignKey("ChecklistId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

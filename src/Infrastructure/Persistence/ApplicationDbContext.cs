@@ -20,6 +20,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<ChecklistAccess> ChecklistAccesses => Set<ChecklistAccess>();
 
+    public DbSet<ChecklistProgress> ChecklistProgresses => Set<ChecklistProgress>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -43,6 +45,18 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.HasOne(a => a.Checklist)
                 .WithMany()
                 .HasForeignKey(a => a.ChecklistId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<ChecklistProgress>(entity =>
+        {
+            entity.HasKey(p => new { p.ChecklistId, p.UserId });
+            entity.Property(p => p.CompletedTaskIdsJson).IsRequired();
+            entity.Property(p => p.UpdatedAtUtc).IsRequired();
+
+            entity.HasOne<Checklist>()
+                .WithMany()
+                .HasForeignKey(p => p.ChecklistId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
