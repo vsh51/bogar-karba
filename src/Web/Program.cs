@@ -43,6 +43,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Serilog;
+using Web.Hubs;
 using Web.Middleware;
 using Web.Options;
 
@@ -168,6 +169,7 @@ builder.Services.AddScoped<SaveChecklistProgressCommandHandler>();
 builder.Services.AddScoped<GetSharedChecklistsQueryHandler>();
 builder.Services.AddScoped<QuickCreateChecklistCommandHandler>();
 
+builder.Services.AddSignalR();
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
@@ -200,6 +202,8 @@ app.UseAuthorization();
 app.UseMiddleware<RequestLoggingMiddleware>();
 
 app.MapStaticAssets();
+
+app.MapHub<NotificationHub>("/hubs/notifications");
 
 app.MapControllerRoute(
     name: "default",
