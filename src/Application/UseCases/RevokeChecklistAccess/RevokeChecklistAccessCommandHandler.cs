@@ -1,5 +1,6 @@
 using Application.Common;
 using Application.Interfaces;
+using Domain.Entities;
 using Microsoft.Extensions.Logging;
 
 namespace Application.UseCases.RevokeChecklistAccess;
@@ -7,6 +8,7 @@ namespace Application.UseCases.RevokeChecklistAccess;
 public sealed class RevokeChecklistAccessCommandHandler(
     IChecklistReadOnlyRepository readRepository,
     IChecklistRepository repository,
+    INotificationRepository notificationRepository,
     ILogger<RevokeChecklistAccessCommandHandler> logger)
 {
     public async Task<Result<bool>> HandleAsync(RevokeChecklistAccessCommand command)
@@ -35,6 +37,15 @@ public sealed class RevokeChecklistAccessCommandHandler(
         }
 
         await repository.RevokeAccessAsync(command.ChecklistId, command.TargetUserId);
+
+        await notificationRepository.AddAsync(new Notification
+        {
+            Id = Guid.NewGuid(),
+            UserId = command.TargetUserId,
+            Message = $"Your access to the checklist \"{checklist.Title}\" has been removed.",
+            EventKey = $"access-revoked:{command.ChecklistId}:{command.TargetUserId}:{DateTime.UtcNow:yyyyMMddHHmmss}",
+            CreatedAtUtc = DateTime.UtcNow
+        });
 
         logger.LogInformation(
             "Access to checklist {ChecklistId} revoked for user {TargetUserId}",

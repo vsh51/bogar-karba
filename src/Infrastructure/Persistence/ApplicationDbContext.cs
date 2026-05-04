@@ -22,6 +22,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<ChecklistProgress> ChecklistProgresses => Set<ChecklistProgress>();
 
+    public DbSet<Notification> Notifications => Set<Notification>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -76,6 +78,16 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.Property(t => t.Content).IsRequired();
             entity.Property(t => t.Position).IsRequired();
             entity.Property(t => t.Link).HasMaxLength(2048);
+        });
+
+        builder.Entity<Notification>(entity =>
+        {
+            entity.HasKey(n => n.Id);
+            entity.Property(n => n.UserId).IsRequired();
+            entity.Property(n => n.Message).IsRequired();
+            entity.Property(n => n.EventKey).IsRequired();
+            entity.HasIndex(n => n.EventKey);
+            entity.HasIndex(n => n.IsSent);
         });
     }
 }

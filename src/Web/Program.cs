@@ -43,8 +43,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Serilog;
+using Web.Hubs;
 using Web.Middleware;
 using Web.Options;
+using Web.Services;
 
 // Load environment variables from .env file
 DotNetEnv.Env.TraversePath().Load();
@@ -109,6 +111,9 @@ builder.Services.Configure<CacheOptions>(
 builder.Services.Configure<RateLimitOptions>(
     builder.Configuration.GetSection(RateLimitOptions.SectionName));
 
+builder.Services.Configure<NotificationOptions>(
+    builder.Configuration.GetSection(NotificationOptions.SectionName));
+
 builder.Services.AddMemoryCache();
 
 builder.Services.AddHttpClient<IBoredApiClient, BoredApiClient>(client =>
@@ -133,6 +138,7 @@ builder.Services.AddScoped<IChecklistReadOnlyRepository>(sp =>
         sp.GetRequiredService<ILogger<CachedChecklistReadOnlyRepository>>()));
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<IChecklistProgressRepository, ChecklistProgressRepository>();
 builder.Services.AddScoped<ISignInService, SignInService>();
 
@@ -168,6 +174,9 @@ builder.Services.AddScoped<SaveChecklistProgressCommandHandler>();
 builder.Services.AddScoped<GetSharedChecklistsQueryHandler>();
 builder.Services.AddScoped<QuickCreateChecklistCommandHandler>();
 
+builder.Services.AddSingleton<ConnectionTracker>();
+builder.Services.AddSignalR();
+builder.Services.AddHostedService<NotificationBackgroundService>();
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
@@ -200,6 +209,8 @@ app.UseAuthorization();
 app.UseMiddleware<RequestLoggingMiddleware>();
 
 app.MapStaticAssets();
+
+app.MapHub<NotificationHub>("/hubs/notifications");
 
 app.MapControllerRoute(
     name: "default",
