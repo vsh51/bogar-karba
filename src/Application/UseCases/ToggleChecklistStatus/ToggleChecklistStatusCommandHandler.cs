@@ -1,5 +1,6 @@
 using Application.Common;
 using Application.Interfaces;
+using Domain.Entities;
 using Microsoft.Extensions.Logging;
 
 namespace Application.UseCases.ToggleChecklistStatus;
@@ -7,6 +8,7 @@ namespace Application.UseCases.ToggleChecklistStatus;
 public sealed class ToggleChecklistStatusCommandHandler(
     IChecklistRepository repository,
     IChecklistReadOnlyRepository readRepository,
+    INotificationRepository notificationRepository,
     ILogger<ToggleChecklistStatusCommandHandler> logger)
 {
     public async Task<Result<bool>> HandleAsync(ToggleChecklistStatusCommand command)
@@ -33,6 +35,24 @@ public sealed class ToggleChecklistStatusCommandHandler(
 
         await repository.UpdateStatusAsync(command.Id, command.NewStatus);
         logger.LogInformation("Checklist {Id} status changed to {NewStatus}", command.Id, command.NewStatus);
+
+        if (command.NewStatus == ChecklistStatus.Published)
+        {
+            var collaboratorIds = await readRepository.GetAccessUserIdsAsync(command.Id);
+
+            foreach (var userId in collaboratorIds)
+            {
+                await notificationRepository.AddAsync(new Notification
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = userId,
+                    Message = $"Checklist \"{checklist.Title}\" that you have access to has been published.",
+                    EventKey = $"published:{command.Id}:{userId}",
+                    CreatedAtUtc = DateTime.UtcNow
+                });
+            }
+        }
+
         return true;
     }
 }

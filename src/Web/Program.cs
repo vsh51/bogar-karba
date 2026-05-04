@@ -46,6 +46,7 @@ using Serilog;
 using Web.Hubs;
 using Web.Middleware;
 using Web.Options;
+using Web.Services;
 
 // Load environment variables from .env file
 DotNetEnv.Env.TraversePath().Load();
@@ -134,6 +135,7 @@ builder.Services.AddScoped<IChecklistReadOnlyRepository>(sp =>
         sp.GetRequiredService<ILogger<CachedChecklistReadOnlyRepository>>()));
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<IChecklistProgressRepository, ChecklistProgressRepository>();
 builder.Services.AddScoped<ISignInService, SignInService>();
 
@@ -170,6 +172,7 @@ builder.Services.AddScoped<GetSharedChecklistsQueryHandler>();
 builder.Services.AddScoped<QuickCreateChecklistCommandHandler>();
 
 builder.Services.AddSignalR();
+builder.Services.AddHostedService<NotificationBackgroundService>();
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
