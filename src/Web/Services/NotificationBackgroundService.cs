@@ -1,20 +1,25 @@
 using Application.Interfaces;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Options;
 using Web.Hubs;
+using Web.Options;
 
 namespace Web.Services;
 
 public sealed class NotificationBackgroundService(
     IServiceScopeFactory scopeFactory,
     IHubContext<NotificationHub> hubContext,
+    IOptions<NotificationOptions> options,
     ILogger<NotificationBackgroundService> logger) : BackgroundService
 {
+    private readonly TimeSpan _pollingInterval = TimeSpan.FromSeconds(options.Value.PollingIntervalSeconds);
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
             await DeliverPendingAsync(stoppingToken);
-            await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+            await Task.Delay(_pollingInterval, stoppingToken);
         }
     }
 

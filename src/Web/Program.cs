@@ -111,6 +111,9 @@ builder.Services.Configure<CacheOptions>(
 builder.Services.Configure<RateLimitOptions>(
     builder.Configuration.GetSection(RateLimitOptions.SectionName));
 
+builder.Services.Configure<NotificationOptions>(
+    builder.Configuration.GetSection(NotificationOptions.SectionName));
+
 builder.Services.AddMemoryCache();
 
 builder.Services.AddHttpClient<IBoredApiClient, BoredApiClient>(client =>
