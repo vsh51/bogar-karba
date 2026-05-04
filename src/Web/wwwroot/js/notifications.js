@@ -41,6 +41,14 @@
         addNotification(message);
     });
 
+    connection.on('TooManyConnections', function () {
+        const item = document.createElement('li');
+        item.className = 'dropdown-item text-danger small py-2';
+        item.textContent = 'Too many active connections. Please try again later.';
+        list.innerHTML = '';
+        list.appendChild(item);
+    });
+
     connection.start().catch(function (err) {
         console.error('SignalR connection error:', err);
     });

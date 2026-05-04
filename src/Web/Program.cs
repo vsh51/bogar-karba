@@ -174,6 +174,7 @@ builder.Services.AddScoped<SaveChecklistProgressCommandHandler>();
 builder.Services.AddScoped<GetSharedChecklistsQueryHandler>();
 builder.Services.AddScoped<QuickCreateChecklistCommandHandler>();
 
+builder.Services.AddSingleton<ConnectionTracker>();
 builder.Services.AddSignalR();
 builder.Services.AddHostedService<NotificationBackgroundService>();
 builder.Services.AddControllersWithViews();
