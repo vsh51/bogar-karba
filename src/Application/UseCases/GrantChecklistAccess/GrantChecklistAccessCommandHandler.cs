@@ -8,6 +8,7 @@ namespace Application.UseCases.GrantChecklistAccess;
 public sealed class GrantChecklistAccessCommandHandler(
     IChecklistReadOnlyRepository readRepository,
     IChecklistRepository repository,
+    INotificationRepository notificationRepository,
     IUserRepository userRepository,
     ILogger<GrantChecklistAccessCommandHandler> logger)
 {
@@ -65,6 +66,15 @@ public sealed class GrantChecklistAccessCommandHandler(
         {
             ChecklistId = command.ChecklistId,
             UserId = targetUserId
+        });
+
+        await notificationRepository.AddAsync(new Notification
+        {
+            Id = Guid.NewGuid(),
+            UserId = targetUserId,
+            Message = $"You have been granted access to the checklist \"{checklist.Title}\".",
+            EventKey = $"access-granted:{command.ChecklistId}:{targetUserId}",
+            CreatedAtUtc = DateTime.UtcNow
         });
 
         logger.LogInformation(
