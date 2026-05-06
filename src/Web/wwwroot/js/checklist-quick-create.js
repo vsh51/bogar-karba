@@ -1,3 +1,4 @@
+// wwwroot/js/checklist-quick-create.js
 document.addEventListener('DOMContentLoaded', () => {
     const textarea = document.getElementById('quick-create-text');
     const lineNumbers = document.getElementById('quick-create-line-numbers');
@@ -24,12 +25,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showError(message) {
         errorBox.textContent = message;
-        errorBox.style.display = 'block';
+        errorBox.classList.remove('d-none');
     }
 
     function clearError() {
         errorBox.textContent = '';
-        errorBox.style.display = 'none';
+        errorBox.classList.add('d-none');
     }
 
     submitBtn.addEventListener('click', async () => {

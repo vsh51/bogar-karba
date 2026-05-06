@@ -14,20 +14,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const showToast = (message, kind = 'success') => {
         const palette = {
-            success: 'text-bg-success',
-            error: 'text-bg-danger',
+            success: 'alert-success',
+            error: 'alert-danger',
         };
         const toast = document.createElement('div');
-        toast.className = `toast align-items-center ${palette[kind] || palette.success} border-0 show`;
+        toast.className = `alert ${palette[kind] || palette.success} alert-dismissible fade show shadow-sm mb-2`;
         toast.setAttribute('role', 'alert');
         toast.innerHTML = `
-            <div class="d-flex">
-                <div class="toast-body">${message}</div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" aria-label="Close"></button>
+            <div class="d-flex align-items-center">
+                <i class="bi ${kind === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'} me-2"></i>
+                <div>${message}</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>`;
-        toast.querySelector('.btn-close').addEventListener('click', () => toast.remove());
         toastStack.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 150);
+        }, 3000);
     };
 
     const postJson = async (url, body) => {
@@ -48,18 +51,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const renderTaskRow = (taskId, content, link) => {
         const row = document.createElement('div');
-        row.className = 'checklist-row task-row';
+        row.className = 'bk-editor-row task-row';
         row.dataset.taskId = taskId;
         row.draggable = true;
         row.innerHTML = `
-            <span class="drag-handle" title="Drag to reorder">&#8942;&#8942;</span>
-            <input type="checkbox" class="select-task" title="Select for grouping" />
-            <input type="text" class="item-input" value="" placeholder="Item description..." />
-            <button type="button" class="btn-link-toggle" title="Attach link">&#128279;</button>
-            <button type="button" class="btn-delete btn-delete-task">&times;</button>`;
+            <div class="bk-drag-handle me-1"><i class="bi bi-grip-vertical"></i></div>
+            <div class="form-check mb-0 me-2"><input type="checkbox" class="form-check-input select-task" /></div>
+            <input type="text" class="bk-editor-input item-input" value="" placeholder="Task description..." />
+            <button type="button" class="bk-btn-action bk-btn-link" title="Attach link"><i class="bi bi-link-45deg"></i></button>
+            <button type="button" class="bk-btn-action bk-btn-delete btn-delete-task"><i class="bi bi-x-lg"></i></button>`;
         row.querySelector('.item-input').value = content;
         if (link) {
-            row.querySelector('.btn-link-toggle').classList.add('has-link');
+            row.querySelector('.bk-btn-link').classList.add('has-link');
         }
         return row;
     };
@@ -69,11 +72,17 @@ document.addEventListener('DOMContentLoaded', () => {
         container.className = 'section-container';
         container.dataset.sectionId = sectionId;
         container.innerHTML = `
-            <div class="checklist-row section-row">
-                <input type="text" class="section-input" placeholder="Section name..." />
-                <button type="button" class="btn-delete btn-delete-section">&times;</button>
+            <div class="bk-editor-row bk-editor-row-section">
+                <input type="text" class="bk-editor-input bk-editor-input-section section-input" placeholder="Section name..." />
+                <button type="button" class="bk-btn-action bk-btn-delete btn-delete-section"><i class="bi bi-trash3"></i></button>
             </div>
-            <div class="tasks-container"></div>`;
+            <div class="tasks-container"></div>
+            <div class="bk-editor-row-add p-2 bg-white border-top border-bottom-0">
+                <div class="input-group input-group-sm">
+                    <input type="text" class="form-control border-0 bg-light add-item-input" placeholder="+ Add item to this section..." />
+                    <button class="btn btn-outline-success border-0 btn-add-confirm" type="button">Add</button>
+                </div>
+            </div>`;
         container.querySelector('.section-input').value = name;
         return container;
     };
@@ -84,37 +93,37 @@ document.addEventListener('DOMContentLoaded', () => {
         groupBtn.disabled = count === 0;
     };
 
-    // --- Link toggle ---
     sectionsContainer.addEventListener('click', (e) => {
-        if (!e.target.classList.contains('btn-link-toggle')) return;
-        const row = e.target.closest('.task-row');
+        const linkBtn = e.target.closest('.bk-btn-link');
+        if (!linkBtn) return;
+
+        const row = linkBtn.closest('.task-row');
         const next = row.nextElementSibling;
 
-        if (next && next.classList.contains('link-input-row')) {
+        if (next && next.classList.contains('bk-link-input-wrapper')) {
             const val = next.querySelector('input').value.trim();
             if (!val) {
                 next.remove();
-                e.target.classList.remove('has-link');
+                linkBtn.classList.remove('has-link');
             }
             return;
         }
 
         const linkRow = document.createElement('div');
-        linkRow.className = 'link-input-row';
+        linkRow.className = 'bk-link-input-wrapper';
         const linkInput = document.createElement('input');
         linkInput.type = 'url';
-        linkInput.className = 'link-url-input';
+        linkInput.className = 'bk-link-input link-url-input';
         linkInput.placeholder = 'https://...';
         linkRow.appendChild(linkInput);
         row.after(linkRow);
         linkInput.focus();
 
         linkInput.addEventListener('input', () => {
-            e.target.classList.toggle('has-link', !!linkInput.value.trim());
+            linkBtn.classList.toggle('has-link', !!linkInput.value.trim());
         });
     });
 
-    // --- Inline Add Item ---
     const submitAddItem = async (sectionContainer) => {
         const input = sectionContainer.querySelector('.add-item-input');
         const content = input.value.trim();
@@ -135,14 +144,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- Add item button click ---
     sectionsContainer.addEventListener('click', (e) => {
         if (e.target.classList.contains('btn-add-confirm')) {
             submitAddItem(e.target.closest('.section-container'));
         }
     });
 
-    // --- Add item Enter key ---
     sectionsContainer.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && e.target.classList.contains('add-item-input')) {
             e.preventDefault();
@@ -150,34 +157,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- Selection tracking ---
     sectionsContainer.addEventListener('change', (e) => {
         if (e.target.classList.contains('select-task')) {
             updateSelectedCount();
         }
     });
 
-    // --- Drag and drop reorder ---
     let dragged = null;
     let draggedLinkRow = null;
 
     sectionsContainer.addEventListener('dragstart', (e) => {
         const row = e.target.closest('.task-row');
-        if (!row) {
-            return;
-        }
+        if (!row) return;
         dragged = row;
         const next = row.nextElementSibling;
-        draggedLinkRow = (next && next.classList.contains('link-input-row')) ? next : null;
+        draggedLinkRow = (next && next.classList.contains('bk-link-input-wrapper')) ? next : null;
         row.classList.add('dragging');
         e.dataTransfer.effectAllowed = 'move';
         e.dataTransfer.setData('text/plain', row.dataset.taskId);
     });
 
     sectionsContainer.addEventListener('dragend', () => {
-        if (dragged) {
-            dragged.classList.remove('dragging');
-        }
+        if (dragged) dragged.classList.remove('dragging');
         sectionsContainer.querySelectorAll('.drop-above, .drop-below').forEach(el => {
             el.classList.remove('drop-above', 'drop-below');
         });
@@ -186,14 +187,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     sectionsContainer.addEventListener('dragover', (e) => {
-        if (!dragged) {
-            return;
-        }
+        if (!dragged) return;
         const row = e.target.closest('.task-row');
         const tasksContainer = e.target.closest('.tasks-container');
-        if (!tasksContainer) {
-            return;
-        }
+        if (!tasksContainer) return;
         e.preventDefault();
         e.dataTransfer.dropEffect = 'move';
 
@@ -209,13 +206,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     sectionsContainer.addEventListener('drop', async (e) => {
-        if (!dragged) {
-            return;
-        }
+        if (!dragged) return;
         const tasksContainer = e.target.closest('.tasks-container');
-        if (!tasksContainer) {
-            return;
-        }
+        if (!tasksContainer) return;
         e.preventDefault();
 
         const sectionContainer = tasksContainer.closest('.section-container');
@@ -250,7 +243,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- Group selected tasks into a new section ---
     groupBtn.addEventListener('click', async () => {
         const sectionName = groupNameInput.value.trim();
         if (!sectionName) {
@@ -276,6 +268,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (row) {
                     row.querySelector('.select-task').checked = false;
                     newTasksContainer.appendChild(row);
+                    const next = row.nextElementSibling;
+                    if (next && next.classList.contains('bk-link-input-wrapper')) {
+                        newTasksContainer.appendChild(next);
+                    }
                 }
             });
             groupNameInput.value = '';
@@ -286,20 +282,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- Remove item / Delete section ---
     sectionsContainer.addEventListener('click', async (e) => {
-        if (e.target.classList.contains('btn-delete-section')) {
-            e.target.closest('.section-container').remove();
+        const deleteBtn = e.target.closest('.bk-btn-delete');
+        if (!deleteBtn) return;
+
+        if (deleteBtn.classList.contains('btn-delete-section')) {
+            if (confirm('Delete this section and all its tasks?')) {
+                deleteBtn.closest('.section-container').remove();
+            }
             return;
         }
 
-        if (e.target.classList.contains('btn-delete-task')) {
-            const row = e.target.closest('.task-row');
+        if (deleteBtn.classList.contains('btn-delete-task')) {
+            const row = deleteBtn.closest('.task-row');
             const taskId = row.dataset.taskId;
             try {
                 await postJson(checklistUrl(`/items/${taskId}/remove`));
                 const nextEl = row.nextElementSibling;
-                if (nextEl && nextEl.classList.contains('link-input-row')) {
+                if (nextEl && nextEl.classList.contains('bk-link-input-wrapper')) {
                     nextEl.remove();
                 }
                 row.remove();
@@ -310,7 +310,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- Bulk save (title / description / content edits / section deletions) ---
     saveBtn.addEventListener('click', async () => {
         const title = editor.querySelector('.editable-title').value.trim();
         const description = editor.querySelector('.editable-desc').value.trim();
@@ -323,7 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tasks: Array.from(sc.querySelectorAll('.task-row')).map(tr => {
                 let link = null;
                 const nextEl = tr.nextElementSibling;
-                if (nextEl && nextEl.classList.contains('link-input-row')) {
+                if (nextEl && nextEl.classList.contains('bk-link-input-wrapper')) {
                     link = nextEl.querySelector('input').value.trim() || null;
                 }
                 return {
