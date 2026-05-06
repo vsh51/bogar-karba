@@ -1,0 +1,252 @@
+.btn {
+    font-weight: var(--bk-font-weight-medium);
+    border-radius: var(--bk-radius-md);
+    padding: 0.55rem 1.1rem;
+    cursor: pointer;
+    transition: background-color var(--bk-transition-fast),
+                border-color var(--bk-transition-fast),
+                color var(--bk-transition-fast),
+                box-shadow var(--bk-transition-fast),
+                transform var(--bk-transition-fast);
+}
+
+.btn:focus-visible,
+.btn:focus {
+    outline: none;
+    box-shadow: var(--bk-shadow-focus);
+}
+
+.btn:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+.btn:disabled,
+.btn.disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-primary {
+    background: var(--bk-color-primary);
+    border-color: var(--bk-color-primary);
+    color: var(--bk-text-on-primary);
+}
+
+.btn-primary:hover {
+    background: var(--bk-color-primary-hover);
+    border-color: var(--bk-color-primary-hover);
+    color: var(--bk-text-on-primary);
+}
+
+.btn-primary:active {
+    background: var(--bk-color-primary-active);
+    border-color: var(--bk-color-primary-active);
+    color: var(--bk-text-on-primary);
+}
+
+.btn-outline-primary {
+    color: var(--bk-color-primary);
+    border-color: var(--bk-color-primary);
+    background: transparent;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:focus {
+    background: var(--bk-color-primary);
+    border-color: var(--bk-color-primary);
+    color: var(--bk-text-on-primary);
+}
+
+.btn-outline-secondary {
+    color: var(--bk-text-secondary);
+    border-color: var(--bk-border-color-strong);
+    background: transparent;
+}
+
+.btn-outline-secondary:hover,
+.btn-outline-secondary:focus {
+    background: var(--bk-bg-muted);
+    color: var(--bk-text-primary);
+}
+
+.btn-danger {
+    background: var(--bk-color-danger);
+    border-color: var(--bk-color-danger);
+    color: var(--bk-text-on-primary);
+}
+
+.btn-danger:hover {
+    background: var(--bk-color-danger-hover);
+    border-color: var(--bk-color-danger-hover);
+    color: var(--bk-text-on-primary);
+}
+
+.btn-danger:focus-visible,
+.btn-danger:focus {
+    box-shadow: var(--bk-shadow-focus-danger);
+}
+
+.btn-outline-danger {
+    color: var(--bk-color-danger);
+    border-color: var(--bk-color-danger);
+    background: transparent;
+}
+
+.btn-outline-danger:hover,
+.btn-outline-danger:focus {
+    background: var(--bk-color-danger);
+    border-color: var(--bk-color-danger);
+    color: var(--bk-text-on-primary);
+}
+
+.btn-outline-danger:focus-visible,
+.btn-outline-danger:focus {
+    box-shadow: var(--bk-shadow-focus-danger);
+}
+
+.form-label {
+    color: var(--bk-text-secondary);
+    font-weight: var(--bk-font-weight-semibold);
+    font-size: var(--bk-font-size-sm);
+    margin-bottom: var(--bk-space-2);
+    display: block;
+}
+
+.form-control,
+.form-select {
+    width: 100%;
+    border: 1px solid var(--bk-border-color-strong);
+    border-radius: var(--bk-radius-md);
+    padding: 0.55rem 0.85rem;
+    background: var(--bk-bg-surface);
+    color: var(--bk-text-primary);
+    font-size: var(--bk-font-size-md);
+    line-height: var(--bk-line-height-base);
+    transition: border-color var(--bk-transition-fast),
+                box-shadow var(--bk-transition-fast);
+}
+
+.form-control::placeholder {
+    color: var(--bk-text-muted);
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--bk-color-primary);
+    box-shadow: 0 0 0 3px rgba(var(--bk-color-primary-rgb), 0.18);
+    outline: none;
+}
+
+.form-control[aria-invalid="true"],
+.form-control.is-invalid,
+.form-control.input-validation-error {
+    border-color: var(--bk-color-danger);
+}
+
+.form-control[aria-invalid="true"]:focus,
+.form-control.is-invalid:focus,
+.form-control.input-validation-error:focus {
+    box-shadow: var(--bk-shadow-focus-danger);
+}
+
+.field-validation-error,
+.text-danger.field-validation-error {
+    color: var(--bk-color-danger);
+    font-size: var(--bk-font-size-sm);
+    display: block;
+    margin-top: var(--bk-space-1);
+}
+
+.validation-summary-errors {
+    color: var(--bk-color-danger-strong);
+    background: var(--bk-color-danger-soft);
+    border: 1px solid #fecaca;
+    border-radius: var(--bk-radius-md);
+    padding: var(--bk-space-3) var(--bk-space-4);
+    margin-bottom: var(--bk-space-4);
+    font-size: var(--bk-font-size-sm);
+}
+
+.validation-summary-errors ul {
+    list-style: disc;
+    padding-left: 1.25rem;
+    margin: 0;
+}
+
+.validation-summary-valid {
+    display: none;
+}
+
+.card {
+    border: 1px solid var(--bk-border-color);
+    border-radius: var(--bk-radius-lg);
+    box-shadow: var(--bk-shadow-xs);
+    background: var(--bk-bg-surface);
+}
+
+.card-header {
+    background: var(--bk-bg-surface);
+    border-bottom: 1px solid var(--bk-border-color);
+    padding: var(--bk-space-4) var(--bk-space-5);
+    font-weight: var(--bk-font-weight-semibold);
+}
+
+.card-body {
+    padding: var(--bk-space-5);
+}
+
+.alert {
+    border-radius: var(--bk-radius-md);
+    border: 1px solid transparent;
+    padding: 0.85rem 1rem;
+    box-shadow: var(--bk-shadow-xs);
+}
+
+.alert-success {
+    background: var(--bk-color-success-soft);
+    color: var(--bk-color-success-strong);
+    border-color: #a7f3d0;
+}
+
+.alert-warning {
+    background: var(--bk-color-warning-soft);
+    color: var(--bk-color-warning-strong);
+    border-color: #fde68a;
+}
+
+.alert-danger {
+    background: var(--bk-color-danger-soft);
+    color: var(--bk-color-danger-strong);
+    border-color: #fecaca;
+}
+
+.badge {
+    font-weight: var(--bk-font-weight-medium);
+    border-radius: var(--bk-radius-pill);
+    padding: 0.35em 0.75em;
+}
+
+.dropdown-menu {
+    border: 1px solid var(--bk-border-color);
+    border-radius: var(--bk-radius-lg);
+    box-shadow: var(--bk-shadow-md);
+    padding: var(--bk-space-2);
+}
+
+.dropdown-item {
+    border-radius: var(--bk-radius-sm);
+    padding: var(--bk-space-2) var(--bk-space-3);
+    color: var(--bk-text-primary);
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+    background: var(--bk-color-primary-soft);
+    color: var(--bk-color-primary);
+}
+
+.dropdown-item:active {
+    background: var(--bk-color-primary);
+    color: var(--bk-text-on-primary);
+}
