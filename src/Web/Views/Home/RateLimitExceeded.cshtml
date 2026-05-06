@@ -2,14 +2,19 @@
     ViewData["Title"] = "Too Many Requests";
 }
 
-<h1 class="text-danger">Too Many Requests</h1>
-<h2 class="text-danger">You have exceeded the allowed request rate.</h2>
+<div class="bk-auth-shell">
+    <div class="bk-auth-card text-center">
+        <h1 class="text-danger">Too many requests</h1>
+        <p class="text-secondary mb-4">
+            You have exceeded the allowed request rate. Please wait a moment before
+            trying again. If you believe this is an error, contact the site administrator.
+        </p>
 
-<p>
-    Please wait a moment before trying again. If you believe this is an error,
-    contact the site administrator.
-</p>
-
-<p>
-    <a class="btn btn-primary" asp-controller="Home" asp-action="Index">Back to Home</a>
-</p>
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+            <a class="btn btn-primary" asp-controller="Home" asp-action="Index">Back to Home</a>
+            <button type="button" class="btn btn-outline-secondary" data-bk-action="reload">
+                Try again
+            </button>
+        </div>
+    </div>
+</div>
