@@ -161,7 +161,7 @@
 .validation-summary-errors {
     color: var(--bk-color-danger-strong);
     background: var(--bk-color-danger-soft);
-    border: 1px solid #fecaca;
+    border: 1px solid var(--bk-color-danger-border);
     border-radius: var(--bk-radius-md);
     padding: var(--bk-space-3) var(--bk-space-4);
     margin-bottom: var(--bk-space-4);
@@ -206,19 +206,19 @@
 .alert-success {
     background: var(--bk-color-success-soft);
     color: var(--bk-color-success-strong);
-    border-color: #a7f3d0;
+    border-color: var(--bk-color-success-border);
 }
 
 .alert-warning {
     background: var(--bk-color-warning-soft);
     color: var(--bk-color-warning-strong);
-    border-color: #fde68a;
+    border-color: var(--bk-color-warning-border);
 }
 
 .alert-danger {
     background: var(--bk-color-danger-soft);
     color: var(--bk-color-danger-strong);
-    border-color: #fecaca;
+    border-color: var(--bk-color-danger-border);
 }
 
 .badge {
