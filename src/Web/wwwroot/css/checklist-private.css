@@ -1,0 +1,43 @@
+.bk-private-checklist {
+    background: var(--bk-bg-page);
+    color: var(--bk-text-primary);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    padding: 2rem 1rem;
+    gap: 1.25rem;
+}
+
+.bk-private-checklist .private-checklist-icon {
+    font-size: 4rem;
+    color: var(--bk-text-muted);
+    margin-bottom: 0.5rem;
+    line-height: 1;
+}
+
+.bk-private-checklist .private-checklist-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--bk-text-primary);
+}
+
+.bk-private-checklist .private-checklist-description {
+    color: var(--bk-text-secondary);
+    line-height: 1.6;
+    margin-bottom: 2rem;
+    max-width: 400px;
+}
+
+@media (max-width: 991px) and (min-width: 768px) {
+    .bk-private-checklist .private-checklist-title {
+        font-size: 1.5rem;
+    }
+
+    .bk-private-checklist .private-checklist-description {
+        font-size: 0.95rem;
+    }
+}
