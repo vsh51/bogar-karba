@@ -250,6 +250,44 @@
     background: var(--bk-color-primary);
     color: var(--bk-text-on-primary);
 }
+
+.bg-primary-soft {
+    background-color: var(--bk-color-primary-soft) !important;
+}
+
+.bg-secondary-soft {
+    background-color: var(--bk-bg-muted) !important;
+}
+
+.bg-success-soft {
+    background-color: var(--bk-color-success-soft) !important;
+}
+
+.bg-warning-soft {
+    background-color: var(--bk-color-warning-soft) !important;
+}
+
+.bg-danger-soft {
+    background-color: var(--bk-color-danger-soft) !important;
+}
+
+.border-dashed {
+    border-style: dashed !important;
+}
+
+.bk-user-avatar-sm {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: var(--bk-radius-pill);
+    background: var(--bk-bg-muted);
+    color: var(--bk-text-secondary);
+    font-size: 1rem;
+    flex: 0 0 auto;
+}
+
 /* ============================================================
    Checklist Pages Styling (.bk-checklist, .bk-embed, .bk-private-checklist)
    ============================================================ */
@@ -546,7 +584,7 @@
 .bk-checklist .checklist-item-link:hover {
     color: var(--bk-link-hover);
     border-bottom-color: var(--bk-link-hover);
-    background-color: rgba(79, 70, 229, 0.05);
+    background-color: rgba(var(--bk-color-primary-rgb), 0.05);
     padding: 0.1rem 0.2rem;
     margin-left: 0;
 }
