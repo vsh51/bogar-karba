@@ -152,6 +152,8 @@ a:focus-visible {
     padding: var(--bk-space-2) var(--bk-space-3);
     border-radius: var(--bk-radius-md);
     position: relative;
+    font-size: var(--bk-font-size-lg);
+    line-height: 1;
     transition: color var(--bk-transition-fast), background var(--bk-transition-fast);
 }
 
@@ -189,10 +191,15 @@ a:focus-visible {
 
 .bk-bell-list .dropdown-item {
     white-space: normal;
+    max-width: 320px;
     padding: var(--bk-space-3) var(--bk-space-4);
     border-bottom: 1px solid var(--bk-border-color);
     font-size: var(--bk-font-size-sm);
     color: var(--bk-text-primary);
+}
+
+.bk-bell-list .dropdown-item.is-error {
+    color: var(--bk-color-danger-strong);
 }
 
 .bk-bell-list .dropdown-item:last-child {

@@ -15,8 +15,7 @@
         badge.classList.remove('d-none');
 
         const item = document.createElement('li');
-        item.className = 'dropdown-item text-wrap small py-2 border-bottom';
-        item.style.maxWidth = '300px';
+        item.className = 'dropdown-item';
         item.textContent = message;
         list.prepend(item);
 
@@ -43,7 +42,7 @@
 
     connection.on('TooManyConnections', function () {
         const item = document.createElement('li');
-        item.className = 'dropdown-item text-danger small py-2';
+        item.className = 'dropdown-item is-error';
         item.textContent = 'Too many active connections. Please try again later.';
         list.innerHTML = '';
         list.appendChild(item);
