@@ -289,8 +289,14 @@
 
         let clearBtn = document.getElementById("clear-progress-btn");
         if (clearBtn) {
-            clearBtn.addEventListener("click", function () {
-                if (!confirm("Clear all progress for this checklist?")) {
+            clearBtn.addEventListener("click", async function () {
+                const ok = await window.bkUi.confirm({
+                    title: "Clear progress",
+                    message: "Clear all progress for this checklist? This cannot be undone.",
+                    confirmLabel: "Clear progress",
+                    danger: true
+                });
+                if (!ok) {
                     return;
                 }
 
