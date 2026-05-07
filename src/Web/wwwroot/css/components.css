@@ -288,6 +288,37 @@
     flex: 0 0 auto;
 }
 
+.bk-stat-tile {
+    background: var(--bk-bg-surface);
+    border: 1px solid var(--bk-border-color);
+    border-radius: var(--bk-radius-md);
+    padding: var(--bk-space-4);
+    box-shadow: var(--bk-shadow-xs);
+    transition: box-shadow var(--bk-transition-fast), border-color var(--bk-transition-fast);
+}
+
+.bk-stat-tile:hover {
+    box-shadow: var(--bk-shadow-sm);
+    border-color: var(--bk-border-color-strong);
+}
+
+.bk-stat-tile__label {
+    margin: 0 0 var(--bk-space-2);
+    font-size: var(--bk-font-size-sm);
+    font-weight: var(--bk-font-weight-medium);
+    color: var(--bk-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.bk-stat-tile__value {
+    margin: 0;
+    font-size: var(--bk-font-size-3xl);
+    font-weight: var(--bk-font-weight-bold);
+    color: var(--bk-text-primary);
+    line-height: var(--bk-line-height-tight);
+}
+
 /* ============================================================
    Checklist Pages Styling (.bk-checklist, .bk-embed, .bk-private-checklist)
    ============================================================ */

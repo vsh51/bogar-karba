@@ -1,21 +1,25 @@
 @model List<AdminUserViewModel>
 @{
     ViewData["Title"] = "User Management";
+    var searchTerm = ViewData["SearchTerm"] as string;
+    var currentAdminId = ViewData["CurrentAdminId"] as string;
 }
 
-<div class="container mt-4" style="max-width: 900px;">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="bk-container bk-container--medium mt-4 mb-5">
+    <div class="bk-page-header bk-page-header--flush d-flex justify-content-between align-items-start gap-3 flex-wrap">
         <div>
-            <h2 class="fw-bold mb-0">User Management</h2>
-            <p class="text-muted">Search and manage system users</p>
+            <h1 class="mb-1">User Management</h1>
+            <p>Search and manage system users</p>
         </div>
-        <a class="btn btn-outline-secondary btn-sm" asp-action="Index">Back to Checklists</a>
+        <a class="btn btn-outline-secondary" asp-action="Index">
+            <i class="bi bi-arrow-left me-1"></i> Back to Checklists
+        </a>
     </div>
 
     <form method="get" class="mb-4">
-        <div class="input-group border rounded-pill overflow-hidden shadow-sm">
-            <span class="input-group-text bg-white border-0"><i class="bi bi-people"></i></span>
-            <input name="searchTerm" value="@ViewData["SearchTerm"]" class="form-control border-0 shadow-none" placeholder="Search by username..." />
+        <div class="input-group shadow-sm">
+            <span class="input-group-text bg-white"><i class="bi bi-people"></i></span>
+            <input name="searchTerm" value="@searchTerm" class="form-control" placeholder="Search by username..." />
             <button type="submit" class="btn btn-primary px-4">Search</button>
         </div>
     </form>
@@ -23,7 +27,7 @@
     <div class="card border-0 shadow-sm">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
+                <thead class="bg-secondary-soft">
                     <tr>
                         <th class="ps-4">User</th>
                         <th>Full Name</th>
@@ -36,7 +40,9 @@
                     {
                         <tr>
                             <td colspan="4" class="text-center py-4 text-muted">
-                                No users found matching "@ViewData["SearchTerm"]"
+                                @(string.IsNullOrWhiteSpace(searchTerm)
+                                    ? "No users yet."
+                                    : $"No users found matching \"{searchTerm}\".")
                             </td>
                         </tr>
                     }
@@ -50,7 +56,7 @@
                             <td>
                                 @if (string.IsNullOrWhiteSpace(user.FullName))
                                 {
-                                    <span class="text-muted italic small">Not set</span>
+                                    <span class="text-muted small fst-italic">Not set</span>
                                 }
                                 else
                                 {
@@ -60,29 +66,29 @@
                             <td>
                                 @if (user.IsBanned)
                                 {
-                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Banned</span>
+                                    <span class="badge bg-danger-soft text-danger">Banned</span>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-success-subtle text-success border border-success-subtle">Active</span>
+                                    <span class="badge bg-success-soft text-success">Active</span>
                                 }
                             </td>
                             <td class="text-end pe-4">
-                                @if (!user.IsBanned && user.Id != (string)ViewData["CurrentAdminId"]!)
+                                @if (!user.IsBanned && user.Id != currentAdminId)
                                 {
-                                    <form asp-action="BanUser" 
-                                          asp-route-userId="@user.Id" 
-                                          asp-route-searchTerm="@ViewData["SearchTerm"]" 
-                                          asp-route-fromUsers="true" 
-                                          method="post" 
+                                    <form asp-action="BanUser"
+                                          asp-route-userId="@user.Id"
+                                          asp-route-searchTerm="@searchTerm"
+                                          asp-route-fromUsers="true"
+                                          method="post"
                                           onsubmit="return confirm('Are you sure you want to block this user?');">
                                         @Html.AntiForgeryToken()
                                         <button type="submit" class="btn btn-sm btn-outline-danger">Block</button>
                                     </form>
                                 }
-                                else if (user.Id == (string)ViewData["CurrentAdminId"]!)
+                                else if (user.Id == currentAdminId)
                                 {
-                                    <span class="badge bg-info-subtle text-info border border-info-subtle">You</span>
+                                    <span class="badge bg-primary-soft text-primary">You</span>
                                 }
                             </td>
                         </tr>

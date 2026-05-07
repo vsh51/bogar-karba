@@ -56,6 +56,14 @@ a:focus-visible {
     padding: 0 var(--bk-space-4);
 }
 
+.bk-container--narrow {
+    max-width: 800px;
+}
+
+.bk-container--medium {
+    max-width: 960px;
+}
+
 .bk-navbar {
     background: var(--bk-bg-surface);
     border-bottom: 1px solid var(--bk-border-color);
