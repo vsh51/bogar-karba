@@ -1,30 +1,31 @@
 document.addEventListener('DOMContentLoaded', () => {
     const editor = document.getElementById('checklist-editor');
-    const content = editor.querySelector('.editor-content');
+    const content = editor.querySelector('.bk-editor-surface');
     const addItemBtn = document.getElementById('add-item-btn');
     const addSectionBtn = document.getElementById('add-section-btn');
     const createBtn = document.getElementById('create-checklist-btn');
 
     function createRow(type = 'item') {
         const row = document.createElement('div');
-        row.className = 'checklist-row ' + (type === 'section' ? 'section-row' : '');
+        row.className = 'bk-editor-row ' + (type === 'section' ? 'bk-editor-row-section' : '');
 
         const input = document.createElement('input');
         input.type = 'text';
+        
         const deleteBtn = document.createElement('button');
         deleteBtn.type = 'button';
-        deleteBtn.className = 'btn-delete';
-        deleteBtn.textContent = '\u00D7';
+        deleteBtn.className = 'bk-btn-action bk-btn-delete';
+        deleteBtn.innerHTML = '<i class="bi bi-x-lg"></i>';
 
         if (type === 'section') {
-            input.className = 'section-input';
+            input.className = 'bk-editor-input bk-editor-input-section section-input';
             input.placeholder = 'Section name...';
         } else {
             const checkbox = document.createElement('div');
-            checkbox.className = 'item-checkbox';
+            checkbox.className = 'bk-editor-checkbox';
             row.appendChild(checkbox);
-            input.className = 'item-input';
-            input.placeholder = 'Item description...';
+            input.className = 'bk-editor-input item-input';
+            input.placeholder = 'Add a task...';
         }
 
         row.appendChild(input);
@@ -32,9 +33,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (type !== 'section') {
             const linkBtn = document.createElement('button');
             linkBtn.type = 'button';
-            linkBtn.className = 'btn-link-toggle';
+            linkBtn.className = 'bk-btn-action bk-btn-link';
             linkBtn.title = 'Attach link';
-            linkBtn.innerHTML = '&#128279;';
+            linkBtn.innerHTML = '<i class="bi bi-link-45deg"></i>';
             row.appendChild(linkBtn);
         }
 
@@ -42,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         deleteBtn.addEventListener('click', () => {
             const linkRow = row.nextElementSibling;
-            if (linkRow && linkRow.classList.contains('link-input-row')) {
+            if (linkRow && linkRow.classList.contains('bk-link-input-wrapper')) {
                 linkRow.remove();
             }
             row.remove();
@@ -51,31 +52,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     content.addEventListener('click', (e) => {
-        if (!e.target.classList.contains('btn-link-toggle')) return;
-        const row = e.target.closest('.checklist-row');
+        const linkBtn = e.target.closest('.bk-btn-link');
+        if (!linkBtn) return;
+
+        const row = linkBtn.closest('.bk-editor-row');
         const existingLinkRow = row.nextElementSibling;
 
-        if (existingLinkRow && existingLinkRow.classList.contains('link-input-row')) {
+        if (existingLinkRow && existingLinkRow.classList.contains('bk-link-input-wrapper')) {
             const val = existingLinkRow.querySelector('input').value.trim();
             if (!val) {
                 existingLinkRow.remove();
-                e.target.classList.remove('has-link');
+                linkBtn.classList.remove('has-link');
             }
             return;
         }
 
         const linkRow = document.createElement('div');
-        linkRow.className = 'link-input-row';
+        linkRow.className = 'bk-link-input-wrapper';
         const linkInput = document.createElement('input');
         linkInput.type = 'url';
-        linkInput.className = 'link-url-input';
+        linkInput.className = 'bk-link-input';
         linkInput.placeholder = 'https://...';
         linkRow.appendChild(linkInput);
         row.after(linkRow);
         linkInput.focus();
 
         linkInput.addEventListener('input', () => {
-            e.target.classList.toggle('has-link', !!linkInput.value.trim());
+            linkBtn.classList.toggle('has-link', !!linkInput.value.trim());
         });
     });
 
@@ -101,13 +104,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (data.link) {
             const linkRow = document.createElement('div');
-            linkRow.className = 'link-input-row';
+            linkRow.className = 'bk-link-input-wrapper';
             const linkInput = document.createElement('input');
             linkInput.type = 'url';
-            linkInput.className = 'link-url-input';
+            linkInput.className = 'bk-link-input';
             linkInput.value = data.link;
             linkRow.appendChild(linkInput);
-            row.querySelector('.btn-link-toggle').classList.add('has-link');
+            row.querySelector('.bk-btn-link').classList.add('has-link');
             content.appendChild(row);
             content.appendChild(linkRow);
         } else {
@@ -127,9 +130,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const rows = Array.from(content.children);
         for (let i = 0; i < rows.length; i++) {
             const row = rows[i];
-            if (row.classList.contains('link-input-row')) continue;
+            if (row.classList.contains('bk-link-input-wrapper')) continue;
 
-            if (row.classList.contains('section-row')) {
+            if (row.classList.contains('bk-editor-row-section')) {
                 if (currentSection.tasks.length > 0 || currentSection.name !== "General") {
                     sections.push(currentSection);
                 }
@@ -139,11 +142,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     tasks: []
                 };
             } else {
-                const taskContent = row.querySelector('.item-input').value.trim();
+                const taskInput = row.querySelector('.item-input');
+                if (!taskInput) continue;
+                
+                const taskContent = taskInput.value.trim();
                 if (taskContent) {
                     let link = null;
                     const nextRow = rows[i + 1];
-                    if (nextRow && nextRow.classList.contains('link-input-row')) {
+                    if (nextRow && nextRow.classList.contains('bk-link-input-wrapper')) {
                         link = nextRow.querySelector('input').value.trim() || null;
                     }
                     currentSection.tasks.push({
