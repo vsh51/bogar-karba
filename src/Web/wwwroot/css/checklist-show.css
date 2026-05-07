@@ -35,7 +35,7 @@
 .bk-checklist .checklist-toolbar {
     display: flex;
     justify-content: flex-end;
-    margin-bottom: 1.5rem;
+    margin: 0.5rem 0 1.5rem;
     gap: 0.5rem;
 }
 
@@ -331,32 +331,12 @@
     background: var(--bk-bg-muted);
     border: 1px solid var(--bk-border-color);
     border-radius: var(--bk-radius-pill);
-    transition: background-color var(--bk-transition-fast),
-                border-color var(--bk-transition-fast),
-                color var(--bk-transition-fast),
-                box-shadow var(--bk-transition-fast);
-}
-
-.bk-checklist .checklist-deadline:hover {
-    background-color: var(--bk-bg-surface);
-    border-color: var(--bk-border-color-strong);
-    box-shadow: var(--bk-shadow-xs);
-}
-
-.bk-checklist .checklist-deadline:focus-visible {
-    outline: none;
-    box-shadow: var(--bk-shadow-focus);
 }
 
 .bk-checklist .checklist-deadline.is-outdated {
     color: var(--bk-color-danger-strong);
     background: var(--bk-color-danger-soft);
-    border-color: var(--bk-color-danger);
-}
-
-.bk-checklist .checklist-deadline.is-outdated:hover {
-    background: var(--bk-color-danger);
-    color: var(--bk-text-on-primary);
+    border-color: var(--bk-color-danger-border);
 }
 
 .bk-checklist .checklist-deadline-remaining {
