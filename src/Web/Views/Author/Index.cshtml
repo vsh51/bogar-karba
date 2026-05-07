@@ -47,7 +47,7 @@
                                     @if (item.Deadline.HasValue)
                                     {
                                         var deadlineIso = item.Deadline.Value.ToString("yyyy-MM-dd");
-                                        var badgeClass = item.IsOutdated ? "bg-danger-soft text-danger" : "bg-light text-muted";
+                                        var badgeClass = item.IsOutdated ? "bg-danger-soft text-danger" : "bg-secondary-soft text-secondary";
                                         <span class="badge @badgeClass fw-normal border">
                                             <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>
                                             <time datetime="@deadlineIso" data-deadline="@deadlineIso">@item.Deadline.Value.ToString("yyyy-MM-dd")</time>
