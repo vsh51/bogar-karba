@@ -9,14 +9,17 @@
     var maxDate = today.AddYears(ChecklistOptionsAccessor.Value.MaxDeadlineYears);
 }
 
-<div class="row justify-content-center">
-    <div class="col-12 col-lg-9 col-xl-8">
-        <div class="card shadow-sm mt-4">
-            <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                <h2 class="h4 mb-0 fw-bold">Edit Checklist</h2>
-                <span class="badge bg-primary-soft text-primary">Editor Mode</span>
-            </div>
-            <div class="card-body p-4" id="checklist-editor">
+<div class="bk-container bk-container--narrow mt-4 mb-5">
+    <div class="bk-page-header bk-page-header--flush d-flex justify-content-between align-items-start gap-3 flex-wrap">
+        <div>
+            <h1>Edit checklist</h1>
+            <p>Update items, sections, and metadata.</p>
+        </div>
+        <span class="badge bg-primary-soft text-primary align-self-center">Editor mode</span>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4" id="checklist-editor">
                 <div class="row g-3 mb-4">
                     <div class="col-12">
                         <label class="form-label">Title</label>
@@ -117,7 +120,6 @@
                 </div>
 
                 @Html.AntiForgeryToken()
-            </div>
         </div>
     </div>
 </div>

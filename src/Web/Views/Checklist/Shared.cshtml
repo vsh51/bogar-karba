@@ -5,69 +5,68 @@
     ViewData["Title"] = "Shared Checklists";
 }
 
-<div class="row justify-content-center">
-    <div class="col-12 col-lg-9 col-xl-8">
-        <div class="text-center mb-5 mt-4">
-            <h2 class="h3 fw-bold">Shared with you</h2>
-            <p class="text-muted">Private checklists from other authors you have access to.</p>
-        </div>
+<div class="bk-container bk-container--narrow mt-4 mb-5">
+    <div class="bk-page-header bk-page-header--flush">
+        <h1>Shared with you</h1>
+        <p>Private checklists from other authors you have access to.</p>
+    </div>
 
-        @if (!Model.Any())
-        {
-            <div class="card border-dashed bg-light text-center py-5 shadow-sm">
-                <div class="card-body">
-                    <i class="bi bi-share text-muted fs-1 mb-3 d-block"></i>
-                    <p class="mb-0 text-muted">No private checklists have been shared with you yet.</p>
-                </div>
+    @if (!Model.Any())
+    {
+        <div class="card border-dashed bg-secondary-soft text-center py-5 shadow-sm">
+            <div class="card-body">
+                <i class="bi bi-share text-muted fs-1 mb-3 d-block"></i>
+                <p class="mb-0 text-muted">No private checklists have been shared with you yet.</p>
             </div>
-        }
-        else
-        {
-            <div class="d-flex flex-column gap-3">
-                @foreach (var item in Model)
-                {
-                    <div class="card shadow-sm border-0">
-                        <div class="card-body p-4">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div class="d-flex flex-wrap align-items-center gap-2">
-                                    <h3 class="h5 mb-0 fw-bold">
-                                        <a href="@Url.Action("Show", "Checklist", new { id = item.Id })" class="text-decoration-none text-dark">@item.Title</a>
-                                    </h3>
-                                    
-                                    @if (item.Status != ChecklistStatus.Published)
-                                    {
-                                        <span class="badge bg-secondary-soft text-secondary small">@item.Status.ToString().ToLower()</span>
-                                    }
-                                    
-                                    <span class="badge bg-dark-subtle text-dark-emphasis small">private</span>
+        </div>
+    }
+    else
+    {
+        <div class="d-flex flex-column gap-3">
+            @foreach (var item in Model)
+            {
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4">
+                        <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                            <h2 class="h5 mb-0 fw-bold">
+                                <a href="@Url.Action("Show", "Checklist", new { id = item.Id })" class="text-decoration-none text-dark">@item.Title</a>
+                            </h2>
 
-                                    @if (item.Deadline.HasValue)
-                                    {
-                                        var deadlineIso = item.Deadline.Value.ToString("yyyy-MM-dd");
-                                        var badgeClass = item.IsOutdated ? "bg-danger-soft text-danger" : "bg-light text-muted";
-                                        <span class="badge @badgeClass fw-normal border">
-                                            <i class="bi bi-calendar-event me-1"></i>
-                                            <time datetime="@deadlineIso" data-deadline="@deadlineIso">@item.Deadline.Value.ToString("yyyy-MM-dd")</time>
-                                            <span class="ms-1 opacity-75">· @item.DeadlineRemaining</span>
-                                        </span>
-                                    }
-                                </div>
-                            </div>
+                            @if (item.Status != ChecklistStatus.Published)
+                            {
+                                <span class="badge bg-secondary-soft text-secondary small">@item.Status.ToString().ToLower()</span>
+                            }
 
+                            <span class="badge bg-secondary-soft text-secondary small">private</span>
+
+                            @if (item.Deadline.HasValue)
+                            {
+                                var deadlineIso = item.Deadline.Value.ToString("yyyy-MM-dd");
+                                var badgeClass = item.IsOutdated ? "bg-danger-soft text-danger" : "bg-secondary-soft text-secondary";
+                                <span class="badge @badgeClass fw-normal border">
+                                    <i class="bi bi-calendar-event me-1"></i>
+                                    <time datetime="@deadlineIso" data-deadline="@deadlineIso">@item.Deadline.Value.ToString("yyyy-MM-dd")</time>
+                                    <span class="ms-1 opacity-75">· @item.DeadlineRemaining</span>
+                                </span>
+                            }
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(item.Description))
+                        {
                             <p class="text-secondary mb-3">@item.Description</p>
-                            
-                            <div class="d-flex align-items-center text-muted small">
-                                <div class="bk-user-avatar-sm me-2">
-                                    <i class="bi bi-person-circle"></i>
-                                </div>
-                                <span>Owner: <span class="fw-medium text-dark">@item.UserName</span></span>
+                        }
+
+                        <div class="d-flex align-items-center text-muted small">
+                            <div class="bk-user-avatar-sm me-2">
+                                <i class="bi bi-person-circle"></i>
                             </div>
+                            <span>Owner: <span class="fw-medium text-dark">@item.UserName</span></span>
                         </div>
                     </div>
-                }
-            </div>
-        }
-    </div>
+                </div>
+            }
+        </div>
+    }
 </div>
 
 @section Scripts {

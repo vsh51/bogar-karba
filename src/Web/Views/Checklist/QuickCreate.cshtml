@@ -4,46 +4,46 @@
     const string QuickCreateExample = "# Trip to Lviv\n\nTwo-day weekend trip planning.\n\n## Before leaving\n- [ ] Buy train tickets\n- [ ] Charge power bank\n\n## In Lviv\n- [ ] Visit Rynok Square\n- [ ] Try Lviv coffee";
 }
 
-<div class="row justify-content-center">
-    <div class="col-12 col-lg-10 col-xl-8">
-        <div class="card shadow-sm mt-4">
-            <div class="card-header py-3">
-                <h2 class="h4 mb-0 fw-bold">Quick Create Checklist</h2>
+<div class="bk-container bk-container--narrow mt-4 mb-5">
+    <div class="bk-page-header bk-page-header--flush">
+        <h1>Quick create checklist</h1>
+        <p>Paste markdown and we'll parse it into a checklist.</p>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <div class="bk-quick-rules mb-4">
+                <strong>Formatting rules</strong>
+                <ul class="mb-0 ps-3">
+                    <li>First line: <code># Title</code></li>
+                    <li>Optional description lines follow the title</li>
+                    <li>Sections: <code>## Section name</code></li>
+                    <li>Items: <code>- [ ] text</code> or <code>- text</code></li>
+                </ul>
             </div>
-            <div class="card-body p-4">
-                <div class="bk-quick-rules mb-4">
-                    <strong>Formatting Rules</strong>
-                    <ul class="mb-0 ps-3">
-                        <li>First line: <code># Title</code></li>
-                        <li>Optional description lines follow the title</li>
-                        <li>Sections: <code>## Section name</code></li>
-                        <li>Items: <code>- [ ] text</code> or <code>- text</code></li>
-                    </ul>
+
+            <div class="mb-4">
+                <label for="quick-create-text" class="form-label">Markdown content</label>
+                <div class="bk-quick-editor">
+                    <pre class="bk-quick-line-numbers" id="quick-create-line-numbers" aria-hidden="true">1</pre>
+                    <textarea id="quick-create-text" wrap="off" placeholder="Paste your markdown here...">@QuickCreateExample</textarea>
                 </div>
-
-                <div class="mb-4">
-                    <label for="quick-create-text" class="form-label">Markdown Content</label>
-                    <div class="bk-quick-editor">
-                        <pre class="bk-quick-line-numbers" id="quick-create-line-numbers" aria-hidden="true">1</pre>
-                        <textarea id="quick-create-text" wrap="off" placeholder="Paste your markdown here...">@QuickCreateExample</textarea>
-                    </div>
-                </div>
-
-                <div class="alert alert-danger d-none" id="quick-create-error" role="alert"></div>
-
-                <div class="d-grid gap-3">
-                    <button type="button" class="btn btn-primary btn-lg" id="quick-create-btn">
-                        Parse and Create
-                    </button>
-                    <div class="d-flex justify-content-center gap-3">
-                        <a asp-controller="Checklist" asp-action="Create" class="text-decoration-none small">Regular Editor</a>
-                        <span class="text-muted small">&middot;</span>
-                        <a asp-controller="Author" asp-action="Index" class="text-decoration-none small">My Checklists</a>
-                    </div>
-                </div>
-
-                @Html.AntiForgeryToken()
             </div>
+
+            <div class="alert alert-danger d-none" id="quick-create-error" role="alert"></div>
+
+            <div class="d-grid gap-3">
+                <button type="button" class="btn btn-primary btn-lg" id="quick-create-btn">
+                    Parse and create
+                </button>
+                <div class="d-flex justify-content-center gap-3">
+                    <a asp-controller="Checklist" asp-action="Create" class="text-decoration-none small">Regular editor</a>
+                    <span class="text-muted small">&middot;</span>
+                    <a asp-controller="Author" asp-action="Index" class="text-decoration-none small">My checklists</a>
+                </div>
+            </div>
+
+            @Html.AntiForgeryToken()
         </div>
     </div>
 </div>
