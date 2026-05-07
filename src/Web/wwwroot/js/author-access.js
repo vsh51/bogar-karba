@@ -29,17 +29,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderUsers = (users) => {
         userList.innerHTML = '';
         if (users.length === 0) {
-            userList.innerHTML = '<p class="text-muted small mb-0">No users have been granted access yet.</p>';
+            userList.innerHTML = '<p class="access-empty">No users have been granted access yet.</p>';
             return;
         }
 
         users.forEach(({ userId, userName }) => {
             const item = document.createElement('div');
-            item.className = 'd-flex align-items-center justify-content-between py-1 px-2 mb-1 border rounded';
+            item.className = 'access-user-item';
             item.innerHTML = `
-                <span class="small">${escapeHtml(userName)}</span>
-                <button type="button" class="btn btn-sm btn-link text-danger p-0 lh-1"
-                        data-user-id="${escapeHtml(userId)}" title="Revoke access">&times;</button>`;
+                <span class="access-username">${escapeHtml(userName)}</span>
+                <button type="button" class="access-revoke-btn"
+                        data-user-id="${escapeHtml(userId)}" title="Revoke access" aria-label="Revoke access">
+                    <i class="bi bi-x-lg" aria-hidden="true"></i>
+                </button>`;
             item.querySelector('button').addEventListener('click', () => revokeAccess(userId));
             userList.appendChild(item);
         });
