@@ -134,6 +134,26 @@
         </div>
     </main>
 
+    <div class="modal fade" id="bk-confirm-modal" tabindex="-1" aria-labelledby="bk-confirm-title" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="bk-confirm-title">Confirm</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-0" id="bk-confirm-message"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" id="bk-confirm-cancel-btn">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="bk-confirm-ok-btn">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bk-toast-stack" id="bk-toast-stack" aria-live="polite" aria-atomic="true"></div>
+
     <footer class="bk-footer">
         <div class="bk-container">
             <p class="bk-footer-text">&copy; @currentYear Bogar Karba — Technical checklist tracker.</p>
