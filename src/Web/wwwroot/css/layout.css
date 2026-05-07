@@ -122,27 +122,54 @@ a:focus-visible {
     box-shadow: var(--bk-shadow-focus);
 }
 
-.bk-user-name {
-    color: var(--bk-text-secondary);
-    font-weight: var(--bk-font-weight-semibold);
+.bk-user-menu {
+    border: none;
+    background: transparent;
+    color: var(--bk-text-primary);
     padding: var(--bk-space-2) var(--bk-space-3);
-    max-width: 220px;
+    border-radius: var(--bk-radius-md);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--bk-space-2);
+    line-height: 1;
+    cursor: pointer;
+    transition: background var(--bk-transition-fast),
+                color var(--bk-transition-fast),
+                box-shadow var(--bk-transition-fast);
+}
+
+.bk-user-menu:hover,
+.bk-user-menu:focus-visible {
+    background: var(--bk-bg-muted);
+    color: var(--bk-text-primary);
+    outline: none;
+}
+
+.bk-user-menu:focus-visible {
+    box-shadow: var(--bk-shadow-focus);
+}
+
+.bk-user-menu .bi-person-circle {
+    font-size: var(--bk-font-size-lg);
+    color: var(--bk-text-secondary);
+}
+
+.bk-user-name {
+    font-weight: var(--bk-font-weight-semibold);
+    max-width: 180px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    display: inline-block;
 }
 
-.bk-navbar form {
-    margin: 0;
-    display: inline-flex;
-    align-items: center;
+.bk-user-menu__chevron {
+    font-size: 0.7rem;
+    color: var(--bk-text-muted);
+    transition: transform var(--bk-transition-fast);
 }
 
-.bk-navbar form .nav-link {
-    border: 0;
-    background: transparent;
-    cursor: pointer;
+.bk-user-menu[aria-expanded="true"] .bk-user-menu__chevron {
+    transform: rotate(180deg);
 }
 
 .bk-bell {
