@@ -18,7 +18,7 @@ RUN dotnet publish -c Release -o /app/publish
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 WORKDIR /app
 
-RUN groupadd -r appgroup && useradd -r -g appgroup appuser
+RUN groupadd -r appgroup && useradd -r -g appgroup -m -d /home/appuser appuser
 
 COPY --from=build /app/publish .
 
