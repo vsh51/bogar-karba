@@ -33,4 +33,4 @@ jobs:
         with:
           app-name: myapp-web-8937
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          images: docker.io/cheliza/bogar-karba:${{ github.sha }}
+          images: 'docker.io/cheliza/bogar-karba:${{ github.sha }}'
