@@ -20,7 +20,7 @@
             return { elapsedMs: 0, isRunning: false, startedAtMs: null };
         }
 
-        let elapsed = Number.isFinite(entry.elapsedMs) ? entry.elapsedMs : 0;
+        var elapsed = Number.isFinite(entry.elapsedMs) ? entry.elapsedMs : 0;
         if (elapsed < 0) {
             elapsed = 0;
         }
