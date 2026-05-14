@@ -22,11 +22,11 @@ jobs:
 
       - name: Build & Push Docker image
         run: |
-          IMAGE=docker.io/vsh51/bogar-karba:${{ github.sha }}
+          IMAGE=docker.io/cheliza/bogar-karba:${{ github.sha }}
           docker build -t $IMAGE .
           docker push $IMAGE
-          docker tag $IMAGE docker.io/vsh51/bogar-karba:latest
-          docker push docker.io/vsh51/bogar-karba:latest
+          docker tag $IMAGE docker.io/cheliza/bogar-karba:latest
+          docker push docker.io/cheliza/bogar-karba:latest
 
       - name: Login to Azure
         uses: azure/login@v2
@@ -38,4 +38,4 @@ jobs:
           az webapp config container set \
             --resource-group student-app-rg \
             --name myapp-web-8937 \
-            --docker-custom-image-name docker.io/vsh51/bogar-karba:${{ github.sha }}
+            --docker-custom-image-name docker.io/cheliza/bogar-karba:${{ github.sha }}
