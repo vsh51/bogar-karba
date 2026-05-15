@@ -1,14 +1,40 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@{
+    ViewData["Title"] = "Home";
+    var isAuthed = User.Identity?.IsAuthenticated == true;
 }
 
-<div class="text-center mt-5 mb-5">
-    <h1 class="display-4">Welcome to Bogar Karba</h1>
-    <p class="lead">Your ultimate technical checklist tracker</p>
-</div>
+<section class="bk-hero">
+    <h1>Welcome to Bogar Karba</h1>
+    <p>Your ultimate technical checklist tracker — plan, share, and finish what matters.</p>
 
-<div id="progress-checklists-container" class="container"></div>
+    <div class="bk-hero-actions">
+        @if (isAuthed)
+        {
+            <a class="btn btn-primary" asp-controller="Checklist" asp-action="Create">Create Checklist</a>
+            <a class="btn btn-outline-primary" asp-controller="Author" asp-action="Index">My Checklists</a>
+        }
+        else
+        {
+            <a class="btn btn-primary" asp-controller="Account" asp-action="Register">Get started</a>
+            <a class="btn btn-outline-primary" asp-controller="Account" asp-action="Login">Sign in</a>
+        }
+    </div>
+</section>
+
+@if (isAuthed)
+{
+    <section class="bk-content-card">
+        <div class="bk-page-header bk-page-header--flush">
+            <h1>Your progress</h1>
+            <p>Pick up where you left off.</p>
+        </div>
+        <div id="progress-checklists-container"></div>
+    </section>
+}
 
 @section Scripts {
-    <script src="~/js/home-progress.js" asp-append-version="true"></script>
+    @if (isAuthed)
+    {
+        <script src="~/js/home-progress.js" asp-append-version="true"></script>
+    }
 }

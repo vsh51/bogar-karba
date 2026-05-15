@@ -16,6 +16,10 @@ public interface IChecklistRepository
 
     Task UpdateStatusAsync(Guid id, ChecklistStatus newStatus);
 
+    Task UpdateVisibilityAsync(Guid id, bool isPublic);
+
+    Task UpdateEmbeddableAsync(Guid id, bool isEmbeddable);
+
     Task<int> GetTotalCountAsync();
 
     Task<int> GetCountByStatusAsync(ChecklistStatus status);
@@ -27,4 +31,8 @@ public interface IChecklistRepository
     Task AddTaskAsync(TaskItem task);
 
     Task UpdateAsync();
+
+    Task GrantAccessAsync(ChecklistAccess access);
+
+    Task RevokeAccessAsync(Guid checklistId, string userId);
 }

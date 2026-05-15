@@ -2,6 +2,7 @@ using Application.UseCases.Auth.LoginUser;
 using Application.UseCases.Auth.Logout;
 using Application.UseCases.Auth.RegisterUser;
 using Microsoft.AspNetCore.Mvc;
+using Web.Filters;
 using Web.Models.Account;
 
 namespace Web.Controllers;
@@ -34,6 +35,7 @@ public sealed class AccountController : BaseController
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [RateLimit("Register")]
     public async Task<IActionResult> Register(RegisterViewModel model)
     {
         if (!ModelState.IsValid)
@@ -73,6 +75,7 @@ public sealed class AccountController : BaseController
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [RateLimit("Login")]
     public async Task<IActionResult> Login(LoginViewModel model)
     {
         if (!ModelState.IsValid)
@@ -81,18 +84,19 @@ public sealed class AccountController : BaseController
             return View(model);
         }
 
-        _logger.LogInformation("User login attempt for {Email}", model.Email);
+        _logger.LogInformation("User login attempt for {Identifier}", model.Email);
 
         var result = await _loginHandler.HandleAsync(
             new LoginUserCommand(model.Email, model.Password));
+
         if (!result.Succeeded)
         {
-            _logger.LogWarning("Login failed for {Email}", model.Email);
-            ModelState.AddModelError(string.Empty, result.ErrorMessage ?? "Invalid email or password.");
+            _logger.LogWarning("Login failed for {Identifier}", model.Email);
+            ModelState.AddModelError(string.Empty, result.ErrorMessage ?? "Invalid login or password.");
             return View(model);
         }
 
-        _logger.LogInformation("User logged in: {Email}", model.Email);
+        _logger.LogInformation("User logged in: {Identifier}", model.Email);
         return RedirectToAction("Index", "Home");
     }
 

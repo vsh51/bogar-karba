@@ -32,6 +32,18 @@ public sealed class CachedChecklistRepository(
         Evict(id);
     }
 
+    public async Task UpdateVisibilityAsync(Guid id, bool isPublic)
+    {
+        await inner.UpdateVisibilityAsync(id, isPublic);
+        Evict(id);
+    }
+
+    public async Task UpdateEmbeddableAsync(Guid id, bool isEmbeddable)
+    {
+        await inner.UpdateEmbeddableAsync(id, isEmbeddable);
+        Evict(id);
+    }
+
     public Task<int> GetTotalCountAsync() => inner.GetTotalCountAsync();
 
     public Task<int> GetCountByStatusAsync(ChecklistStatus status) =>
@@ -45,6 +57,11 @@ public sealed class CachedChecklistRepository(
     public Task AddTaskAsync(TaskItem task) => inner.AddTaskAsync(task);
 
     public Task UpdateAsync() => inner.UpdateAsync();
+
+    public Task GrantAccessAsync(ChecklistAccess access) => inner.GrantAccessAsync(access);
+
+    public Task RevokeAccessAsync(Guid checklistId, string userId) =>
+        inner.RevokeAccessAsync(checklistId, userId);
 
     private void Evict(Guid id)
     {

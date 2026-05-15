@@ -9,7 +9,8 @@ public static class ChecklistMappings
 {
     public static GetPublishedChecklistResult ToPublishedChecklistResult(
         this Checklist checklist,
-        DateOnly today)
+        DateOnly today,
+        bool isOwner = false)
     {
         var info = DeadlineFormatter.Describe(checklist.Deadline, today);
 
@@ -19,8 +20,11 @@ public static class ChecklistMappings
             Title = checklist.Title,
             Description = checklist.Description,
             Deadline = checklist.Deadline,
+            IsPublic = checklist.IsPublic,
+            IsOwner = isOwner,
             IsOutdated = info?.IsOutdated ?? false,
             DeadlineRemaining = info?.RemainingText,
+            IsEmbeddable = checklist.IsEmbeddable,
             Sections = checklist.Sections
                 .OrderBy(s => s.Position)
                 .Select(section => new ChecklistSectionDto
@@ -34,7 +38,8 @@ public static class ChecklistMappings
                         {
                             Id = task.Id,
                             Content = task.Content,
-                            Position = task.Position
+                            Position = task.Position,
+                            Link = task.Link
                         })
                         .ToList()
                 })
@@ -57,6 +62,8 @@ public static class ChecklistMappings
             UserId = checklist.UserId,
             UserName = userName ?? string.Empty,
             Status = checklist.Status,
+            IsPublic = checklist.IsPublic,
+            IsEmbeddable = checklist.IsEmbeddable,
             Deadline = checklist.Deadline,
             IsOutdated = info?.IsOutdated ?? false,
             DeadlineRemaining = info?.RemainingText

@@ -2,4 +2,5 @@ namespace Application.UseCases.GetChecklistForEdit;
 
 public sealed record EditTaskResult(
     Guid Id,
-    string Content);
+    string Content,
+    string? Link);

@@ -4,4 +4,5 @@ public record AddChecklistItemCommand(
     Guid ChecklistId,
     string OwnerId,
     Guid SectionId,
-    string Content);
+    string Content,
+    string? Link = null);

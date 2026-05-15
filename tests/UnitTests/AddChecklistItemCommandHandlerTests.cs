@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.Interfaces;
 using Application.UseCases.AddChecklistItem;
 using Domain.Entities;
@@ -55,7 +56,7 @@ public class AddChecklistItemCommandHandlerTests
         var result = await _handler.HandleAsync(command);
 
         Assert.False(result.Succeeded);
-        Assert.Equal("Item content is required.", result.ErrorMessage);
+        Assert.Equal(ResultErrors.ItemContentRequired, result.ErrorMessage);
         _repositoryMock.Verify(r => r.UpdateAsync(), Times.Never);
     }
 
@@ -71,7 +72,7 @@ public class AddChecklistItemCommandHandlerTests
         var result = await _handler.HandleAsync(command);
 
         Assert.False(result.Succeeded);
-        Assert.Equal("Checklist not found.", result.ErrorMessage);
+        Assert.Equal(ResultErrors.ChecklistNotFound, result.ErrorMessage);
     }
 
     [Fact]
@@ -87,7 +88,7 @@ public class AddChecklistItemCommandHandlerTests
         var result = await _handler.HandleAsync(command);
 
         Assert.False(result.Succeeded);
-        Assert.Equal("You can only modify your own checklists.", result.ErrorMessage);
+        Assert.Equal(ResultErrors.NotChecklistOwner, result.ErrorMessage);
     }
 
     [Fact]
@@ -103,7 +104,43 @@ public class AddChecklistItemCommandHandlerTests
         var result = await _handler.HandleAsync(command);
 
         Assert.False(result.Succeeded);
-        Assert.Equal("Section not found.", result.ErrorMessage);
+        Assert.Equal(ResultErrors.SectionNotFound, result.ErrorMessage);
+    }
+
+    [Fact]
+    public async Task HandleAsync_WithLink_SavesLinkOnTask()
+    {
+        var checklist = BuildChecklist();
+        var section = checklist.Sections[0];
+
+        _repositoryMock.Setup(r => r.GetByIdWithDetailsAsync(checklist.Id))
+            .ReturnsAsync(checklist);
+
+        var command = new AddChecklistItemCommand(
+            checklist.Id, OwnerId, section.Id, "New task", "https://example.com");
+
+        var result = await _handler.HandleAsync(command);
+
+        Assert.True(result.Succeeded);
+        Assert.Equal("https://example.com", section.Tasks[^1].Link);
+    }
+
+    [Fact]
+    public async Task HandleAsync_WithWhitespaceLink_SavesNullOnTask()
+    {
+        var checklist = BuildChecklist();
+        var section = checklist.Sections[0];
+
+        _repositoryMock.Setup(r => r.GetByIdWithDetailsAsync(checklist.Id))
+            .ReturnsAsync(checklist);
+
+        var command = new AddChecklistItemCommand(
+            checklist.Id, OwnerId, section.Id, "New task", "   ");
+
+        var result = await _handler.HandleAsync(command);
+
+        Assert.True(result.Succeeded);
+        Assert.Null(section.Tasks[^1].Link);
     }
 
     [Fact]

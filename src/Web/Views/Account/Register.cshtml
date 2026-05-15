@@ -3,57 +3,69 @@
     ViewData["Title"] = "Register";
 }
 
-<div class="row justify-content-center mt-5">
-    <div class="col-md-5">
-        <div class="card">
-            <div class="card-header bg-light text-center">
-                <h4 class="mb-0">Register</h4>
+<div class="bk-auth-shell">
+    <div class="bk-auth-card">
+        <h1>Create your account</h1>
+
+        <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+        <form asp-action="Register" method="post" novalidate>
+            <div class="row g-3 mb-3">
+                <div class="col-12 col-sm-6">
+                    <label asp-for="Name" class="form-label"></label>
+                    <input asp-for="Name"
+                           class="form-control"
+                           placeholder="First name"
+                           autocomplete="given-name"
+                           autofocus />
+                    <span asp-validation-for="Name" class="field-validation-error"></span>
+                </div>
+                <div class="col-12 col-sm-6">
+                    <label asp-for="Surname" class="form-label"></label>
+                    <input asp-for="Surname"
+                           class="form-control"
+                           placeholder="Last name"
+                           autocomplete="family-name" />
+                    <span asp-validation-for="Surname" class="field-validation-error"></span>
+                </div>
             </div>
-            <div class="card-body">
-                <div asp-validation-summary="All" class="text-danger mb-3"></div>
 
-                <form asp-action="Register" method="post">
-                    <div class="row mb-3">
-                        <div class="col">
-                            <label asp-for="Name" class="form-label"></label>
-                            <input asp-for="Name" class="form-control" placeholder="Enter name" />
-                            <span asp-validation-for="Name" class="text-danger"></span>
-                        </div>
-                        <div class="col">
-                            <label asp-for="Surname" class="form-label"></label>
-                            <input asp-for="Surname" class="form-control" placeholder="Enter surname" />
-                            <span asp-validation-for="Surname" class="text-danger"></span>
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label asp-for="Email" class="form-label"></label>
-                        <input asp-for="Email" class="form-control" placeholder="Enter email" />
-                        <span asp-validation-for="Email" class="text-danger"></span>
-                    </div>
-
-                    <div class="mb-3">
-                        <label asp-for="Password" class="form-label"></label>
-                        <input asp-for="Password" class="form-control" placeholder="Enter password" />
-                        <span asp-validation-for="Password" class="text-danger"></span>
-                    </div>
-
-                    <div class="mb-3">
-                        <label asp-for="ConfirmPassword" class="form-label"></label>
-                        <input asp-for="ConfirmPassword" class="form-control" placeholder="Confirm password" />
-                        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
-                    </div>
-
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">Register</button>
-                    </div>
-
-                    <div class="text-center mt-3">
-                        <a asp-controller="Account" asp-action="Login">Already have an account? Sign in</a>
-                    </div>
-                </form>
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email"
+                       class="form-control"
+                       placeholder="email@example.com"
+                       autocomplete="email" />
+                <span asp-validation-for="Email" class="field-validation-error"></span>
             </div>
-        </div>
+
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label"></label>
+                <input asp-for="Password"
+                       class="form-control"
+                       placeholder="Choose a strong password"
+                       autocomplete="new-password" />
+                <span asp-validation-for="Password" class="field-validation-error"></span>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="ConfirmPassword" class="form-label"></label>
+                <input asp-for="ConfirmPassword"
+                       class="form-control"
+                       placeholder="Repeat your password"
+                       autocomplete="new-password" />
+                <span asp-validation-for="ConfirmPassword" class="field-validation-error"></span>
+            </div>
+
+            <div class="d-grid">
+                <button type="submit" class="btn btn-primary py-2">Create account</button>
+            </div>
+        </form>
+
+        <p class="bk-auth-footer">
+            Already have an account?
+            <a asp-controller="Account" asp-action="Login">Sign in</a>
+        </p>
     </div>
 </div>
 

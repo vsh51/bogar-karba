@@ -1,3 +1,4 @@
+using Application.DTOs.User;
 using Application.Enums;
 using Application.Interfaces;
 using Application.Options;
@@ -167,6 +168,32 @@ public class SearchChecklistsQueryHandlerTests
         {
             return Task.CompletedTask;
         }
+
+        public Task UpdateVisibilityAsync(Guid id, bool isPublic)
+        {
+            var item = _items.FirstOrDefault(c => c.Id == id);
+            if (item != null)
+            {
+                item.IsPublic = isPublic;
+            }
+
+            return Task.CompletedTask;
+        }
+
+        public Task GrantAccessAsync(ChecklistAccess access) => Task.CompletedTask;
+
+        public Task RevokeAccessAsync(Guid checklistId, string userId) => Task.CompletedTask;
+
+        public Task UpdateEmbeddableAsync(Guid id, bool isEmbeddable)
+        {
+            var item = _items.FirstOrDefault(c => c.Id == id);
+            if (item != null)
+            {
+                item.IsEmbeddable = isEmbeddable;
+            }
+
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class FakeUserRepository : IUserRepository
@@ -186,5 +213,9 @@ public class SearchChecklistsQueryHandlerTests
         public Task<int> GetTotalCountAsync() => Task.FromResult(0);
 
         public Task<Dictionary<string, string>> GetUsernamesByIdsAsync(IEnumerable<string> userIds) => Task.FromResult(new Dictionary<string, string>());
+
+        public Task<List<UserSummaryDto>> SearchUsersAsync(string? searchTerm) => Task.FromResult(new List<UserSummaryDto>());
+
+        public Task<string?> GetUserIdByUsernameAsync(string username) => Task.FromResult<string?>(null);
     }
 }

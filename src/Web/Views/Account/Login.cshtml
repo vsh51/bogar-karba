@@ -3,38 +3,41 @@
     ViewData["Title"] = "Login";
 }
 
-<div class="row justify-content-center mt-5">
-    <div class="col-md-5">
-        <div class="card">
-            <div class="card-header bg-light text-center">
-                <h4 class="mb-0">Login</h4>
+<div class="bk-auth-shell">
+    <div class="bk-auth-card">
+        <h1>Sign in to Bogar Karba</h1>
+
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <form asp-action="Login" method="post" novalidate>
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email"
+                       class="form-control"
+                       placeholder="email@example.com or username"
+                       autocomplete="username"
+                       autofocus />
+                <span asp-validation-for="Email" class="field-validation-error"></span>
             </div>
-            <div class="card-body">
-                <div asp-validation-summary="All" class="text-danger mb-3"></div>
 
-                <form asp-action="Login" method="post">
-                    <div class="mb-3">
-                        <label asp-for="Email" class="form-label"></label>
-                        <input asp-for="Email" class="form-control" placeholder="Enter email" />
-                        <span asp-validation-for="Email" class="text-danger"></span>
-                    </div>
-
-                    <div class="mb-3">
-                        <label asp-for="Password" class="form-label"></label>
-                        <input asp-for="Password" class="form-control" placeholder="Enter password" />
-                        <span asp-validation-for="Password" class="text-danger"></span>
-                    </div>
-
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">Login</button>
-                    </div>
-
-                    <div class="text-center mt-3">
-                        <a asp-controller="Account" asp-action="Register">Don't have an account? Register</a>
-                    </div>
-                </form>
+            <div class="mb-4">
+                <label asp-for="Password" class="form-label"></label>
+                <input asp-for="Password"
+                       class="form-control"
+                       placeholder="Enter your password"
+                       autocomplete="current-password" />
+                <span asp-validation-for="Password" class="field-validation-error"></span>
             </div>
-        </div>
+
+            <div class="d-grid">
+                <button type="submit" class="btn btn-primary py-2">Sign in</button>
+            </div>
+        </form>
+
+        <p class="bk-auth-footer">
+            Don't have an account?
+            <a asp-controller="Account" asp-action="Register">Register</a>
+        </p>
     </div>
 </div>
 

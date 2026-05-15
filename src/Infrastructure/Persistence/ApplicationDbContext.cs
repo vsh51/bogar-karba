@@ -18,6 +18,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<TaskItem> Tasks => Set<TaskItem>();
 
+    public DbSet<ChecklistAccess> ChecklistAccesses => Set<ChecklistAccess>();
+
+    public DbSet<ChecklistProgress> ChecklistProgresses => Set<ChecklistProgress>();
+
+    public DbSet<Notification> Notifications => Set<Notification>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -32,6 +38,28 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.HasOne<ApplicationUser>()
                 .WithMany(u => u.Checklists)
                 .HasForeignKey(c => c.UserId);
+        });
+
+        builder.Entity<ChecklistAccess>(entity =>
+        {
+            entity.HasKey(a => new { a.ChecklistId, a.UserId });
+
+            entity.HasOne(a => a.Checklist)
+                .WithMany()
+                .HasForeignKey(a => a.ChecklistId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<ChecklistProgress>(entity =>
+        {
+            entity.HasKey(p => new { p.ChecklistId, p.UserId });
+            entity.Property(p => p.CompletedTaskIdsJson).IsRequired();
+            entity.Property(p => p.UpdatedAtUtc).IsRequired();
+
+            entity.HasOne<Checklist>()
+                .WithMany()
+                .HasForeignKey(p => p.ChecklistId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         builder.Entity<ApplicationUser>(entity =>
@@ -49,6 +77,17 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         {
             entity.Property(t => t.Content).IsRequired();
             entity.Property(t => t.Position).IsRequired();
+            entity.Property(t => t.Link).HasMaxLength(2048);
+        });
+
+        builder.Entity<Notification>(entity =>
+        {
+            entity.HasKey(n => n.Id);
+            entity.Property(n => n.UserId).IsRequired();
+            entity.Property(n => n.Message).IsRequired();
+            entity.Property(n => n.EventKey).IsRequired();
+            entity.HasIndex(n => n.EventKey);
+            entity.HasIndex(n => n.IsSent);
         });
     }
 }

@@ -4,8 +4,8 @@ namespace Web.Models.Admin;
 
 public sealed class AdminLoginViewModel
 {
-    [Required(ErrorMessage = "Username is required")]
-    [Display(Name = "Username")]
+    [Required(ErrorMessage = "Email or Username is required")]
+    [Display(Name = "Email or Username")]
     public string UserName { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Password is required")]

@@ -59,32 +59,61 @@
         return out;
     }
 
+    function parseJsonObject(raw) {
+        if (typeof raw !== "string" || raw === "") {
+            return null;
+        }
+
+        let first = raw.charAt(0);
+        let last = raw.charAt(raw.length - 1);
+        if (!((first === "{" && last === "}") || (first === "[" && last === "]"))) {
+            return null;
+        }
+
+        let parsed = JSON.parse(raw);
+        return parsed && typeof parsed === "object" ? parsed : null;
+    }
+
     function loadRoot() {
-        try {
-            let raw = localStorage.getItem(STORAGE_KEY);
-            if (raw === null || raw === "") {
-                return freshRoot();
-            }
-
-            let data = JSON.parse(raw);
-            if (!data || typeof data !== "object") {
-                return freshRoot();
-            }
-
-            if (
-                data.v === SCHEMA_VERSION && data.checklists &&
-                typeof data.checklists === "object"
-            ) {
-                return {
-                    v: SCHEMA_VERSION,
-                    checklists: normalizeChecklistsObject(data.checklists)
-                };
-            }
-
-            return freshRoot();
-        } catch (e) {
+        let raw = localStorage.getItem(STORAGE_KEY);
+        if (raw === null || raw === "") {
             return freshRoot();
         }
+
+        let data = parseJsonObject(raw);
+        if (!data) {
+            return freshRoot();
+        }
+
+        if (
+            data.v === SCHEMA_VERSION && data.checklists &&
+            typeof data.checklists === "object"
+        ) {
+            return {
+                v: SCHEMA_VERSION,
+                checklists: normalizeChecklistsObject(data.checklists)
+            };
+        }
+
+        return freshRoot();
+    }
+
+    function parseInitialCompletedTaskIds(page) {
+        if (!page) {
+            return [];
+        }
+
+        let raw = page.getAttribute("data-initial-completed-task-ids");
+        if (!raw) {
+            return [];
+        }
+
+        let parsed = parseJsonObject(raw);
+        if (!Array.isArray(parsed)) {
+            return [];
+        }
+
+        return dedupeTaskIds(parsed);
     }
 
     function persistRoot(root) {
@@ -174,6 +203,45 @@
         }
     }
 
+    function getServerProgressUrl(page) {
+        if (!page) {
+            return "";
+        }
+
+        let url = page.getAttribute("data-server-progress-url");
+        return typeof url === "string" ? url : "";
+    }
+
+    function createServerSync(saveUrl, checklistId) {
+        if (!saveUrl) {
+            return function () {};
+        }
+
+        let pendingTimeoutId = null;
+
+        return function () {
+            if (pendingTimeoutId !== null) {
+                window.clearTimeout(pendingTimeoutId);
+            }
+
+            pendingTimeoutId = window.setTimeout(function () {
+                pendingTimeoutId = null;
+
+                let completedTaskIds = getChecklistProgress(checklistId);
+                fetch(saveUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    credentials: "same-origin",
+                    body: JSON.stringify({ completedTaskIds: completedTaskIds })
+                }).catch(function () {
+                    // Keep local progress even if server sync fails.
+                });
+            }, 250);
+        };
+    }
+
     function initChecklistPage() {
         let page = document.querySelector(".checklist-page[data-checklist-id]");
         if (!page) {
@@ -183,6 +251,14 @@
         let checklistId = page.getAttribute("data-checklist-id");
         if (!checklistId) {
             return;
+        }
+
+        let serverProgressUrl = getServerProgressUrl(page);
+        let syncProgressToServer = createServerSync(serverProgressUrl, checklistId);
+
+        if (serverProgressUrl) {
+            let initialCompleted = parseInitialCompletedTaskIds(page);
+            saveChecklistProgress(checklistId, initialCompleted);
         }
 
         let completed = getChecklistProgress(checklistId);
@@ -206,6 +282,7 @@
                     let list = getChecklistProgress(checklistId);
                     el.checked = list.indexOf(tid) >= 0;
                     renderChecklistProgress(page);
+                    syncProgressToServer();
                 };
             }(input, taskId));
         }
@@ -222,6 +299,7 @@
                     inputs[i].checked = false;
                 }
                 renderChecklistProgress(page);
+                syncProgressToServer();
             });
         }
 

@@ -11,4 +11,12 @@ public interface IChecklistReadOnlyRepository
     Task<Checklist?> GetByIdAsync(Guid id);
 
     Task<Checklist?> GetByIdWithSectionsAsync(Guid id, CancellationToken cancellationToken = default);
+
+    Task<bool> HasAccessAsync(Guid checklistId, string userId, CancellationToken cancellationToken = default);
+
+    Task<List<string>> GetAccessUserIdsAsync(Guid checklistId, CancellationToken cancellationToken = default);
+
+    Task<IEnumerable<SharedChecklist>> GetSharedWithUserAsync(string userId, CancellationToken cancellationToken = default);
 }
+
+public record SharedChecklist(Checklist Checklist, string OwnerName);

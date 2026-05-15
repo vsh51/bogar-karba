@@ -32,6 +32,14 @@
                             {
                                 <span class="badge bg-secondary ms-2">inactive</span>
                             }
+                            @if (!item.IsPublic)
+                            {
+                                <span class="badge bg-dark-subtle text-dark-emphasis ms-2">private</span>
+                            }
+                            @if (item.IsPublic && !item.IsEmbeddable)
+                            {
+                                <span class="badge bg-dark-subtle text-dark-emphasis ms-2">embed disabled</span>
+                            }
                             @if (item.Deadline.HasValue)
                             {
                                 var deadlineIso = item.Deadline.Value.ToString("yyyy-MM-dd");
@@ -86,7 +94,52 @@
                                 </li>
                             }
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#" onclick="window.checklistProgressSync.copyShareLinkToClipboard('@item.Id'); return false;"><i class="bi bi-share"></i> Get shareable link</a></li>
+                            @if (!item.IsPublic)
+                            {
+                                <li>
+                                    <form asp-controller="Author" asp-action="MakePublic" asp-route-id="@item.Id" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="dropdown-item">Make public</button>
+                                    </form>
+                                </li>
+                                <li>
+                                    <button type="button" class="dropdown-item"
+                                            data-bs-toggle="modal" data-bs-target="#access-modal"
+                                            data-checklist-id="@item.Id"
+                                            data-checklist-title="@item.Title">
+                                        Manage access
+                                    </button>
+                                </li>
+                            }
+                            else
+                            {
+                                <li>
+                                    <form asp-controller="Author" asp-action="MakePrivate" asp-route-id="@item.Id" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="dropdown-item">Make private</button>
+                                    </form>
+                                </li>
+                                @if (item.IsEmbeddable)
+                                {
+                                    <li>
+                                        <form asp-controller="Author" asp-action="DisableEmbed" asp-route-id="@item.Id" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="dropdown-item">Disable iframe embed</button>
+                                        </form>
+                                    </li>
+                                }
+                                else
+                                {
+                                    <li>
+                                        <form asp-controller="Author" asp-action="EnableEmbed" asp-route-id="@item.Id" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="dropdown-item">Enable iframe embed</button>
+                                        </form>
+                                    </li>
+                                }
+                            }
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" onclick="if (window.checklistProgressSync) { window.checklistProgressSync.copyShareLinkToClipboard('@item.Id'); } return false;"><i class="bi bi-share"></i> Get shareable link</a></li>
                         </ul>
                     </div>
                 </div>
@@ -94,13 +147,44 @@
         }
     </div>
 
-    <div class="mt-5">
+    <div class="mt-5 d-flex gap-2">
         <a href="@Url.Action("Create", "Checklist")" class="btn btn-outline-secondary">
             Create new checklist
         </a>
+        <a href="@Url.Action("QuickCreate", "Checklist")" class="btn btn-outline-primary">
+            Quick create from text
+        </a>
+    </div>
+</div>
+
+<div class="modal fade" id="access-modal" tabindex="-1" aria-labelledby="access-modal-label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="access-modal-label">Manage access</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                @Html.AntiForgeryToken()
+
+                <p class="text-muted small mb-3" id="access-modal-subtitle"></p>
+
+                <div class="d-flex gap-2 mb-2">
+                    <input id="access-modal-username" type="text" class="form-control form-control-sm"
+                           placeholder="Username" autocomplete="off" />
+                    <button id="access-modal-grant-btn" type="button" class="btn btn-sm btn-primary">Grant</button>
+                </div>
+
+                <p id="access-modal-error" class="text-danger small mt-1" hidden></p>
+
+                <div id="access-modal-user-list" class="mt-3"></div>
+            </div>
+        </div>
     </div>
 </div>
 
 @section Scripts {
     <script src="~/js/checklist-deadline.js" asp-append-version="true"></script>
+    <script src="~/js/checklist-sync.js" asp-append-version="true"></script>
+    <script src="~/js/author-access.js" asp-append-version="true"></script>
 }

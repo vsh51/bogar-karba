@@ -14,6 +14,10 @@ public sealed class ChecklistSummaryDto
 
     public Domain.Entities.ChecklistStatus Status { get; init; }
 
+    public bool IsPublic { get; init; }
+
+    public bool IsEmbeddable { get; init; }
+
     public DateOnly? Deadline { get; init; }
 
     public bool IsOutdated { get; init; }

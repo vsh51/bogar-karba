@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function createRow(type = 'item') {
         const row = document.createElement('div');
         row.className = 'checklist-row ' + (type === 'section' ? 'section-row' : '');
-        
+
         const input = document.createElement('input');
         input.type = 'text';
         const deleteBtn = document.createElement('button');
@@ -28,11 +28,56 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         row.appendChild(input);
+
+        if (type !== 'section') {
+            const linkBtn = document.createElement('button');
+            linkBtn.type = 'button';
+            linkBtn.className = 'btn-link-toggle';
+            linkBtn.title = 'Attach link';
+            linkBtn.innerHTML = '&#128279;';
+            row.appendChild(linkBtn);
+        }
+
         row.appendChild(deleteBtn);
 
-        row.querySelector('.btn-delete').addEventListener('click', () => row.remove());
+        deleteBtn.addEventListener('click', () => {
+            const linkRow = row.nextElementSibling;
+            if (linkRow && linkRow.classList.contains('link-input-row')) {
+                linkRow.remove();
+            }
+            row.remove();
+        });
         return row;
     }
+
+    content.addEventListener('click', (e) => {
+        if (!e.target.classList.contains('btn-link-toggle')) return;
+        const row = e.target.closest('.checklist-row');
+        const existingLinkRow = row.nextElementSibling;
+
+        if (existingLinkRow && existingLinkRow.classList.contains('link-input-row')) {
+            const val = existingLinkRow.querySelector('input').value.trim();
+            if (!val) {
+                existingLinkRow.remove();
+                e.target.classList.remove('has-link');
+            }
+            return;
+        }
+
+        const linkRow = document.createElement('div');
+        linkRow.className = 'link-input-row';
+        const linkInput = document.createElement('input');
+        linkInput.type = 'url';
+        linkInput.className = 'link-url-input';
+        linkInput.placeholder = 'https://...';
+        linkRow.appendChild(linkInput);
+        row.after(linkRow);
+        linkInput.focus();
+
+        linkInput.addEventListener('input', () => {
+            e.target.classList.toggle('has-link', !!linkInput.value.trim());
+        });
+    });
 
     addItemBtn.addEventListener('click', () => {
         content.appendChild(createRow('item'));
@@ -40,6 +85,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
     addSectionBtn.addEventListener('click', () => {
         content.appendChild(createRow('section'));
+    });
+
+    const addBoredBtn = document.getElementById('add-bored-btn');
+    addBoredBtn.addEventListener('click', async () => {
+        addBoredBtn.disabled = true;
+        const response = await fetch('/checklist/bored-activity');
+        addBoredBtn.disabled = false;
+
+        if (!response.ok) return;
+
+        const data = await response.json();
+        const row = createRow('item');
+        row.querySelector('.item-input').value = data.activity;
+
+        if (data.link) {
+            const linkRow = document.createElement('div');
+            linkRow.className = 'link-input-row';
+            const linkInput = document.createElement('input');
+            linkInput.type = 'url';
+            linkInput.className = 'link-url-input';
+            linkInput.value = data.link;
+            linkRow.appendChild(linkInput);
+            row.querySelector('.btn-link-toggle').classList.add('has-link');
+            content.appendChild(row);
+            content.appendChild(linkRow);
+        } else {
+            content.appendChild(row);
+        }
     });
 
     createBtn.addEventListener('click', async () => {
@@ -50,8 +123,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const sections = [];
         let currentSection = { name: "General", position: 0, tasks: [] };
-        
-        Array.from(content.children).forEach((row, index) => {
+
+        const rows = Array.from(content.children);
+        for (let i = 0; i < rows.length; i++) {
+            const row = rows[i];
+            if (row.classList.contains('link-input-row')) continue;
+
             if (row.classList.contains('section-row')) {
                 if (currentSection.tasks.length > 0 || currentSection.name !== "General") {
                     sections.push(currentSection);
@@ -64,13 +141,19 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 const taskContent = row.querySelector('.item-input').value.trim();
                 if (taskContent) {
+                    let link = null;
+                    const nextRow = rows[i + 1];
+                    if (nextRow && nextRow.classList.contains('link-input-row')) {
+                        link = nextRow.querySelector('input').value.trim() || null;
+                    }
                     currentSection.tasks.push({
                         content: taskContent,
-                        position: currentSection.tasks.length
+                        position: currentSection.tasks.length,
+                        link: link
                     });
                 }
             }
-        });
+        }
         sections.push(currentSection);
 
         const requestData = {

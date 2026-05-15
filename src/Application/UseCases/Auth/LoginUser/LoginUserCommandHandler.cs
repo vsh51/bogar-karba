@@ -12,28 +12,44 @@ public sealed class LoginUserCommandHandler(
 {
     public async Task<Result<bool>> HandleAsync(LoginUserCommand command)
     {
-        logger.LogInformation("Login attempt for '{Email}'", command.Email);
+        var mode = command.LoginIdentifier.Contains('@')
+            ? UserLookupMode.ByEmail
+            : UserLookupMode.ByUserName;
 
-        if (!await repository.UserExistsAsync(command.Email, UserLookupMode.ByEmail))
+        logger.LogInformation(
+            "Login attempt for '{Identifier}' using mode {Mode}",
+            command.LoginIdentifier,
+            mode);
+
+        if (!await repository.UserExistsAsync(command.LoginIdentifier, mode))
         {
-            logger.LogWarning("Login failed: user '{Email}' not found", command.Email);
-            return "Invalid email or password.";
+            logger.LogWarning(
+                "Login failed: user '{Identifier}' not found",
+                command.LoginIdentifier);
+            return "Invalid login or password.";
         }
 
-        if (!await repository.IsActiveAsync(command.Email, UserLookupMode.ByEmail))
+        if (!await repository.IsActiveAsync(command.LoginIdentifier, mode))
         {
-            logger.LogWarning("Login denied for '{Email}': account is not active", command.Email);
+            logger.LogWarning(
+                "Login denied for '{Identifier}': account is not active",
+                command.LoginIdentifier);
             return "Your account is blocked.";
         }
 
-        if (!await repository.CheckPasswordAsync(command.Email, command.Password, UserLookupMode.ByEmail))
+        if (!await repository.CheckPasswordAsync(command.LoginIdentifier, command.Password, mode))
         {
-            logger.LogWarning("Login failed: invalid password for '{Email}'", command.Email);
-            return "Invalid email or password.";
+            logger.LogWarning(
+                "Login failed: invalid password for '{Identifier}'",
+                command.LoginIdentifier);
+            return "Invalid login or password.";
         }
 
-        await signInService.SignInAsync(command.Email, UserLookupMode.ByEmail);
-        logger.LogInformation("User '{Email}' logged in successfully", command.Email);
+        await signInService.SignInAsync(command.LoginIdentifier, mode);
+        logger.LogInformation(
+            "User '{Identifier}' logged in successfully",
+            command.LoginIdentifier);
+
         return true;
     }
 }

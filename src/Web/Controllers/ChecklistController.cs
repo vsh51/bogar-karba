@@ -5,12 +5,20 @@ using Application.UseCases.DeleteChecklist;
 using Application.UseCases.EditChecklist;
 using Application.UseCases.ExportChecklist;
 using Application.UseCases.ExportChecklist.Markdown;
+using Application.UseCases.GetBoredActivity;
+using Application.UseCases.GetChecklistAccessList;
 using Application.UseCases.GetChecklistForEdit;
+using Application.UseCases.GetChecklistProgress;
 using Application.UseCases.GetChecklistsByIds;
 using Application.UseCases.GetPublishedChecklist;
+using Application.UseCases.GetSharedChecklists;
+using Application.UseCases.GrantChecklistAccess;
 using Application.UseCases.GroupTasksIntoSection;
+using Application.UseCases.QuickCreateChecklist;
 using Application.UseCases.RemoveChecklistItem;
 using Application.UseCases.ReorderChecklistItem;
+using Application.UseCases.RevokeChecklistAccess;
+using Application.UseCases.SaveChecklistProgress;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Web.Filters;
@@ -33,7 +41,15 @@ public sealed class ChecklistController : BaseController
     private readonly GroupTasksIntoSectionCommandHandler _groupTasksHandler;
     private readonly AddChecklistItemCommandHandler _addItemHandler;
     private readonly RemoveChecklistItemCommandHandler _removeItemHandler;
+    private readonly GetBoredActivityQueryHandler _boredActivityHandler;
     private readonly GetChecklistsByIdsQueryHandler _getByIdsHandler;
+    private readonly GetChecklistAccessListQueryHandler _getAccessListHandler;
+    private readonly GrantChecklistAccessCommandHandler _grantAccessHandler;
+    private readonly RevokeChecklistAccessCommandHandler _revokeAccessHandler;
+    private readonly GetChecklistProgressQueryHandler _getChecklistProgressHandler;
+    private readonly SaveChecklistProgressCommandHandler _saveChecklistProgressHandler;
+    private readonly GetSharedChecklistsQueryHandler _sharedHandler;
+    private readonly QuickCreateChecklistCommandHandler _quickCreateHandler;
     private readonly ILogger<ChecklistController> _logger;
 
     public ChecklistController(
@@ -47,7 +63,15 @@ public sealed class ChecklistController : BaseController
         GroupTasksIntoSectionCommandHandler groupTasksHandler,
         AddChecklistItemCommandHandler addItemHandler,
         RemoveChecklistItemCommandHandler removeItemHandler,
+        GetBoredActivityQueryHandler boredActivityHandler,
         GetChecklistsByIdsQueryHandler getByIdsHandler,
+        GetChecklistAccessListQueryHandler getAccessListHandler,
+        GrantChecklistAccessCommandHandler grantAccessHandler,
+        RevokeChecklistAccessCommandHandler revokeAccessHandler,
+        GetChecklistProgressQueryHandler getChecklistProgressHandler,
+        SaveChecklistProgressCommandHandler saveChecklistProgressCommandHandler,
+        GetSharedChecklistsQueryHandler sharedHandler,
+        QuickCreateChecklistCommandHandler quickCreateHandler,
         ILogger<ChecklistController> logger)
     {
         _handler = handler;
@@ -60,8 +84,34 @@ public sealed class ChecklistController : BaseController
         _groupTasksHandler = groupTasksHandler;
         _addItemHandler = addItemHandler;
         _removeItemHandler = removeItemHandler;
+        _boredActivityHandler = boredActivityHandler;
         _getByIdsHandler = getByIdsHandler;
+        _getAccessListHandler = getAccessListHandler;
+        _grantAccessHandler = grantAccessHandler;
+        _revokeAccessHandler = revokeAccessHandler;
+        _getChecklistProgressHandler = getChecklistProgressHandler;
+        _saveChecklistProgressHandler = saveChecklistProgressCommandHandler;
+        _sharedHandler = sharedHandler;
+        _quickCreateHandler = quickCreateHandler;
         _logger = logger;
+    }
+
+    [HttpGet("shared")]
+    [Authorize]
+    public async Task<IActionResult> Shared()
+    {
+        var userId = RequiredUserId;
+        _logger.LogInformation("Shared checklists page requested by user {UserId}", userId);
+
+        var result = await _sharedHandler.HandleAsync(new GetSharedChecklistsQuery(userId));
+
+        if (!result.Succeeded)
+        {
+            _logger.LogError("Failed to fetch shared checklists for user {UserId}: {Error}", userId, result.ErrorMessage);
+            return BadRequest(result.ErrorMessage);
+        }
+
+        return View(result.Value);
     }
 
     [HttpGet("create")]
@@ -92,7 +142,7 @@ public sealed class ChecklistController : BaseController
             model.Sections.Select(s => new CreateSectionRequest(
                 s.Name,
                 s.Position,
-                s.Tasks.Select(t => new CreateTaskRequest(t.Content, t.Position)).ToList())).ToList());
+                s.Tasks.Select(t => new CreateTaskRequest(t.Content, t.Position, t.Link)).ToList())).ToList());
 
         var result = await _createHandler.HandleAsync(request, userId);
 
@@ -113,6 +163,46 @@ public sealed class ChecklistController : BaseController
         return BadRequest(result.ErrorMessage ?? "An error occurred while creating the checklist.");
     }
 
+    [HttpGet("quick-create")]
+    [Authorize]
+    public IActionResult QuickCreate()
+    {
+        _logger.LogInformation("Quick checklist create page requested by user {UserId}", RequiredUserId);
+        return View();
+    }
+
+    [HttpPost("quick-create")]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> QuickCreate([FromBody] QuickCreateChecklistViewModel model)
+    {
+        var userId = RequiredUserId;
+
+        _logger.LogInformation(
+            "Quick checklist creation requested by user {UserId}: input length {Length}",
+            userId,
+            model.RawText?.Length ?? 0);
+
+        var command = new QuickCreateChecklistCommand(model.RawText ?? string.Empty);
+        var result = await _quickCreateHandler.HandleAsync(command, userId);
+
+        if (result.Succeeded)
+        {
+            _logger.LogInformation(
+                "Checklist {ChecklistId} quick-created successfully for user {UserId}",
+                result.Value,
+                userId);
+            return Json(new { success = true, id = result.Value, redirectUrl = Url.Action("Show", "Checklist", new { id = result.Value }) });
+        }
+
+        _logger.LogWarning(
+            "Quick checklist creation failed for user {UserId}: {Error}",
+            userId,
+            result.ErrorMessage ?? "Unknown error");
+
+        return BadRequest(result.ErrorMessage ?? "An error occurred while creating the checklist.");
+    }
+
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> Show(Guid id, CancellationToken cancellationToken)
     {
@@ -121,13 +211,88 @@ public sealed class ChecklistController : BaseController
 
         if (!result.Succeeded || result.Value is null)
         {
+            if (result.ErrorMessage == ResultErrors.ChecklistIsPrivate)
+            {
+                _logger.LogInformation("Checklist {ChecklistId} is private and access was denied", id);
+                return View("Private");
+            }
+
             _logger.LogInformation("Checklist {ChecklistId} not found or not available", id);
             return NotFound();
         }
 
         _logger.LogInformation("Checklist {ChecklistId} retrieved and displayed successfully", id);
 
-        return View("Show", result.Value.ToChecklistViewModel());
+        var viewModel = result.Value.ToChecklistViewModel();
+
+        if (viewModel.IsOwner && !viewModel.IsPublic && CurrentUserId is not null)
+        {
+            var progressResult = await _getChecklistProgressHandler.HandleAsync(
+                new GetChecklistProgressQuery(id, CurrentUserId),
+                cancellationToken);
+
+            if (progressResult.Succeeded)
+            {
+                viewModel.InitialCompletedTaskIds = (progressResult.Value ?? Array.Empty<Guid>())
+                    .Select(taskId => taskId.ToString())
+                    .ToList();
+            }
+        }
+
+        return View("Show", viewModel);
+    }
+
+    [HttpPost("{id:guid}/progress")]
+    [Authorize]
+    public async Task<IActionResult> SaveProgress(
+        Guid id,
+        [FromBody] SaveChecklistProgressRequest request,
+        CancellationToken cancellationToken)
+    {
+        var completedTaskIds = (request.CompletedTaskIds ?? Array.Empty<string>())
+            .Where(s => Guid.TryParse(s, out _))
+            .Select(Guid.Parse)
+            .Distinct()
+            .ToList();
+
+        var result = await _saveChecklistProgressHandler.HandleAsync(
+            new SaveChecklistProgressCommand(id, RequiredUserId, completedTaskIds),
+            cancellationToken);
+
+        if (!result.Succeeded)
+        {
+            if (result.ErrorMessage == ResultErrors.NotChecklistOwner)
+            {
+                return Forbid();
+            }
+
+            if (result.ErrorMessage == ResultErrors.ChecklistNotFound)
+            {
+                return NotFound();
+            }
+
+            return BadRequest();
+        }
+
+        return Json(new { success = true });
+    }
+
+    [HttpGet("{id:guid}/embed")]
+    [AllowAnonymous]
+    public async Task<IActionResult> Embed(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _handler.HandleAsync(
+            new GetPublishedChecklistQuery(id), cancellationToken);
+
+        if (!result.Succeeded || result.Value is null || !result.Value.IsPublic || !result.Value.IsEmbeddable)
+        {
+            _logger.LogInformation("Embed denied for checklist {ChecklistId}: not public, not embeddable, or not found", id);
+            return NotFound();
+        }
+
+        _logger.LogInformation("Checklist {ChecklistId} embedded view served", id);
+
+        return View("Embed", result.Value.ToChecklistViewModel());
     }
 
     [HttpPost("{id:guid}/export/markdown")]
@@ -216,7 +381,8 @@ public sealed class ChecklistController : BaseController
                         .Select(t => new EditTaskViewModel
                         {
                             Id = t.Id,
-                            Content = t.Content
+                            Content = t.Content,
+                            Link = t.Link
                         })
                         .ToList()
                 })
@@ -242,7 +408,7 @@ public sealed class ChecklistController : BaseController
             model.Sections.Select(s => new EditSectionRequest(
                 s.Id,
                 s.Name,
-                s.Tasks.Select(t => new EditTaskRequest(t.Id, t.Content)).ToList())).ToList());
+                s.Tasks.Select(t => new EditTaskRequest(t.Id, t.Content, t.Link)).ToList())).ToList());
 
         var result = await _editHandler.HandleAsync(command);
 
@@ -318,7 +484,7 @@ public sealed class ChecklistController : BaseController
             id,
             model.SectionId);
 
-        var command = new AddChecklistItemCommand(id, userId, model.SectionId, model.Content);
+        var command = new AddChecklistItemCommand(id, userId, model.SectionId, model.Content, model.Link);
         var result = await _addItemHandler.HandleAsync(command);
 
         if (result.Succeeded)
@@ -378,5 +544,82 @@ public sealed class ChecklistController : BaseController
         }
 
         return Json(result.Value);
+    }
+
+    [HttpGet("bored-activity")]
+    public async Task<IActionResult> GetBoredActivity(CancellationToken cancellationToken)
+    {
+        var result = await _boredActivityHandler.HandleAsync(cancellationToken);
+
+        if (!result.Succeeded)
+        {
+            return StatusCode(503, result.ErrorMessage);
+        }
+
+        return Json(new { activity = result.Value!.Activity, link = result.Value.Link });
+    }
+
+    [HttpGet("{id:guid}/access")]
+    [Authorize]
+    public async Task<IActionResult> GetAccessList(Guid id, CancellationToken cancellationToken)
+    {
+        var userId = RequiredUserId;
+        var result = await _getAccessListHandler.HandleAsync(
+            new GetChecklistAccessListQuery(id, userId), cancellationToken);
+
+        if (!result.Succeeded)
+        {
+            return result.ErrorMessage == ResultErrors.NotChecklistOwner ? Forbid() : NotFound();
+        }
+
+        return Json(result.Value);
+    }
+
+    [HttpPost("{id:guid}/access/grant")]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> GrantAccess(Guid id, [FromBody] GrantAccessViewModel model)
+    {
+        var userId = RequiredUserId;
+
+        _logger.LogInformation(
+            "Grant access to checklist {ChecklistId} for username '{Username}' requested by user {UserId}",
+            id,
+            model.Username,
+            userId);
+
+        var result = await _grantAccessHandler.HandleAsync(
+            new GrantChecklistAccessCommand(id, userId, model.Username));
+
+        if (!result.Succeeded)
+        {
+            return BadRequest(result.ErrorMessage);
+        }
+
+        return Ok();
+    }
+
+    [HttpPost("{id:guid}/access/{targetUserId}/revoke")]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RevokeAccess(Guid id, string targetUserId)
+    {
+        var userId = RequiredUserId;
+
+        _logger.LogInformation(
+            "Revoke access to checklist {ChecklistId} for user {TargetUserId} requested by user {UserId}",
+            id,
+            targetUserId,
+            userId);
+
+        var result = await _revokeAccessHandler.HandleAsync(
+            new RevokeChecklistAccessCommand(id, userId, targetUserId));
+
+        if (!result.Succeeded)
+        {
+            return BadRequest(result.ErrorMessage);
+        }
+
+        return Ok();
     }
 }
