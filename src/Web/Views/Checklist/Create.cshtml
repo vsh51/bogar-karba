@@ -7,169 +7,76 @@
     var maxDate = today.AddYears(ChecklistOptionsAccessor.Value.MaxDeadlineYears);
 }
 
-<style>
-    .editor-content {
-        display: flex;
-        flex-direction: column;
-    }
+<div class="bk-container bk-container--narrow mt-4 mb-5">
+    <div class="bk-page-header bk-page-header--flush">
+        <h1>Create new checklist</h1>
+        <p>Add items, group them into sections, and set an optional deadline.</p>
+    </div>
 
-    .checklist-row {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.4rem 0.5rem;
-        border-bottom: 1px solid #e9ecef;
-    }
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4" id="checklist-editor">
+                <div class="row g-3 mb-4">
+                    <div class="col-12">
+                        <label class="form-label">Title</label>
+                        <input type="text" class="form-control form-control-lg editable-title" placeholder="e.g. Project Launch Roadmap" />
+                    </div>
 
-    .checklist-row:last-child {
-        border-bottom: none;
-    }
+                    <div class="col-12">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control editable-desc" rows="2" placeholder="What is this checklist about? (optional)"></textarea>
+                    </div>
 
-    .item-checkbox {
-        width: 1rem;
-        height: 1rem;
-        border: 2px solid #adb5bd;
-        border-radius: 0.2rem;
-        flex-shrink: 0;
-    }
-
-    .item-input {
-        flex: 1;
-        border: none;
-        background: transparent;
-        outline: none;
-        font-size: 0.95rem;
-    }
-
-    .section-row {
-        background: #f8f9fa;
-        border-bottom: 2px solid #dee2e6 !important;
-        margin-top: 0.25rem;
-    }
-
-    .section-input {
-        flex: 1;
-        border: none;
-        background: transparent;
-        outline: none;
-        font-size: 0.95rem;
-        font-weight: 600;
-    }
-
-    .btn-delete {
-        color: #dc3545;
-        background: transparent;
-        border: none;
-        cursor: pointer;
-        visibility: hidden;
-        font-size: 1.1rem;
-        line-height: 1;
-    }
-
-    .checklist-row:hover .btn-delete {
-        visibility: visible;
-    }
-
-    .btn-link-toggle {
-        background: transparent;
-        border: none;
-        cursor: pointer;
-        color: #adb5bd;
-        font-size: 0.95rem;
-        padding: 0 0.2rem;
-        line-height: 1;
-        visibility: hidden;
-    }
-
-    .checklist-row:hover .btn-link-toggle {
-        visibility: visible;
-    }
-
-    .btn-link-toggle.has-link {
-        color: #0d6efd;
-        visibility: visible;
-    }
-
-    .link-input-row {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.2rem 0.5rem 0.4rem 2.1rem;
-        border-bottom: 1px solid #e9ecef;
-    }
-
-    .link-input-row input {
-        flex: 1;
-        border: 1px solid #dee2e6;
-        border-radius: 0.25rem;
-        padding: 0.2rem 0.4rem;
-        font-size: 0.85rem;
-        outline: none;
-        color: #0d6efd;
-    }
-
-    .link-input-row input:focus {
-        border-color: #86b7fe;
-    }
-</style>
-
-<div class="row justify-content-center mt-5">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header bg-light text-center">
-                <h4 class="mb-0">Create Checklist</h4>
-            </div>
-            <div class="card-body" id="checklist-editor">
-                <div class="mb-3">
-                    <label class="form-label">Title</label>
-                    <input type="text" class="form-control editable-title" placeholder="Enter checklist title" />
+                    <div class="col-md-6">
+                        <label class="form-label">Deadline <span class="text-muted fw-normal">(optional)</span></label>
+                        <input type="date" class="form-control editable-deadline"
+                               min="@today.ToString("yyyy-MM-dd")"
+                               max="@maxDate.ToString("yyyy-MM-dd")" />
+                        <div class="form-text">Max @ChecklistOptionsAccessor.Value.MaxDeadlineYears years ahead.</div>
+                    </div>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label">Description</label>
-                    <input type="text" class="form-control editable-desc" placeholder="Enter description (optional)" />
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Deadline <span class="text-muted small">(optional)</span></label>
-                    <input type="date" class="form-control editable-deadline"
-                           min="@today.ToString("yyyy-MM-dd")"
-                           max="@maxDate.ToString("yyyy-MM-dd")" />
-                    <div class="form-text small">Maximum @ChecklistOptionsAccessor.Value.MaxDeadlineYears years ahead.</div>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Items</label>
-                    <div class="editor-content border rounded">
-                        <div class="checklist-row">
-                            <div class="item-checkbox"></div>
-                            <input type="text" class="item-input" placeholder="Item description..." />
-                            <button type="button" class="btn-link-toggle" title="Attach link">&#128279;</button>
-                            <button type="button" class="btn-delete">&times;</button>
+                <div class="mb-4">
+                    <label class="form-label">Checklist Items</label>
+                    <div class="bk-editor-surface">
+                        <div class="bk-editor-row">
+                            <div class="bk-editor-checkbox"></div>
+                            <input type="text" class="bk-editor-input item-input" placeholder="Add a task..." />
+                            <button type="button" class="bk-btn-action bk-btn-link" title="Attach link">
+                                <i class="bi bi-link-45deg"></i>
+                            </button>
+                            <button type="button" class="bk-btn-action bk-btn-delete">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                <div class="d-flex gap-2 mb-3">
-                    <button type="button" class="btn btn-outline-secondary btn-sm" id="add-item-btn">+ Item</button>
-                    <button type="button" class="btn btn-outline-secondary btn-sm" id="add-section-btn">+ Section</button>
-                    <button type="button" class="btn btn-outline-primary btn-sm" id="add-bored-btn" title="Add a random activity from Bored API">+ Random activity</button>
+                <div class="d-flex flex-wrap gap-2 mb-4">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="add-item-btn">
+                        <i class="bi bi-plus-lg me-1"></i> Item
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="add-section-btn">
+                        <i class="bi bi-list-task me-1"></i> Section
+                    </button>
+                    <button type="button" class="btn btn-outline-primary btn-sm" id="add-bored-btn" title="Add a random activity">
+                        <i class="bi bi-magic me-1"></i> Random activity
+                    </button>
                 </div>
 
-                <div class="d-grid">
-                    <button type="button" class="btn btn-primary" id="create-checklist-btn">Create</button>
-                </div>
-
-                <div class="text-center mt-3">
-                    <a asp-controller="Author" asp-action="Index">Back to your checklists</a>
+                <div class="d-grid gap-3">
+                    <button type="button" class="btn btn-primary btn-lg" id="create-checklist-btn">
+                        Create Checklist
+                    </button>
+                    <a asp-controller="Author" asp-action="Index" class="btn btn-link text-decoration-none text-muted">
+                        Cancel and go back
+                    </a>
                 </div>
 
                 @Html.AntiForgeryToken()
-            </div>
         </div>
     </div>
 </div>
 
 @section Scripts {
-    <script src="~/js/checklist-create.js"></script>
+    <script src="~/js/checklist-create.js" asp-append-version="true"></script>
 }

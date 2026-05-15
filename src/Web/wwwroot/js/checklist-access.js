@@ -36,7 +36,10 @@ document.addEventListener('DOMContentLoaded', () => {
             item.className = 'access-user-item';
             item.innerHTML = `
                 <span class="access-username">${escapeHtml(userName)}</span>
-                <button type="button" class="access-revoke-btn" data-user-id="${escapeHtml(userId)}" title="Revoke access">&times;</button>`;
+                <button type="button" class="access-revoke-btn"
+                        data-user-id="${escapeHtml(userId)}" title="Revoke access" aria-label="Revoke access">
+                    <i class="bi bi-x-lg" aria-hidden="true"></i>
+                </button>`;
             userListEl.appendChild(item);
         });
 

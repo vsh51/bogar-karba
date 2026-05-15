@@ -22,15 +22,18 @@
 
     --bk-color-success: #10b981;
     --bk-color-success-soft: #ecfdf5;
+    --bk-color-success-border: #a7f3d0;
     --bk-color-success-strong: #065f46;
 
     --bk-color-warning: #f59e0b;
     --bk-color-warning-soft: #fffbeb;
+    --bk-color-warning-border: #fde68a;
     --bk-color-warning-strong: #92400e;
 
     --bk-color-danger: #ef4444;
     --bk-color-danger-hover: #dc2626;
     --bk-color-danger-soft: #fef2f2;
+    --bk-color-danger-border: #fecaca;
     --bk-color-danger-strong: #991b1b;
 
     --bk-space-1: 0.25rem;

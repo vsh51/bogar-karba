@@ -5,6 +5,11 @@
       "wwwroot/css/variables.css",
       "wwwroot/css/layout.css",
       "wwwroot/css/components.css",
+      "wwwroot/css/checklist-show.css",
+      "wwwroot/css/checklist-embed.css",
+      "wwwroot/css/checklist-private.css",
+      "wwwroot/css/checklist-editor.css",
+      "wwwroot/css/checklist-quick-create.css",
       "wwwroot/css/site.css"
     ],
     "minify": {

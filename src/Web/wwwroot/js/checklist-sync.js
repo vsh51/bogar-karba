@@ -32,12 +32,12 @@
         try {
             data = JSON.parse(fileContent);
         } catch (e) {
-            alert("Invalid file format. Please upload a valid JSON file.");
+            window.bkUi.toast("Invalid file format. Please upload a valid JSON file.", "error");
             return false;
         }
 
         if (data.v !== SCHEMA_VERSION || !data.checklists || typeof data.checklists !== "object") {
-            alert("Invalid progress file schema. It might be corrupted or from an incompatible version.");
+            window.bkUi.toast("Invalid progress file schema. It might be corrupted or from an incompatible version.", "error");
             return false;
         }
 
@@ -99,14 +99,14 @@
                     let content = evt.target.result;
                     let success = importProgress(content);
                     if (success) {
-                        alert("Progress imported successfully!");
-                        window.location.reload();
+                        window.bkUi.toast("Progress imported successfully.", "success");
+                        setTimeout(function() { window.location.reload(); }, 1000);
                     }
                     fileInput.value = "";
                 };
 
                 reader.onerror = function() {
-                    alert("Failed to read the file.");
+                    window.bkUi.toast("Failed to read the file.", "error");
                     fileInput.value = "";
                 };
 
@@ -136,9 +136,10 @@
         }
 
         navigator.clipboard.writeText(baseUrl).then(function() {
-            alert("Shareable link copied to clipboard!");
+            window.bkUi.toast("Shareable link copied to clipboard.", "success");
         }).catch(function() {
-            alert("Failed to copy link automatically. Here it is:\n\n" + baseUrl);
+            window.bkUi.toast("Could not copy automatically. Open the browser console for the link.", "error");
+            console.info("Shareable link:", baseUrl);
         });
     }
 
